@@ -1,0 +1,69 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/*
+ * Paper theme — warm cream, hairline rules, no shadows, small radii.
+ * DaisyUI is plumbing (tokens + dark mode + a11y primitives), not the chassis;
+ * the week grid is custom. See docs/design.md.
+ */
+@plugin "daisyui/theme" {
+  name: "paper";
+  default: true;
+  color-scheme: light;
+  --color-base-100: oklch(98% 0.008 85);    /* warm cream ~#FAF7F0 */
+  --color-base-200: oklch(96% 0.010 85);    /* faint hover/elevation, no shadow */
+  --color-base-300: oklch(93% 0.012 85);
+  --color-base-content: oklch(28% 0.02 60); /* warm near-black ink */
+  --color-primary: oklch(55% 0.04 60);
+  --color-primary-content: oklch(98% 0.008 85);
+  --depth: 0;
+  --noise: 0;
+  --border: 1px;
+  --radius-box: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 0.25rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "paper-dark";
+  prefersdark: true;
+  color-scheme: dark;
+  --color-base-100: oklch(24% 0.012 70);    /* warm charcoal */
+  --color-base-200: oklch(27% 0.012 70);
+  --color-base-300: oklch(31% 0.013 70);
+  --color-base-content: oklch(90% 0.012 85); /* warm off-white ink */
+  --color-primary: oklch(80% 0.04 85);
+  --color-primary-content: oklch(24% 0.012 70);
+  --depth: 0;
+  --noise: 0;
+  --border: 1px;
+  --radius-box: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 0.25rem;
+}
+
+/* App tokens that must survive purge and be usable as utilities (bg-tag-yellow, border-hairline, …). */
+@theme {
+  --color-hairline: oklch(88% 0.01 85);     /* low-contrast warm gray ruled line */
+  --color-tag-yellow: oklch(92% 0.09 95);
+  --color-tag-pink:   oklch(90% 0.07 5);
+  --color-tag-blue:   oklch(90% 0.06 235);
+  --color-tag-green:  oklch(91% 0.07 150);
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-accent: "Caveat", ui-serif, cursive;
+}
+
+html,
+body,
+#__nuxt {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* Handwritten accent for the logo + day labels — used sparingly. */
+.font-accent {
+  font-family: var(--font-accent);
+}

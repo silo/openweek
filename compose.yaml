@@ -1,0 +1,44 @@
+# Openweek self-host stack: app + postgres. See docs/self-hosting.md.
+#   cp .env.example .env   # then fill in secrets
+#   docker compose up -d
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: openweek
+      POSTGRES_PASSWORD: openweek
+      POSTGRES_DB: openweek
+    volumes:
+      - openweek-db:/var/lib/postgresql/data
+    ports:
+      # Exposed for local dev (pnpm dev / db:migrate from the host). Override the
+      # host port if 5432 is taken: OPENWEEK_DB_PORT=5544 in your .env.
+      - "${OPENWEEK_DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openweek -d openweek"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # In-container the db host is the service name.
+      DATABASE_URL: postgres://openweek:openweek@db:5432/openweek
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      OPENWEEK_ENCRYPTION_KEY: ${OPENWEEK_ENCRYPTION_KEY}
+      NODE_ENV: production
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      OPENWEEK_SYNC_INTERVAL: ${OPENWEEK_SYNC_INTERVAL:-10m}
+    ports:
+      - "3000:3000"
+
+volumes:
+  openweek-db:
