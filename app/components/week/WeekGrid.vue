@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { useWeek } from '~/composables/useWeek'
 
-// Per-user week start is wired in Phase 3; default Monday for now.
-const { days, rangeLabel, next, prev, thisWeek } = useWeek(1)
+const user = useAuthUser()
+
+// Week start follows the signed-in user's preference (default Monday).
+const weekStartsOn = computed(() => (user.value?.weekStartsOn ?? 1) as 0 | 1 | 2 | 3 | 4 | 5 | 6)
+const { days, rangeLabel, next, prev, thisWeek } = useWeek(weekStartsOn.value)
 </script>
 
 <template>
@@ -22,6 +25,9 @@ const { days, rangeLabel, next, prev, thisWeek } = useWeek(1)
         <button class="btn btn-sm btn-ghost" aria-label="Next week" @click="next">
           ›
         </button>
+        <NuxtLink to="/settings" class="btn btn-sm btn-ghost" :aria-label="`Settings for ${user?.name ?? 'account'}`">
+          ⚙
+        </NuxtLink>
       </div>
     </header>
 

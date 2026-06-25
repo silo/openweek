@@ -24,6 +24,11 @@ export default defineNuxtConfig({
   vite: {
     // Tailwind v4 is CSS-first; wired as a Vite plugin (not @nuxtjs/tailwindcss).
     plugins: [tailwindcss()],
+    // Pre-bundle the auth client deps so the first sign-in doesn't trigger a
+    // dep-optimization page reload mid-request.
+    optimizeDeps: {
+      include: ['better-auth/vue', 'better-auth/client/plugins'],
+    },
   },
 
   typescript: {
