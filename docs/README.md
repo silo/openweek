@@ -18,11 +18,14 @@ These docs are the source of truth for *why* the project is built the way it is.
 | [design.md](./design.md) | Paper aesthetic, theme tokens, fonts, accessibility, responsive/mobile, DnD UX. |
 | [self-hosting.md](./self-hosting.md) | Env vars, secrets, Docker, migrations, backups, reverse proxy. |
 | [roadmap.md](./roadmap.md) | Phased build plan, scope (now vs later), per-phase verification. |
+| [testing.md](./testing.md) | Test strategy, environments, coverage map, and what's verified another way. |
 | [decisions.md](./decisions.md) | Decision log of one-way doors and locked choices, with context. |
 
 ## Status
 
-Greenfield. Repo is a bare Nuxt 4.4.8 starter. Planning complete; implementation not started.
+Phases 1–4 implemented: setup/self-host ops, auth, the week grid + task CRUD + the optimistic
+store, and drag & drop (with the move-menu fallback). Vitest suite in place. Next: Phase 5
+(calendar-sync foundation).
 
 ## Conventions for these docs
 

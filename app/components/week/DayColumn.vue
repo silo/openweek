@@ -21,6 +21,10 @@ const heading = computed(() => props.list?.name ?? props.day?.dayName ?? '')
 
 const tasks = computed(() =>
   props.list ? store.tasksForList(props.list.id) : store.tasksForDate(props.day!.iso))
+
+// Whole column body is a drop target (so tasks can land in an empty day/list).
+const dropEl = ref<HTMLElement>()
+useDropColumn(dropEl, () => scope.value)
 </script>
 
 <template>
@@ -43,7 +47,7 @@ const tasks = computed(() =>
       </div>
     </header>
 
-    <div class="flex flex-1 flex-col gap-0.5 px-1.5 pb-2">
+    <div ref="dropEl" class="flex flex-1 flex-col gap-0.5 px-1.5 pb-2">
       <TaskRow v-for="task in tasks" :key="task.id" :task="task" />
       <QuickAdd :scope="scope" />
     </div>

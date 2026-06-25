@@ -1,7 +1,7 @@
-import { formatInTimeZone } from 'date-fns-tz'
 import { and, eq, inArray, isNull, lt, sql } from 'drizzle-orm'
 import { useDb } from '~~/server/db'
 import { boards, tasks, user } from '~~/server/db/schema'
+import { localDay, shouldRollover } from '~~/server/utils/rollover'
 import { requireUser } from '~~/server/utils/session'
 
 /**
@@ -27,8 +27,8 @@ export default defineEventHandler(async (event) => {
   if (!u || !u.enabled)
     return { rolled: 0, enabled: false }
 
-  const today = formatInTimeZone(new Date(), u.timezone ?? 'UTC', 'yyyy-MM-dd')
-  if (u.last === today)
+  const today = localDay(new Date(), u.timezone)
+  if (!shouldRollover({ enabled: u.enabled, lastRolloverDate: u.last, today }))
     return { rolled: 0, date: today, alreadyRolled: true }
 
   const rolled = await db.transaction(async (tx) => {

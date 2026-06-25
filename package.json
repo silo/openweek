@@ -15,9 +15,14 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "auth:gen": "npx @better-auth/cli@latest generate --config auth.config.ts --output server/db/schema/auth.ts -y"
+    "auth:gen": "npx @better-auth/cli@latest generate --config auth.config.ts --output server/db/schema/auth.ts -y",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^2.0.1",
+    "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "^3.0.0",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^2.0.0",
     "@fontsource/caveat": "^5.2.8",
     "@fontsource/inter": "^5.2.8",
     "@pinia/nuxt": "^0.11.3",
@@ -45,6 +50,7 @@
     "@nuxt/eslint": "^1.16.0",
     "@nuxt/test-utils": "^4.0.3",
     "@types/pg": "^8.20.0",
+    "@vitest/coverage-v8": "^4.1.9",
     "@vue/test-utils": "^2.4.11",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.5.0",

@@ -80,11 +80,17 @@ expands correctly across next/prev week; DB inspection confirms tokens are ciphe
 
 ## Cross-cutting tests (Vitest, throughout)
 
-- Zod input rejection on API routes.
-- Fractional-index move at start / end / empty / single.
-- Rollover idempotency.
-- AES-GCM encrypt → decrypt round-trip.
-- First-user-admin hook.
+Setup, conventions, and the coverage map live in [testing.md](./testing.md). Status:
+
+- Zod input rejection (shared DTOs). ✅ done
+- Fractional-index move at start / end / empty / single. ✅ done
+- Rollover idempotency (decision + per-timezone local day). ✅ done
+- First-user-admin rule. ✅ done
+- Optimistic store: mutate → reconcile / rollback + undo. ✅ done (bonus)
+- AES-GCM encrypt → decrypt round-trip. ⏳ lands with the crypto util in Phase 5.
+
+DB-level guarantees and drag/render are verified against real Postgres + a scripted Playwright
+run for now; a committed Playwright e2e suite is a later phase.
 
 ## Later phases (not scheduled)
 

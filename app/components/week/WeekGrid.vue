@@ -6,8 +6,9 @@ import { useBoardStore } from '~/stores/board'
 const user = useAuthUser()
 const store = useBoardStore()
 
-const weekStartsOn = computed(() => (user.value?.weekStartsOn ?? 1) as 0 | 1 | 2 | 3 | 4 | 5 | 6)
-const { days, rangeLabel, next, prev, thisWeek, offset } = useWeek(weekStartsOn.value)
+const { days, rangeLabel, next, prev, thisWeek, offset } = useWeek()
+
+const desktopScroll = ref<HTMLElement>()
 
 const range = computed(() => ({ from: days.value[0]!.iso, to: days.value[6]!.iso }))
 
@@ -50,6 +51,9 @@ useSwipe(swipeArea, {
 
 // Keep the selected index valid after week nav.
 watch(offset, () => { selected.value = Math.min(selected.value, 6) })
+
+// One drop monitor + auto-scroll for both layouts' scroll containers.
+useTaskDndMonitor([desktopScroll, swipeArea])
 </script>
 
 <template>
@@ -69,7 +73,7 @@ watch(offset, () => { selected.value = Math.min(selected.value, 6) })
     </header>
 
     <!-- Desktop: 7 day columns + a Someday column holding the lists -->
-    <div class="hidden flex-1 grid-cols-8 divide-x divide-hairline overflow-auto md:grid">
+    <div ref="desktopScroll" class="hidden flex-1 grid-cols-8 divide-x divide-hairline overflow-auto md:grid">
       <DayColumn v-for="day in days" :key="day.iso" :day="day" />
       <div class="flex flex-col divide-y divide-hairline bg-base-100/40">
         <DayColumn v-for="list in store.sortedLists" :key="list.id" :list="list" />

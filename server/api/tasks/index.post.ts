@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm'
 import { uuidv7 } from 'uuidv7'
 import { createTaskInput } from '#shared/schemas/task'
 import { lists, tasks } from '~~/server/db/schema'
-import { appendPosition, loadOwnedBoard } from '~~/server/utils/ownership'
+import { loadOwnedBoard, nextPositionInScope } from '~~/server/utils/ownership'
 
 // Create a task on a date or in a list. The DB CHECK guarantees exactly one of
 // date|listId; we also verify the list belongs to the board for a clean 400.
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
   const scope = input.listId != null
     ? { listId: input.listId }
     : { date: input.date! }
-  const position = input.position ?? await appendPosition(db, board.id, scope)
+  const position = input.position ?? await nextPositionInScope(db, board.id, scope)
 
   const [row] = await db
     .insert(tasks)

@@ -83,9 +83,14 @@ pnpm install
 docker compose up -d db        # postgres
 pnpm db:generate && pnpm db:migrate
 pnpm dev                       # http://localhost:3000
-pnpm typecheck && pnpm lint
+pnpm typecheck && pnpm lint && pnpm test
 docker compose up              # full self-host stack
 ```
+
+Tests: **Vitest** (`pnpm test` / `test:watch` / `test:coverage`); strategy + coverage map in
+[docs/testing.md](./docs/testing.md). Load-bearing logic is extracted into pure helpers
+(`shared/utils/ordering.ts`, `server/utils/{first-user,rollover}.ts`, `validateEnv`) so it's
+unit-testable; the optimistic store is tested in the `nuxt` env with a mocked `$fetch`.
 Required env (see `.env.example` once created): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
 `OPENWEEK_ENCRYPTION_KEY` (base64, 32 bytes), optional `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`. Full list:
 [docs/self-hosting.md](./docs/self-hosting.md).

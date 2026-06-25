@@ -6,6 +6,7 @@ import { generateKeyBetween } from 'fractional-indexing-jittered'
 import { useDb } from '../db'
 import * as schema from '../db/schema'
 import { userAdditionalFields } from './auth-fields'
+import { firstUserRole } from './first-user'
 import { getEnv } from './runtime-config'
 
 function createAuth() {
@@ -47,8 +48,7 @@ function createAuth() {
           // First registered user becomes admin; everyone after is a normal user.
           before: async (data) => {
             const [row] = await db.select({ n: count() }).from(schema.user)
-            const isFirst = (row?.n ?? 0) === 0
-            return { data: { ...data, role: isFirst ? 'admin' : 'user' } }
+            return { data: { ...data, role: firstUserRole(row?.n ?? 0) } }
           },
           // Give every new user a default board with a "Someday" list.
           after: async (newUser) => {

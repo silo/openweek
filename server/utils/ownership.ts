@@ -36,8 +36,8 @@ export async function loadOwnedTask(event: H3Event, taskId: string) {
 
 type DB = ReturnType<typeof useDb>
 
-/** Fractional position appended after the last task in a day or list scope. */
-export async function appendPosition(
+/** Fractional position appended after the last task in a day or list scope (DB-backed). */
+export async function nextPositionInScope(
   db: DB,
   boardId: string,
   scope: { date: string } | { listId: string },

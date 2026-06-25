@@ -1,5 +1,5 @@
 import { addDays, addWeeks, format, isToday, startOfWeek } from 'date-fns'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 export interface WeekDay {
   iso: string // yyyy-MM-dd — the key used as a task's `date`
@@ -11,15 +11,19 @@ export interface WeekDay {
 }
 
 /**
- * Current week range + prev/next/this-week navigation. Week start is per-user
- * (default Monday); wired to the user setting in Phase 2/3. Day columns are
- * derived from dates here — never stored. See docs/data-model.md.
+ * Current week range + prev/next/this-week navigation. Week start follows the
+ * signed-in user (default Monday). The week offset is shared app-wide via
+ * useState, so the grid and the "move to…" menu always agree on which week is
+ * displayed. Day columns are derived from dates — never stored.
  */
-export function useWeek(weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1) {
-  // Offset in weeks from the current week (0 = this week).
-  const offset = ref(0)
+export function useWeek() {
+  const user = useAuthUser()
+  const weekStartsOn = computed(() => (user.value?.weekStartsOn ?? 1) as 0 | 1 | 2 | 3 | 4 | 5 | 6)
 
-  const anchor = computed(() => startOfWeek(addWeeks(new Date(), offset.value), { weekStartsOn }))
+  // Offset in weeks from the current week (0 = this week) — shared across instances.
+  const offset = useState('week-offset', () => 0)
+
+  const anchor = computed(() => startOfWeek(addWeeks(new Date(), offset.value), { weekStartsOn: weekStartsOn.value }))
 
   const days = computed<WeekDay[]>(() =>
     Array.from({ length: 7 }, (_, i) => {

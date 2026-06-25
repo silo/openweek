@@ -8,6 +8,11 @@ const store = useBoardStore()
 const editor = useTaskEditor()
 const { colors, swatchClass, highlightClass } = useTaskColors()
 
+const rowEl = ref<HTMLElement>()
+const gripEl = ref<HTMLElement>()
+const taskId = computed(() => props.task.id)
+const { dragging, edge } = useDraggableRow(rowEl, gripEl, taskId)
+
 const editing = ref(false)
 const draft = ref(props.task.title)
 const inputEl = ref<HTMLInputElement>()
@@ -39,9 +44,25 @@ function pickColor(c: TaskColor | null) {
 
 <template>
   <div
-    class="group flex items-start gap-2 rounded px-1.5 py-1 transition-colors hover:bg-base-200"
-    :class="highlightClass(task.color)"
+    ref="rowEl"
+    class="group relative flex items-start gap-1 rounded px-1 py-1 transition-colors hover:bg-base-200"
+    :class="[highlightClass(task.color), dragging ? 'opacity-40' : '']"
   >
+    <!-- Drop indicators (closest edge) -->
+    <div v-if="edge === 'top'" class="absolute inset-x-1 -top-px h-0.5 rounded bg-primary" />
+    <div v-if="edge === 'bottom'" class="absolute inset-x-1 -bottom-px h-0.5 rounded bg-primary" />
+
+    <!-- Drag handle -->
+    <button
+      ref="gripEl"
+      type="button"
+      tabindex="-1"
+      class="mt-0.5 cursor-grab select-none text-xs opacity-0 transition-opacity group-hover:opacity-40 active:cursor-grabbing"
+      aria-label="Drag to reorder"
+    >
+      ⠿
+    </button>
+
     <input
       type="checkbox"
       class="checkbox checkbox-xs mt-0.5"
@@ -71,13 +92,12 @@ function pickColor(c: TaskColor | null) {
     </button>
 
     <!-- Hover controls -->
-    <div class="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-      <!-- Color -->
+    <div class="flex items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
       <div class="dropdown dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-xs px-1" aria-label="Color tag">
           <span class="size-3 rounded-full border border-hairline" :class="task.color ? swatchClass(task.color) : 'bg-base-100'" />
         </div>
-        <ul tabindex="0" class="dropdown-content menu z-10 w-max gap-1 rounded-box bg-base-100 p-2 shadow">
+        <ul tabindex="0" class="dropdown-content menu z-20 w-max gap-1 rounded-box bg-base-100 p-2 shadow">
           <li class="flex flex-row gap-1">
             <button v-for="c in colors" :key="c" type="button" class="size-5 rounded-full border border-hairline" :class="swatchClass(c)" :aria-label="c" @click="pickColor(c)" />
             <button type="button" class="size-5 rounded-full border border-hairline bg-base-100 text-xs" aria-label="No color" @click="pickColor(null)">✕</button>
@@ -85,12 +105,12 @@ function pickColor(c: TaskColor | null) {
         </ul>
       </div>
 
-      <!-- Notes / detail -->
       <button type="button" class="btn btn-ghost btn-xs px-1" :class="{ 'text-primary': task.notes }" aria-label="Notes" @click="editor.open(task.id)">
         ✎
       </button>
 
-      <!-- Delete -->
+      <TaskMoveMenu :task="task" />
+
       <button type="button" class="btn btn-ghost btn-xs px-1" aria-label="Delete task" @click="store.deleteTask(task.id)">
         ✕
       </button>

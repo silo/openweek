@@ -1,14 +1,7 @@
 import type { Board, List, Task, TaskColor } from '#shared/types/task'
-import { generateKeyBetween } from 'fractional-indexing-jittered'
+import { appendPosition, byPosition } from '#shared/utils/ordering'
 import { defineStore } from 'pinia'
 import { uuidv7 } from 'uuidv7'
-
-/** Stable (position, id) comparison — never position alone (see docs). */
-function byPosition(a: Task, b: Task) {
-  if (a.position !== b.position)
-    return a.position < b.position ? -1 : 1
-  return a.id < b.id ? -1 : 1
-}
 
 type Scope = { date: string } | { listId: string }
 
@@ -44,9 +37,8 @@ export const useBoardStore = defineStore('board', () => {
     return Object.values(tasksById.value).filter(t => t.listId === listId).sort(byPosition)
   }
 
-  function lastPosition(scope: Scope): string | null {
-    const items = 'listId' in scope ? tasksForList(scope.listId) : tasksForDate(scope.date)
-    return items.at(-1)?.position ?? null
+  function scopeItems(scope: Scope): Task[] {
+    return 'listId' in scope ? tasksForList(scope.listId) : tasksForDate(scope.date)
   }
 
   // --- loading ---
@@ -84,7 +76,7 @@ export const useBoardStore = defineStore('board', () => {
     if (!b)
       return
     const id = uuidv7()
-    const position = generateKeyBetween(lastPosition(scope), null)
+    const position = appendPosition(scopeItems(scope))
     const now = new Date().toISOString()
     const optimistic: Task = {
       id,
@@ -182,8 +174,7 @@ export const useBoardStore = defineStore('board', () => {
     if (!b)
       return
     const id = uuidv7()
-    const last = sortedLists.value.at(-1)?.position ?? null
-    const position = generateKeyBetween(last, null)
+    const position = appendPosition(sortedLists.value)
     const optimistic: List = { id, boardId: b.id, name, position }
     lists.value = [...lists.value, optimistic]
     try {

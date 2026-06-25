@@ -38,20 +38,25 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>
 
-let cached: Env | null = null
-
-export function getEnv(): Env {
-  if (cached)
-    return cached
-
-  const parsed = envSchema.safeParse(process.env)
+/**
+ * Validate an env source (defaults to process.env), throwing a clear,
+ * multi-issue message on failure. Pure + side-effect-free so it's unit-testable.
+ */
+export function validateEnv(source: Record<string, unknown> = process.env): Env {
+  const parsed = envSchema.safeParse(source)
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map(i => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)
       .join('\n')
     throw new Error(`Invalid environment configuration:\n${issues}\n\nSee .env.example and docs/self-hosting.md.`)
   }
+  return parsed.data
+}
 
-  cached = parsed.data
+let cached: Env | null = null
+
+/** Validate process.env once and cache (called from the Nitro startup plugin). */
+export function getEnv(): Env {
+  cached ??= validateEnv(process.env)
   return cached
 }

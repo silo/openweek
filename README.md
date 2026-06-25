@@ -112,7 +112,8 @@ Other scripts:
 ```bash
 pnpm typecheck     # vue-tsc strict type-check
 pnpm lint          # ESLint
-pnpm test          # Vitest
+pnpm test          # Vitest (see docs/testing.md)
+pnpm test:coverage # Vitest with a coverage report
 pnpm db:generate   # generate a migration after editing the schema
 pnpm auth:gen      # regenerate Better Auth tables after auth config changes
 pnpm build         # production build
