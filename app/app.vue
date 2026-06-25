@@ -8,6 +8,7 @@ const sourceUrl = 'https://github.com/openweek/openweek'
 <template>
   <div class="flex h-full flex-col bg-base-100 text-base-content">
     <NuxtRouteAnnouncer />
+    <Toaster />
     <main class="flex-1 overflow-hidden">
       <NuxtPage />
     </main>

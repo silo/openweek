@@ -7,9 +7,14 @@ export default defineNuxtConfig({
 
   modules: [
     '@pinia/nuxt',
+    '@vueuse/nuxt',
     '@nuxt/eslint',
     '@nuxt/test-utils/module',
   ],
+
+  // Register components by filename (no directory prefix): <DayColumn>, <TaskRow>,
+  // <Toaster>, … rather than <WeekDayColumn>, <UiToaster>.
+  components: [{ path: '~/components', pathPrefix: false }],
 
   // Self-hosted fonts (no Google Fonts CDN) + the paper theme entry.
   css: [
