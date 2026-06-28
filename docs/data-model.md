@@ -1,5 +1,12 @@
 # Data Model
 
+> **Status (Phase 6):** the recurrence/subtask columns are now **active** (self-FKs on `recurrenceId`/`parentId`).
+> Added since: `lists.color`, `tasks.startTime` (`'HH:mm'` label), `tasks.linkedEventId` (convert-to-task), a
+> partial unique `(recurrence_id, date)` index, the sync tables (`connected_accounts`/`external_calendars`/
+> `synced_events`), and user fields `accentColor`/`tagStyle`/`showCalendarEvents`. See [decisions.md](./decisions.md)
+> D15–D18.
+
+
 PostgreSQL via Drizzle ORM. All **app** tables use **uuid v7** primary keys (time-sortable, double as the
 ordering tiebreaker). Better Auth tables keep their native `text` ids; app foreign keys to users are `text`.
 

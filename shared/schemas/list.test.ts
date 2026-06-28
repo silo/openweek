@@ -13,6 +13,9 @@ describe('createListInput', () => {
   it('rejects a bad boardId', () => {
     expect(createListInput.safeParse({ boardId: 'x', name: 'A' }).success).toBe(false)
   })
+  it('accepts an optional color', () => {
+    expect(createListInput.safeParse({ boardId, name: 'Work', color: '#CFDEEA' }).success).toBe(true)
+  })
 })
 
 describe('updateListInput', () => {

@@ -85,6 +85,31 @@ source-link/version footer (network-use clause) in the first commit; consolidate
 validation; Postgres backup/restore docs; `nuxt typecheck` + ESLint CI gate; pin **Zod 4** + drizzle-zod
 together. _Confirm CLA/DCO policy before accepting external PRs (open item)._
 
+### D15 — v2 "paper" redesign keeps the tag-color union; accent is a runtime CSS var ✅
+**Why:** the v2 design renames tag colors (butter/mint/sky/rose) but the DB stores `'yellow'|'pink'|'blue'|'green'`.
+**Decision:** keep the union + DB strings; change only the `--color-tag-*` *values* to the v2 palette (yellow→butter,
+green→mint, blue→sky, pink→rose). The configurable accent is a runtime `--color-accent` var set by a client plugin
+from the user's `accentColor`, not a DaisyUI theme rebuild. Avoids a churny rename across schema/store/tests.
+
+### D16 — Task `startTime` is a `text 'HH:mm'` label, not scheduling 🔒
+**Why:** the app's premise is "no hourly scheduling," but v2 shows optional times. **Decision:** a nullable
+`text` column holding `'HH:mm'` (regex-validated) — a tag, no hourly grid. `text` avoids pg `time` serialization
+quirks across the JSON boundary.
+
+### D17 — Recurrence: template-is-first-occurrence; subtasks are real scoped rows 🔒
+**Why:** the data model reserves `recurrenceRule`/`recurrenceId`/`parentId`. **Decision:** the row carrying the
+RRULE *is* the first occurrence (no invisible generator); later instances are real task rows linked by
+`recurrenceId`, materialized per visible week and idempotent via a partial unique `(recurrence_id, date)` index.
+Subtasks are real rows sharing the parent's scope, filtered from the top level by `parentId IS NULL`. Rollover
+skips templates, instances, and subtasks.
+
+### D18 — Calendar secrets: AES-256-GCM stored as base64 `text`; sync is full-replace 🔒-ish
+**Why:** D12 mandated encryption + key versioning; storage shape and sync strategy were open. **Decision:**
+`cipher`/`iv`/`authTag` as base64 **`text`** (+ `encKeyVersion`) — avoids a Drizzle `bytea` custom type; CalDAV
+stores `{username,password}` JSON encrypted, Google a refresh token, iCal the URL. Read-only sync is a
+**full-replace** of each calendar's mirrored events per poll (correct + simple); incremental cursors (410/ctag,
+in the tested `sync-cursor.ts`) are a wired-later optimization.
+
 ---
 
 ## Open items to revisit

@@ -35,7 +35,7 @@ await load()
 <template>
   <div class="mx-auto w-full max-w-3xl p-6">
     <header class="mb-6 flex items-center justify-between">
-      <h1 class="font-accent text-3xl">
+      <h1 class="font-mono text-3xl">
         Users
       </h1>
       <NuxtLink to="/settings" class="link link-hover text-sm">

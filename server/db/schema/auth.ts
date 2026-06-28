@@ -27,6 +27,9 @@ export const user = pgTable("user", {
   weekStartsOn: integer("week_starts_on").default(1),
   rolloverEnabled: boolean("rollover_enabled").default(false),
   lastRolloverDate: text("last_rollover_date"),
+  accentColor: text("accent_color").default("sky"),
+  tagStyle: text("tag_style").default("underline"),
+  showCalendarEvents: boolean("show_calendar_events").default(true),
 });
 
 export const session = pgTable(

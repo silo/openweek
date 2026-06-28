@@ -56,7 +56,10 @@ export default defineEventHandler(async (event) => {
         inArray(tasks.boardId, ownedBoards),
         lt(tasks.date, today),
         eq(tasks.done, false),
+        // Skip generated instances AND recurrence templates AND subtasks.
         isNull(tasks.recurrenceId),
+        isNull(tasks.recurrenceRule),
+        isNull(tasks.parentId),
       ))
       .returning({ id: tasks.id })
 

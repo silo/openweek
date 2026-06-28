@@ -3,52 +3,46 @@ import type { WeekDay } from '~/composables/useWeek'
 import { useBoardStore } from '~/stores/board'
 
 /**
- * The reusable layout atom — layout-agnostic (no grid assumption), so it powers
- * the desktop 7-col grid, the Someday lists, and the mobile single-day view.
- * Renders tasks for its scope (a date or a list) and a focus-first quick-add.
+ * One day column — the reusable atom for the desktop 7-col grid and the mobile
+ * single-day view. Renders top-level tasks for its date (subtasks live under
+ * their parent) and a focus-first quick-add. Lists live in the bottom drawer.
  */
-const props = defineProps<{
-  day?: WeekDay
-  list?: { id: string, name: string }
-}>()
+const props = defineProps<{ day: WeekDay }>()
 
 const store = useBoardStore()
+const user = useAuthUser()
+const search = useState('week-search', () => '')
+const scope = computed(() => ({ date: props.day.iso }))
+const tasks = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  return store.tasksForDate(props.day.iso)
+    .filter(t => !t.parentId)
+    .filter(t => !q || t.title.toLowerCase().includes(q))
+})
+const events = computed(() => (user.value?.showCalendarEvents === false ? [] : store.eventsForDate(props.day.iso)))
 
-const scope = computed(() =>
-  props.list ? { listId: props.list.id } : { date: props.day!.iso })
-
-const heading = computed(() => props.list?.name ?? props.day?.dayName ?? '')
-
-const tasks = computed(() =>
-  props.list ? store.tasksForList(props.list.id) : store.tasksForDate(props.day!.iso))
-
-// Whole column body is a drop target (so tasks can land in an empty day/list).
 const dropEl = ref<HTMLElement>()
 useDropColumn(dropEl, () => scope.value)
 </script>
 
 <template>
-  <section class="flex min-h-48 flex-col border-hairline" :aria-label="heading">
-    <header class="flex items-baseline justify-between px-3 pb-1 pt-2">
-      <h2 class="font-accent text-xl leading-none" :class="{ 'text-primary': day?.isToday }">
-        {{ heading }}
-      </h2>
-      <div class="flex items-center gap-1">
-        <span v-if="day" class="text-sm tabular-nums opacity-60">{{ day.dayNumber }}</span>
-        <button
-          v-if="list"
-          type="button"
-          class="btn btn-ghost btn-xs px-1 opacity-40 hover:opacity-100"
-          :aria-label="`Delete list ${list.name}`"
-          @click="store.deleteList(list.id)"
-        >
-          ✕
-        </button>
-      </div>
+  <section
+    class="flex min-h-48 flex-col"
+    :class="day.isToday ? 'bg-accent/10' : ''"
+    :aria-label="day.dayName"
+  >
+    <header class="flex items-center gap-2 px-4 pb-2 pt-3">
+      <span
+        v-if="day.isToday"
+        class="grid size-[26px] place-items-center rounded-full bg-accent font-mono text-[15px] leading-none text-base-content"
+      >{{ day.dayNumber }}</span>
+      <span v-else class="font-mono text-[17px] leading-none">{{ day.dayNumber }}</span>
+      <span class="font-mono text-[10px] tracking-widest text-base-content/40">{{ day.dayName.toUpperCase() }}</span>
     </header>
 
-    <div ref="dropEl" class="flex flex-1 flex-col gap-0.5 px-1.5 pb-2">
+    <div ref="dropEl" class="flex flex-1 flex-col gap-3 px-3.5 pb-4 pt-1">
       <TaskRow v-for="task in tasks" :key="task.id" :task="task" />
+      <EventRow v-for="ev in events" :key="ev.id" :event="ev" />
       <QuickAdd :scope="scope" />
     </div>
   </section>

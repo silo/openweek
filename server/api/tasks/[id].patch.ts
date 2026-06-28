@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { updateTaskInput } from '#shared/schemas/task'
+import { ruleToRrule } from '#shared/utils/recurrence'
 import { lists, tasks } from '~~/server/db/schema'
 import { loadOwnedTask } from '~~/server/utils/ownership'
 
@@ -23,6 +24,10 @@ export default defineEventHandler(async (event) => {
     patch.done = input.done
   if (input.position !== undefined)
     patch.position = input.position
+  if (input.startTime !== undefined)
+    patch.startTime = input.startTime
+  if (input.recurrence !== undefined)
+    patch.recurrenceRule = input.recurrence ? ruleToRrule(input.recurrence) : null
 
   // Move: to a date clears listId; to a list clears date and must stay on-board.
   if (input.date != null) {

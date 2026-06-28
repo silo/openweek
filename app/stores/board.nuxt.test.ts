@@ -25,6 +25,11 @@ function makeTask(over: Partial<Task> = {}): Task {
     color: null,
     done: false,
     rolledOverFrom: null,
+    startTime: null,
+    recurrenceRule: null,
+    recurrenceId: null,
+    parentId: null,
+    linkedEventId: null,
     createdAt: 'now',
     updatedAt: 'now',
     ...over,
@@ -127,7 +132,7 @@ describe('loadWeek', () => {
       if (url === '/api/boards')
         return Promise.resolve([board])
       if (url === '/api/lists')
-        return Promise.resolve([{ id: 'l1', boardId: 'b1', name: 'Someday', position: 'a0' }])
+        return Promise.resolve([{ id: 'l1', boardId: 'b1', name: 'Someday', color: null, position: 'a0' }])
       if (url === '/api/tasks')
         return Promise.resolve([makeTask({ id: 't1' })])
       return Promise.resolve(null)
@@ -168,7 +173,7 @@ describe('lists', () => {
 
   it('renames a list', async () => {
     const store = useBoardStore()
-    store.lists = [{ id: 'l1', boardId: 'b1', name: 'Old', position: 'a0' }]
+    store.lists = [{ id: 'l1', boardId: 'b1', name: 'Old', color: null, position: 'a0' }]
     fetchMock.mockResolvedValue({ ok: true })
     await store.renameList('l1', 'New')
     expect(store.lists[0]!.name).toBe('New')
@@ -176,7 +181,7 @@ describe('lists', () => {
 
   it('deletes a list and its tasks, restoring on failure', async () => {
     const store = useBoardStore()
-    store.lists = [{ id: 'l1', boardId: 'b1', name: 'L', position: 'a0' }]
+    store.lists = [{ id: 'l1', boardId: 'b1', name: 'L', color: null, position: 'a0' }]
     store.tasksById = { t1: makeTask({ listId: 'l1', date: null }) }
 
     fetchMock.mockResolvedValue({ ok: true })
@@ -185,7 +190,7 @@ describe('lists', () => {
     expect(store.tasksById.t1).toBeUndefined()
 
     // Re-seed and fail → both restored.
-    store.lists = [{ id: 'l2', boardId: 'b1', name: 'L2', position: 'a1' }]
+    store.lists = [{ id: 'l2', boardId: 'b1', name: 'L2', color: null, position: 'a1' }]
     store.tasksById = { t2: makeTask({ id: 't2', listId: 'l2', date: null }) }
     fetchMock.mockRejectedValue(new Error('x'))
     await store.deleteList('l2')

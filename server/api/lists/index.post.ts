@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
   const [row] = await db
     .insert(lists)
-    .values({ id: input.id ?? uuidv7(), boardId: board.id, name: input.name, position })
+    .values({ id: input.id ?? uuidv7(), boardId: board.id, name: input.name, color: input.color ?? null, position })
     .returning()
   return row
 })

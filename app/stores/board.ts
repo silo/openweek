@@ -1,5 +1,7 @@
-import type { Board, List, Task, TaskColor } from '#shared/types/task'
+import type { Board, List, SyncedEventOccurrence, Task, TaskColor } from '#shared/types/task'
+import type { RecurrenceKind } from '#shared/utils/recurrence'
 import { appendPosition, byPosition } from '#shared/utils/ordering'
+import { ruleToRrule } from '#shared/utils/recurrence'
 import { defineStore } from 'pinia'
 import { uuidv7 } from 'uuidv7'
 
@@ -19,10 +21,13 @@ function omitKey<T>(map: Record<string, T>, id: string): Record<string, T> {
  */
 export const useBoardStore = defineStore('board', () => {
   const tasksById = ref<Record<string, Task>>({})
+  const syncedEvents = ref<SyncedEventOccurrence[]>([])
   const lists = ref<List[]>([])
   const board = ref<Board | null>(null)
   const ready = ref(false)
   const loading = ref(false)
+  const currentFrom = ref('')
+  const currentTo = ref('')
 
   const { push } = useToasts()
 
@@ -41,6 +46,14 @@ export const useBoardStore = defineStore('board', () => {
     return 'listId' in scope ? tasksForList(scope.listId) : tasksForDate(scope.date)
   }
 
+  function subtasksOf(parentId: string): Task[] {
+    return Object.values(tasksById.value).filter(t => t.parentId === parentId).sort(byPosition)
+  }
+
+  function eventsForDate(iso: string): SyncedEventOccurrence[] {
+    return syncedEvents.value.filter(e => e.date === iso)
+  }
+
   // --- loading ---
   async function ensureBoard() {
     if (board.value)
@@ -54,12 +67,18 @@ export const useBoardStore = defineStore('board', () => {
 
   async function loadWeek(from: string, to: string) {
     loading.value = true
+    currentFrom.value = from
+    currentTo.value = to
     try {
       const b = await ensureBoard()
       if (!b)
         return
+      // Materialize any missing recurring-task instances for this window first.
+      await $fetch('/api/tasks/recur', { method: 'POST', body: { boardId: b.id, from, to } }).catch(() => {})
       const rows = await $fetch<Task[]>('/api/tasks', { query: { boardId: b.id, from, to } })
       tasksById.value = Object.fromEntries(rows.map(t => [t.id, t]))
+      // Read-only calendar events for the window (empty if no calendars connected).
+      syncedEvents.value = await $fetch<SyncedEventOccurrence[]>('/api/sync/events', { query: { boardId: b.id, from, to } }).catch(() => [])
       ready.value = true
     }
     catch {
@@ -68,6 +87,12 @@ export const useBoardStore = defineStore('board', () => {
     finally {
       loading.value = false
     }
+  }
+
+  /** Re-load the currently displayed week (after sync / calendar changes). */
+  async function reloadWeek() {
+    if (currentFrom.value)
+      await loadWeek(currentFrom.value, currentTo.value)
   }
 
   // --- mutations (optimistic) ---
@@ -89,6 +114,11 @@ export const useBoardStore = defineStore('board', () => {
       color,
       done: false,
       rolledOverFrom: null,
+      startTime: null,
+      recurrenceRule: null,
+      recurrenceId: null,
+      parentId: null,
+      linkedEventId: null,
       createdAt: now,
       updatedAt: now,
     }
@@ -128,6 +158,79 @@ export const useBoardStore = defineStore('board', () => {
   const setColor = (id: string, color: TaskColor | null) => patchTask(id, { color })
   const setTitle = (id: string, title: string) => patchTask(id, { title })
   const setNotes = (id: string, notes: string | null) => patchTask(id, { notes })
+  const setTime = (id: string, startTime: string | null) => patchTask(id, { startTime })
+
+  /** Set/clear a recurrence kind; re-materializes the visible week on success. */
+  async function setRecurrence(id: string, kind: RecurrenceKind | null) {
+    const current = tasksById.value[id]
+    if (!current)
+      return
+    const snapshot = { ...current }
+    tasksById.value = { ...tasksById.value, [id]: { ...current, recurrenceRule: kind ? ruleToRrule(kind) : null } }
+    try {
+      const row = await $fetch<Task>(`/api/tasks/${id}`, { method: 'PATCH', body: { recurrence: kind } })
+      tasksById.value = { ...tasksById.value, [id]: row }
+      if (currentFrom.value)
+        await loadWeek(currentFrom.value, currentTo.value)
+    }
+    catch {
+      tasksById.value = { ...tasksById.value, [id]: snapshot }
+      push('Could not update repeat.', 'error')
+    }
+  }
+
+  /** Add a subtask (depth-1) sharing the parent's scope. */
+  async function addSubtask(parentId: string, title: string) {
+    const parent = tasksById.value[parentId]
+    const b = board.value
+    if (!parent || parent.parentId || !b)
+      return
+    const id = uuidv7()
+    const position = appendPosition(subtasksOf(parentId))
+    const now = new Date().toISOString()
+    const scope: Scope = parent.listId != null ? { listId: parent.listId } : { date: parent.date! }
+    const optimistic: Task = {
+      id,
+      boardId: b.id,
+      title,
+      notes: null,
+      date: 'date' in scope ? scope.date : null,
+      listId: 'listId' in scope ? scope.listId : null,
+      position,
+      color: null,
+      done: false,
+      rolledOverFrom: null,
+      startTime: null,
+      recurrenceRule: null,
+      recurrenceId: null,
+      parentId,
+      linkedEventId: null,
+      createdAt: now,
+      updatedAt: now,
+    }
+    tasksById.value = { ...tasksById.value, [id]: optimistic }
+    try {
+      const row = await $fetch<Task>('/api/tasks', { method: 'POST', body: { id, boardId: b.id, title, position, parentId, ...scope } })
+      tasksById.value = { ...tasksById.value, [id]: row }
+    }
+    catch {
+      tasksById.value = omitKey(tasksById.value, id)
+      push('Could not add subtask.', 'error')
+    }
+  }
+
+  /** Convert a read-only calendar event into a real task (optionally linked). */
+  async function convertEvent(occ: SyncedEventOccurrence, keepLinked: boolean) {
+    const syncedEventId = occ.id.split(':')[0]!
+    try {
+      const task = await $fetch<Task>('/api/sync/convert', { method: 'POST', body: { syncedEventId, date: occ.date, keepLinked } })
+      tasksById.value = { ...tasksById.value, [task.id]: task }
+      push('Event added as a task.', 'success')
+    }
+    catch {
+      push('Could not convert event.', 'error')
+    }
+  }
 
   /** Move to a date or list at a given fractional position (Phase 4 DnD / move-menu). */
   function moveTask(id: string, scope: Scope, position: string) {
@@ -175,7 +278,7 @@ export const useBoardStore = defineStore('board', () => {
       return
     const id = uuidv7()
     const position = appendPosition(sortedLists.value)
-    const optimistic: List = { id, boardId: b.id, name, position }
+    const optimistic: List = { id, boardId: b.id, name, color: null, position }
     lists.value = [...lists.value, optimistic]
     try {
       const row = await $fetch<List>('/api/lists', { method: 'POST', body: { id, boardId: b.id, name, position } })
@@ -246,13 +349,21 @@ export const useBoardStore = defineStore('board', () => {
     sortedLists,
     tasksForDate,
     tasksForList,
+    subtasksOf,
+    syncedEvents,
+    eventsForDate,
+    convertEvent,
     ensureBoard,
     loadWeek,
+    reloadWeek,
     createTask,
+    addSubtask,
     toggleDone,
     setColor,
     setTitle,
     setNotes,
+    setTime,
+    setRecurrence,
     moveTask,
     deleteTask,
     createList,

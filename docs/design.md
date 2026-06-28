@@ -1,5 +1,12 @@
 # Design
 
+> **Status (Phase 6 — Openweek v2 "paper"):** the live app supersedes the v1 tokens below. v2 uses **IBM Plex
+> Mono** (display) + **IBM Plex Sans** (body), a warm-paper palette, a **runtime-swappable accent** (butter/mint/
+> sky/rose via `--color-accent`), and two highlighter styles (`.tag-underline` / `.tag-swipe`, a per-user
+> setting). The week grid is 7 equal columns; lists live in a bottom tabbed drawer. The principles below still
+> hold; the specific token values live in [`app/assets/css/main.css`](../app/assets/css/main.css).
+
+
 The whole appeal of this category is that it feels like a **paper planner**, not a SaaS dashboard. This doc
 captures the aesthetic, the theme tokens, typography, accessibility, and the responsive/DnD behaviour that the
 components must honour.

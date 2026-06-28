@@ -36,10 +36,14 @@ Tests are co-located as `*.test.ts` next to the code. Config: [`vitest.config.ts
 | First-user-becomes-admin rule | `server/utils/first-user.ts` | `first-user.test.ts` |
 | Rollover — per-timezone local day + idempotency gate | `server/utils/rollover.ts` | `rollover.test.ts` |
 | Optimistic store — create/toggle/edit/delete/move/list-CRUD/rollover + **rollback** + undo | `app/stores/board.ts` | `board.nuxt.test.ts` |
+| **AES-256-GCM** round-trip, tamper-fails, key-version map | `server/utils/crypto.ts` | `crypto.test.ts` |
+| Task **recurrence** expansion + RRULE round-trip | `shared/utils/recurrence.ts` | `recurrence.test.ts` |
+| **ical.js** parse + recurrence expansion (RRULE/EXDATE/window) | `server/utils/event-expansion.ts` | `event-expansion.test.ts` |
+| Incremental-sync cursor (410 / invalid-token → resync) | `server/utils/sync-cursor.ts` | `sync-cursor.test.ts` |
+| v2 DTOs — `startTime`/`recurrence`/`parentId`, `list.color`, sync connect/convert | `shared/schemas/*` | `task/list/sync.test.ts` |
 
-These map directly onto the roadmap's cross-cutting test list (Zod rejection, fractional-index
-edge cases, rollover idempotency, first-user-admin). The **AES-GCM round-trip** test lands with
-the crypto util in Phase 5.
+These map onto the roadmap's cross-cutting test list (Zod rejection, fractional-index edge cases,
+rollover idempotency, first-user-admin, and the **AES-GCM round-trip** — now landed in Phase 6).
 
 ## Design-for-testability
 

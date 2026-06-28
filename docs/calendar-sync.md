@@ -1,5 +1,10 @@
 # Calendar Sync
 
+> **Status (Phase 6):** implemented. iCal is verified end-to-end; Google/CalDAV connect code is in place but
+> unverified without live credentials. Sync is currently **full-replace** per calendar (not yet incremental —
+> the `sync-cursor.ts` decision logic is tested but unwired). Event times currently render in the server
+> timezone. Tables/encryption are as specified below.
+
 Openweek mirrors external calendars **read-only** into the week grid (foundation phase). The layer is
 architected so two-way sync can be added later without reshaping data. Connecting a calendar is **independent
 of how you log in** — an email/password user can connect Google, CalDAV, and iCal sources.

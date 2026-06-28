@@ -6,8 +6,7 @@ import { useBoardStore } from '~/stores/board'
 const user = useAuthUser()
 const store = useBoardStore()
 
-const { days, rangeLabel, next, prev, thisWeek, offset } = useWeek()
-
+const { days, next, prev, offset } = useWeek()
 const desktopScroll = ref<HTMLElement>()
 
 const range = computed(() => ({ from: days.value[0]!.iso, to: days.value[6]!.iso }))
@@ -28,14 +27,11 @@ onMounted(() => {
   const todayIdx = days.value.findIndex(d => d.isToday)
   selected.value = todayIdx >= 0 ? todayIdx : 0
 })
-const showSomeday = ref(false)
 const selectedDay = computed(() => days.value[selected.value]!)
 
 const swipeArea = ref<HTMLElement>()
 useSwipe(swipeArea, {
   onSwipeEnd(_e, direction) {
-    if (showSomeday.value)
-      return
     if (direction === 'left') {
       if (selected.value < 6)
         selected.value++
@@ -48,72 +44,42 @@ useSwipe(swipeArea, {
     }
   },
 })
-
-// Keep the selected index valid after week nav.
 watch(offset, () => { selected.value = Math.min(selected.value, 6) })
 
-// One drop monitor + auto-scroll for both layouts' scroll containers.
 useTaskDndMonitor([desktopScroll, swipeArea])
 </script>
 
 <template>
-  <div class="flex h-full flex-col">
-    <header class="flex items-center justify-between border-b border-hairline px-4 py-3">
-      <h1 class="font-accent text-3xl">
-        Openweek
-      </h1>
-      <div class="flex items-center gap-1">
-        <span class="mr-2 hidden text-sm opacity-70 sm:inline">{{ rangeLabel }}</span>
-        <button class="btn btn-ghost btn-sm" aria-label="Previous week" @click="prev">‹</button>
-        <button class="btn btn-ghost btn-sm" @click="thisWeek">Today</button>
-        <button class="btn btn-ghost btn-sm" aria-label="Next week" @click="next">›</button>
-        <ThemeToggle />
-        <NuxtLink to="/settings" class="btn btn-ghost btn-sm" aria-label="Settings">⚙</NuxtLink>
-      </div>
-    </header>
+  <div class="flex h-full flex-col bg-base-100">
+    <TopBar />
 
-    <!-- Desktop: 7 day columns + a Someday column holding the lists -->
-    <div ref="desktopScroll" class="hidden flex-1 grid-cols-8 divide-x divide-hairline overflow-auto md:grid">
-      <DayColumn v-for="day in days" :key="day.iso" :day="day" />
-      <div class="flex flex-col divide-y divide-hairline bg-base-100/40">
-        <DayColumn v-for="list in store.sortedLists" :key="list.id" :list="list" />
-        <AddList />
+    <!-- Desktop: 7 equal day columns + bottom list drawer -->
+    <div class="hidden min-h-0 flex-1 flex-col md:flex">
+      <div ref="desktopScroll" class="grid flex-1 grid-cols-7 divide-x divide-hairline overflow-auto">
+        <DayColumn v-for="day in days" :key="day.iso" :day="day" />
       </div>
+      <ListDrawer />
     </div>
 
-    <!-- Mobile: week strip + single day (swipeable) or Someday sheet -->
-    <div class="flex flex-1 flex-col md:hidden">
+    <!-- Mobile: week strip + single day (swipeable) + drawer -->
+    <div class="flex min-h-0 flex-1 flex-col md:hidden">
       <nav class="flex items-stretch border-b border-hairline">
         <button
           v-for="(day, i) in days"
           :key="day.iso"
           type="button"
-          class="flex flex-1 flex-col items-center py-1.5 text-xs"
-          :class="[!showSomeday && selected === i ? 'border-b-2 border-primary font-medium' : 'opacity-60', day.isToday ? 'text-primary' : '']"
-          @click="showSomeday = false; selected = i"
+          class="flex flex-1 flex-col items-center py-1.5 font-mono text-[11px]"
+          :class="[selected === i ? 'border-b-2 border-accent font-medium' : 'opacity-50', day.isToday ? 'font-semibold' : '']"
+          @click="selected = i"
         >
-          <span>{{ day.dayName }}</span>
+          <span>{{ day.dayName.toUpperCase() }}</span>
           <span class="tabular-nums">{{ day.dayNumber }}</span>
         </button>
-        <button
-          type="button"
-          class="flex flex-col items-center justify-center px-3 text-xs"
-          :class="showSomeday ? 'border-b-2 border-primary font-medium' : 'opacity-60'"
-          @click="showSomeday = true"
-        >
-          ⋯
-        </button>
       </nav>
-
       <div ref="swipeArea" class="flex-1 overflow-auto">
-        <template v-if="showSomeday">
-          <div class="divide-y divide-hairline">
-            <DayColumn v-for="list in store.sortedLists" :key="list.id" :list="list" />
-            <AddList />
-          </div>
-        </template>
-        <DayColumn v-else :key="selectedDay.iso" :day="selectedDay" />
+        <DayColumn :key="selectedDay.iso" :day="selectedDay" />
       </div>
+      <ListDrawer />
     </div>
 
     <TaskEditor />

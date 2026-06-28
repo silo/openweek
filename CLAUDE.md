@@ -14,9 +14,13 @@ License: **AGPL-3.0** (so hosted forks stay open). Self-hosting via Docker is a 
 
 ## Status
 
-Greenfield. The repo is currently a bare **Nuxt 4.4.8** starter (`app/app.vue` only — no `server/`, no
-schema, no app deps yet). Planning is complete and documented; implementation has **not** started. Build
-order is in [docs/roadmap.md](./docs/roadmap.md).
+Phases 1–6 implemented. The app is the **Openweek v2 "paper"** redesign: IBM Plex Mono/Sans, configurable
+accent + highlighter (underline/swipe), a top bar (brand, week nav, calendars dropdown, progress, search,
+account menu), a 7-equal-column grid, and a bottom tabbed **list drawer** (lists carry colors). Tasks support
+optional time labels, **subtasks** (depth-1), and **recurrence** (template-is-first-occurrence, materialized
+per visible week). **Calendar sync** (Google/CalDAV/iCal) mirrors events read-only with AES-256-GCM-encrypted
+secrets, a Nitro scheduled poll, and convert-event-to-task. Build order + per-phase status in
+[docs/roadmap.md](./docs/roadmap.md). Tests: see [docs/testing.md](./docs/testing.md).
 
 ## Tech stack (final — see [docs/tech-stack.md](./docs/tech-stack.md) for versions + rationale)
 

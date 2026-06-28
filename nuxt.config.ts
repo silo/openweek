@@ -17,14 +17,21 @@ export default defineNuxtConfig({
   components: [{ path: '~/components', pathPrefix: false }],
 
   // Self-hosted fonts (no Google Fonts CDN) + the paper theme entry.
+  // v2: IBM Plex Mono (display) + IBM Plex Sans (body).
   css: [
-    '@fontsource/inter/400.css',
-    '@fontsource/inter/500.css',
-    '@fontsource/inter/600.css',
-    '@fontsource/caveat/400.css',
-    '@fontsource/caveat/700.css',
+    '@fontsource/ibm-plex-sans/400.css',
+    '@fontsource/ibm-plex-sans/500.css',
+    '@fontsource/ibm-plex-mono/400.css',
+    '@fontsource/ibm-plex-mono/500.css',
+    '@fontsource/ibm-plex-mono/600.css',
     '~/assets/css/main.css',
   ],
+
+  // Calendar sync runs as an in-process Nitro scheduled task (polling, not push).
+  nitro: {
+    experimental: { tasks: true },
+    scheduledTasks: { '*/10 * * * *': ['sync'] },
+  },
 
   vite: {
     // Tailwind v4 is CSS-first; wired as a Vite plugin (not @nuxtjs/tailwindcss).

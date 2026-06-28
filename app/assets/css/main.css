@@ -2,55 +2,66 @@
 @plugin "daisyui";
 
 /*
- * Paper theme — warm cream, hairline rules, no shadows, small radii.
- * DaisyUI is plumbing (tokens + dark mode + a11y primitives), not the chassis;
+ * Paper v2 — warm off-white, hairline rules, no shadows, small radii, mono
+ * display type. DaisyUI is plumbing (tokens + dark mode + a11y primitives);
  * the week grid is custom. See docs/design.md.
  */
 @plugin "daisyui/theme" {
   name: "paper";
   default: true;
   color-scheme: light;
-  --color-base-100: oklch(98% 0.008 85);    /* warm cream ~#FAF7F0 */
-  --color-base-200: oklch(96% 0.010 85);    /* faint hover/elevation, no shadow */
-  --color-base-300: oklch(93% 0.012 85);
-  --color-base-content: oklch(28% 0.02 60); /* warm near-black ink */
-  --color-primary: oklch(55% 0.04 60);
-  --color-primary-content: oklch(98% 0.008 85);
+  --color-base-100: oklch(99% 0.003 90);    /* white card surface (#FFFFFF-ish) */
+  --color-base-200: oklch(96% 0.006 90);    /* warm paper bg (#F2F1EC) / hover */
+  --color-base-300: oklch(93% 0.007 88);    /* hairline fills (#EDEBE4) */
+  --color-base-content: oklch(28% 0.004 70); /* ink (#2A2A28) */
+  --color-primary: oklch(87% 0.035 240);     /* sky accent default */
+  --color-primary-content: oklch(30% 0.02 70);
   --depth: 0;
   --noise: 0;
   --border: 1px;
-  --radius-box: 0.25rem;
-  --radius-field: 0.25rem;
-  --radius-selector: 0.25rem;
+  --radius-box: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-selector: 0.5rem;
 }
 
 @plugin "daisyui/theme" {
   name: "paper-dark";
   prefersdark: true;
   color-scheme: dark;
-  --color-base-100: oklch(24% 0.012 70);    /* warm charcoal */
-  --color-base-200: oklch(27% 0.012 70);
-  --color-base-300: oklch(31% 0.013 70);
-  --color-base-content: oklch(90% 0.012 85); /* warm off-white ink */
-  --color-primary: oklch(80% 0.04 85);
-  --color-primary-content: oklch(24% 0.012 70);
+  --color-base-100: oklch(23% 0.006 80);    /* warm charcoal card */
+  --color-base-200: oklch(20% 0.006 80);    /* darker app bg */
+  --color-base-300: oklch(30% 0.007 80);    /* hairline fills */
+  --color-base-content: oklch(90% 0.006 85); /* warm off-white ink */
+  --color-primary: oklch(70% 0.045 240);
+  --color-primary-content: oklch(20% 0.006 80);
   --depth: 0;
   --noise: 0;
   --border: 1px;
-  --radius-box: 0.25rem;
-  --radius-field: 0.25rem;
-  --radius-selector: 0.25rem;
+  --radius-box: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-selector: 0.5rem;
 }
 
-/* App tokens that must survive purge and be usable as utilities (bg-tag-yellow, border-hairline, …). */
+/*
+ * App tokens that must survive purge and be usable as utilities
+ * (bg-tag-yellow, border-hairline, bg-accent, …).
+ *
+ * Tag color NAMES are kept (yellow/pink/blue/green) so the TaskColor union, the
+ * DB color strings, and useTaskColors don't change — but the VALUES are the v2
+ * highlighter palette: yellow→butter, green→mint, blue→sky, pink→rose.
+ *
+ * --color-accent is the runtime-swappable accent (today circle, brand square,
+ * active tab). Default = sky; a client plugin overrides it from the user setting.
+ */
 @theme {
-  --color-hairline: oklch(88% 0.01 85);     /* low-contrast warm gray ruled line */
-  --color-tag-yellow: oklch(92% 0.09 95);
-  --color-tag-pink:   oklch(90% 0.07 5);
-  --color-tag-blue:   oklch(90% 0.06 235);
-  --color-tag-green:  oklch(91% 0.07 150);
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-accent: "Caveat", ui-serif, cursive;
+  --color-hairline: oklch(93% 0.006 85);
+  --color-tag-yellow: oklch(89% 0.06 92);   /* butter #EAD9A0 */
+  --color-tag-green:  oklch(89% 0.04 145);  /* mint   #D2E2CD */
+  --color-tag-blue:   oklch(89% 0.03 240);  /* sky    #CFDEEA */
+  --color-tag-pink:   oklch(88% 0.03 5);    /* rose   #E9D2D8 */
+  --color-accent: oklch(87% 0.035 240);     /* sky #CBDDE9 (runtime-swappable) */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
 }
 
 html,
@@ -61,9 +72,30 @@ body,
 
 body {
   font-family: var(--font-sans);
+  background: var(--color-base-200);
 }
 
-/* Handwritten accent for the logo + day labels — used sparingly. */
-.font-accent {
-  font-family: var(--font-accent);
+/*
+ * Highlighter tag styles. The task row sets `--tag-col` inline (the resolved tag
+ * color) and applies one class based on the user's tagStyle setting.
+ */
+.tag-underline {
+  background-image: linear-gradient(to top, var(--tag-col) 0%, var(--tag-col) 42%, transparent 42%);
+}
+
+.tag-swipe {
+  background-color: var(--tag-col);
+  border-radius: 3px;
+  padding: 0 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Blinking caret for the "write a task" ghost row. */
+@keyframes ow-caret {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.caret-blink {
+  animation: ow-caret 1.1s step-end infinite;
 }

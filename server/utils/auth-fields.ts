@@ -13,4 +13,8 @@ export const userAdditionalFields: UserAdditionalFields = {
   weekStartsOn: { type: 'number', required: false, defaultValue: 1, input: true },
   rolloverEnabled: { type: 'boolean', required: false, defaultValue: false, input: true },
   lastRolloverDate: { type: 'string', required: false, input: false },
+  // v2 appearance + sync prefs.
+  accentColor: { type: 'string', required: false, defaultValue: 'sky', input: true },
+  tagStyle: { type: 'string', required: false, defaultValue: 'underline', input: true },
+  showCalendarEvents: { type: 'boolean', required: false, defaultValue: true, input: true },
 }

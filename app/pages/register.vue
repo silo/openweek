@@ -36,7 +36,7 @@ function onGoogle() {
 <template>
   <div class="grid min-h-full place-items-center p-6">
     <div class="w-full max-w-sm">
-      <h1 class="mb-6 text-center font-accent text-4xl">
+      <h1 class="mb-6 text-center font-mono text-4xl">
         Openweek
       </h1>
 

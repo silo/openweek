@@ -35,6 +35,23 @@ describe('createTaskInput', () => {
   })
 })
 
+describe('createTaskInput v2 fields', () => {
+  it('accepts a valid HH:mm time', () => {
+    expect(createTaskInput.safeParse({ boardId, title: 'x', date: '2026-06-25', startTime: '09:30' }).success).toBe(true)
+  })
+  it('rejects a bad time', () => {
+    expect(createTaskInput.safeParse({ boardId, title: 'x', date: '2026-06-25', startTime: '25:00' }).success).toBe(false)
+    expect(createTaskInput.safeParse({ boardId, title: 'x', date: '2026-06-25', startTime: '9:5' }).success).toBe(false)
+  })
+  it('accepts a recurrence kind and parentId', () => {
+    expect(createTaskInput.safeParse({ boardId, title: 'x', date: '2026-06-25', recurrence: 'weekly' }).success).toBe(true)
+    expect(createTaskInput.safeParse({ boardId, title: 'x', date: '2026-06-25', parentId: boardId }).success).toBe(true)
+  })
+  it('rejects an unknown recurrence kind', () => {
+    expect(createTaskInput.safeParse({ boardId, title: 'x', date: '2026-06-25', recurrence: 'yearly' }).success).toBe(false)
+  })
+})
+
 describe('updateTaskInput', () => {
   it('accepts a partial update', () => {
     expect(updateTaskInput.safeParse({ done: true }).success).toBe(true)

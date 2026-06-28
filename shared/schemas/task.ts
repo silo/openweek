@@ -7,7 +7,11 @@ import { TASK_COLORS } from '../types/task'
 export const taskColorSchema = z.enum(TASK_COLORS)
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected a yyyy-MM-dd date')
+const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Expected an HH:mm time')
 const uuid = z.uuid()
+// Simple recurrence kinds the UI offers; expanded to a canonical RRULE server-side.
+export const recurrenceKinds = ['daily', 'wkdays', 'weekly', 'monthly'] as const
+export const recurrenceKindSchema = z.enum(recurrenceKinds)
 
 /**
  * Create a task. The client supplies `id` + `position` (uuid v7 + fractional
@@ -24,6 +28,9 @@ export const createTaskInput = z
     position: z.string().min(1).optional(),
     color: taskColorSchema.nullish(),
     notes: z.string().max(10000).nullish(),
+    startTime: hhmm.nullish(),
+    recurrence: recurrenceKindSchema.nullish(),
+    parentId: uuid.nullish(), // a subtask of this parent (shares the parent's scope)
   })
   .refine(d => (d.date != null) !== (d.listId != null), {
     message: 'Provide exactly one of date or listId',
@@ -45,6 +52,8 @@ export const updateTaskInput = z
     date: isoDate.nullable().optional(),
     listId: uuid.nullable().optional(),
     position: z.string().min(1).optional(),
+    startTime: hhmm.nullable().optional(),
+    recurrence: recurrenceKindSchema.nullable().optional(),
   })
   .refine(d => Object.keys(d).length > 0, { message: 'Empty update' })
 export type UpdateTaskInput = z.infer<typeof updateTaskInput>

@@ -92,6 +92,33 @@ Setup, conventions, and the coverage map live in [testing.md](./testing.md). Sta
 DB-level guarantees and drag/render are verified against real Postgres + a scripted Playwright
 run for now; a committed Playwright e2e suite is a later phase.
 
+## Phase 6 — Openweek v2 (paper) ✅
+
+A redesign + feature expansion (folds in the old Phase 5 sync plus recurrence/subtasks). Built in
+commit-able sub-stages **6a–6i** (see [decisions.md](./decisions.md) D15–D18):
+
+- **6a Skin:** IBM Plex Mono/Sans, paper-v2 palette, runtime `--color-accent`, `.tag-underline`/`.tag-swipe`.
+- **6b Schema:** `lists.color`, `tasks.startTime` (`'HH:mm'` label), activated `recurrenceId`/`parentId`
+  self-FKs, `linkedEventId`, the three sync tables, and `accentColor`/`tagStyle`/`showCalendarEvents` user
+  fields. One migration (`0003`).
+- **6c Layout:** top bar + 7-equal-column grid + bottom tabbed list drawer (replaces the Someday column).
+- **6d Tasks:** circle marks, highlighter tags, time/recurrence/subtask badges, inline notes, subtasks UI.
+- **6e Recurrence:** pure `shared/utils/recurrence.ts` + idempotent per-week materialization; rollover skips
+  templates/instances/subtasks.
+- **6f Sync backend:** `server/utils/crypto.ts` (AES-256-GCM), Google/CalDAV/iCal connect flows, the sync
+  engine (full-replace), Nitro scheduled task.
+- **6g Sync UI:** read-only event rows (source-colored), convert-to-task, calendars dropdown.
+- **6h Chrome:** appearance settings (accent/tag/show-events), calendar connections UI, in-week search.
+- **6i:** Vitest for crypto (AES round-trip), recurrence, ical.js expansion, sync-cursor, new DTOs.
+
+**Verified:** migrations apply; iCal connect → sync → events expand across the week; convert links a task;
+recurring task materializes on nav; secrets stored as ciphertext; accent recolors live; typecheck+lint+test
+green (103 tests). Google/CalDAV connect code is in place but unverified without live credentials.
+
+**Known limitations (follow-ups):** event times render in the server timezone (fine for single-TZ self-host);
+sync is full-replace (incremental cursors via `sync-cursor.ts` are tested but not yet wired); recurrence has no
+"edit this/future" UI yet.
+
 ## Later phases (not scheduled)
 
 Recurring tasks (materialize instances from `recurrenceRule`) · reminders/notifications · two-way calendar
