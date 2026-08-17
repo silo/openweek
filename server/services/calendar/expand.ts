@@ -22,7 +22,26 @@ function makeParsed(ev: ICAL.Event, start: ICAL.Time, end: ICAL.Time | null, sta
  * honouring RRULE/EXDATE/RDATE and RECURRENCE-ID overrides (via ical.js).
  */
 export function expandIcs(ics: string, windowStart: Date, windowEnd: Date): ParsedEvent[] {
-  const comp = new ICAL.Component(ICAL.parse(ics))
+  // Some providers (notably Google) prefix a UTF-8 BOM, which breaks ical.js's parser.
+  const cleaned = ics.replace(/^\uFEFF/, '').trimStart()
+  if (!cleaned.includes('BEGIN:VCALENDAR')) {
+    throw new Error('Response is not an iCal feed (no BEGIN:VCALENDAR) — check the URL points to an .ics feed')
+  }
+  const comp = new ICAL.Component(ICAL.parse(cleaned))
+
+  // Register embedded VTIMEZONEs so TZID-based recurrences expand at the right local time.
+  for (const vtz of comp.getAllSubcomponents('vtimezone')) {
+    try {
+      const tz = new ICAL.Timezone(vtz)
+      if (tz.tzid && !ICAL.TimezoneService.has(tz.tzid)) {
+        ICAL.TimezoneService.register(tz)
+      }
+    }
+    catch {
+      // Ignore a malformed VTIMEZONE rather than failing the whole feed.
+    }
+  }
+
   const vevents = comp.getAllSubcomponents('vevent')
 
   const masters = new Map<string, ICAL.Event>()
