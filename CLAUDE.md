@@ -22,10 +22,19 @@ pnpm typecheck      # vue-tsc — BLOCKING gate (the default build does not type
 pnpm lint           # @nuxt/eslint (flat config)
 pnpm test           # Vitest
 pnpm test:coverage  # coverage report
-pnpm db:generate    # generate a migration after editing the schema   (Phase 1+)
-pnpm db:migrate     # apply migrations                                (Phase 1+)
-pnpm auth:gen       # regenerate Better Auth tables after auth changes (Phase 1+)
+pnpm db:up          # start the Postgres container, wait until healthy
+pnpm db:stop        # stop it (data is kept in the openweek-db volume)
+pnpm db:reset       # ⚠︎ destroy the volume, recreate, re-migrate
+pnpm db:psql        # psql shell inside the container
+pnpm db:logs        # tail Postgres logs
+pnpm db:generate    # generate a migration after editing the schema
+pnpm db:migrate     # apply migrations
+pnpm auth:gen       # regenerate Better Auth tables after auth changes
 ```
+First run: `cp .env.example .env`, then `pnpm db:up && pnpm db:migrate && pnpm dev`.
+`docker compose` reads the same `.env`, so `OPENWEEK_DB_PORT` must match the port in
+`DATABASE_URL` (parallel workspaces each pick their own).
+
 Before any PR: `pnpm lint && pnpm typecheck && pnpm test` must be green.
 
 ## Structure (Nuxt 4 three-root)

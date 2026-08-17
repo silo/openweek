@@ -95,10 +95,11 @@ For working on Openweek itself. Requires Node 22+, [pnpm](https://pnpm.io), and 
 can provide one).
 
 ```bash
+cp .env.example .env
 pnpm install
 
-# Start just the database from the compose stack
-docker compose up -d db
+# Start just the database from the compose stack (waits until it is healthy)
+pnpm db:up
 
 # Apply the schema
 pnpm db:migrate
@@ -107,6 +108,9 @@ pnpm db:migrate
 pnpm dev
 ```
 
+`docker compose` reads the same `.env` as the app, so if you change `OPENWEEK_DB_PORT` (handy when
+several checkouts run side by side) keep the port in `DATABASE_URL` in sync.
+
 Other scripts:
 
 ```bash
@@ -114,6 +118,10 @@ pnpm typecheck     # vue-tsc strict type-check
 pnpm lint          # ESLint
 pnpm test          # Vitest (see docs/testing.md)
 pnpm test:coverage # Vitest with a coverage report
+pnpm db:stop       # stop the database (the openweek-db volume keeps your data)
+pnpm db:reset      # destroy the volume, recreate the database, re-migrate
+pnpm db:psql       # psql shell inside the container
+pnpm db:logs       # tail Postgres logs
 pnpm db:generate   # generate a migration after editing the schema
 pnpm auth:gen      # regenerate Better Auth tables after auth config changes
 pnpm build         # production build
