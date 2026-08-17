@@ -1,0 +1,39 @@
+# Postgres for local development and self-hosting. The full `app` service is added in Phase 9.
+# Dev: `docker compose up -d db` then `pnpm db:migrate && pnpm dev`.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: openweek
+      POSTGRES_PASSWORD: openweek
+      POSTGRES_DB: openweek
+    ports:
+      # Host port is overridable (OPENWEEK_DB_PORT) so parallel workspaces don't collide; container port stays 5432.
+      - "${OPENWEEK_DB_PORT:-5432}:5432"
+    volumes:
+      - openweek-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openweek -d openweek"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://openweek:openweek@db:5432/openweek
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      OPENWEEK_ENCRYPTION_KEY: ${OPENWEEK_ENCRYPTION_KEY:?set OPENWEEK_ENCRYPTION_KEY in .env}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    ports:
+      - "${OPENWEEK_PORT:-3000}:3000"
+
+volumes:
+  openweek-db:

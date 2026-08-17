@@ -2,16 +2,74 @@
   "name": "openweek-app",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@10.34.4",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "auth:gen": "npx --yes @better-auth/cli@latest generate --config server/utils/auth.ts --output server/database/schema/auth.ts --yes"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^2.0.1",
+    "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "^3.0.0",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^2.0.0",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@fontsource/ibm-plex-sans": "^5.2.8",
+    "@fontsource/newsreader": "^5.2.10",
+    "@fontsource/space-grotesk": "^5.2.10",
+    "@fontsource/spline-sans-mono": "^5.2.8",
+    "@googleapis/calendar": "^15.0.0",
+    "@pinia/nuxt": "^0.11.0",
+    "better-auth": "^1.6.23",
+    "date-fns": "^4.4.0",
+    "date-fns-tz": "^3.2.0",
+    "drizzle-orm": "^0.45.2",
+    "drizzle-zod": "^0.8.3",
+    "fractional-indexing-jittered": "^1.0.0",
+    "google-auth-library": "^10.9.0",
+    "ical.js": "^2.2.1",
     "nuxt": "^4.4.8",
+    "pg": "^8.22.0",
+    "pinia": "^3.0.0",
+    "tsdav": "^2.3.1",
+    "uuidv7": "^1.2.1",
     "vue": "^3.5.38",
-    "vue-router": "^5.1.0"
+    "vue-router": "^5.1.0",
+    "zod": "^4.4.0"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.16.0",
+    "@playwright/test": "^1.61.1",
+    "@tailwindcss/vite": "^4.3.2",
+    "@types/pg": "^8.20.0",
+    "@vitest/coverage-v8": "^4.1.0",
+    "daisyui": "^5.6.18",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9.0.0",
+    "happy-dom": "^20.0.0",
+    "tailwindcss": "^4.3.2",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.0",
+    "vue-tsc": "^3.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@parcel/watcher",
+      "unrs-resolver"
+    ]
   }
 }

@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: openweek --default, openweek-dark --prefersdark;
+}
+
+/* --- Paper (light) --------------------------------------------------------- */
+@plugin "daisyui/theme" {
+  name: "openweek";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: #FFFFFF;
+  --color-base-200: #FCFBF7;
+  --color-base-300: #EDEBE4;
+  --color-base-content: #2A2A28;
+  --color-primary: #CBDDE9;
+  --color-primary-content: #2A2A28;
+  --color-neutral: #2A2A28;
+  --color-neutral-content: #F2F1EC;
+  --color-error: #C49097;
+  --color-error-content: #FFFFFF;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --border: 1px;
+}
+
+/* --- Paper (dark) ---------------------------------------------------------- */
+@plugin "daisyui/theme" {
+  name: "openweek-dark";
+  prefersdark: true;
+  color-scheme: dark;
+  --color-base-100: #221F1B;
+  --color-base-200: #1E1B18;
+  --color-base-300: #33302A;
+  --color-base-content: #E8E4DA;
+  --color-primary: #9CBBD6;
+  --color-primary-content: #14140F;
+  --color-neutral: #E8E4DA;
+  --color-neutral-content: #1B1A17;
+  --color-error: #C49097;
+  --color-error-content: #14140F;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --border: 1px;
+}
+
+/* Map --ow-* tokens (which flip with the theme) to Tailwind color utilities. */
+@theme {
+  --color-ow-bg: var(--ow-bg);
+  --color-ow-surface: var(--ow-surface);
+  --color-ow-sunken: var(--ow-sunken);
+  --color-ow-ink: var(--ow-ink);
+  --color-ow-muted: var(--ow-muted);
+  --color-ow-faint: var(--ow-faint);
+  --color-ow-ghost: var(--ow-ghost);
+  --color-ow-hairline: var(--ow-hairline);
+  --color-ow-border: var(--ow-border);
+  --color-hl-butter: #EAD9A0;
+  --color-hl-mint: #D2E2CD;
+  --color-hl-sky: #CFDEEA;
+  --color-hl-rose: #E9D2D8;
+  --color-src-google: #86B08B;
+  --color-src-caldav: #9CBBD6;
+  --color-src-ical: #D3B488;
+  --font-display: var(--ow-display);
+  --font-body: var(--ow-body);
+}
+
+:root,
+[data-theme="openweek"] {
+  --ow-bg: #F2F1EC;
+  --ow-surface: #FFFFFF;
+  --ow-sunken: #FCFBF7;
+  --ow-ink: #2A2A28;
+  --ow-muted: #8C887D;
+  --ow-faint: #AEA99D;
+  --ow-ghost: #C8C4BA;
+  --ow-hairline: #EDEBE4;
+  --ow-border: #E7E4DB;
+  --ow-accent: #CBDDE9;
+  --ow-accent-ink: #5C5226;
+  --ow-display: 'IBM Plex Mono', ui-monospace, monospace;
+  --ow-body: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+[data-theme="openweek-dark"] {
+  --ow-bg: #1B1A17;
+  --ow-surface: #221F1B;
+  --ow-sunken: #1E1B18;
+  --ow-ink: #E8E4DA;
+  --ow-muted: #9A968B;
+  --ow-faint: #7C786E;
+  --ow-ghost: #5A564D;
+  --ow-hairline: #33302A;
+  --ow-border: #3B372F;
+  --ow-accent: #9CBBD6;
+  --ow-accent-ink: #14140F;
+}
+
+@layer base {
+  html { font-family: var(--ow-body); }
+  body {
+    background: var(--ow-bg);
+    color: var(--ow-ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: #EAD9A0; color: #2A2A28; }
+}
+
+/* Highlighter tag rendering (ported from the design's hl()). */
+@utility hl-underline {
+  color: var(--ow-ink);
+  background-image: linear-gradient(to top, var(--hl) 0%, var(--hl) 42%, transparent 42%);
+}
+@utility hl-swipe {
+  color: var(--ow-ink);
+  background-color: var(--hl);
+  padding: 1px 4px;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}

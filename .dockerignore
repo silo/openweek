@@ -1,0 +1,17 @@
+node_modules
+.output
+.nuxt
+.nitro
+.data
+.cache
+.git
+.github
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+dist
+.context
+playwright-report
+test-results
