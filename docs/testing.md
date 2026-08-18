@@ -17,12 +17,13 @@ integration layer against a real Postgres, all gated in CI.
 - **Crypto** — AES-256-GCM round-trip; decrypt with the wrong key fails; `encKeyVersion` selects the key.
 - **Contract smoke** — import a `drizzle-zod`-generated schema and `parse()` a sample row (guards a future
   zod4 / drizzle-zod version split — see [tech-stack.md](./tech-stack.md)).
-- **Pure style fns** — the `hl()` highlighter builder for both `underline` and `swipe`.
+- **Colour constants** — the ink palette, its per-theme values, and `inkColor()`'s pass-through for
+  pre-rework hex values (`shared/constants/colors.test.ts`).
 
 ### Component (happy-dom)
-`TaskItem` across states (open/done/highlight/rolled/meta/note), `EventItem`, `TaskDetailPopover`,
-`ConvertEventPopover`, `DayColumn` inline composer, `ThemeControls`. Assert rendered structure + a11y roles,
-not pixel styles.
+`TaskItem` across states (open/done/`edge` vs `fill` highlight/rolled/meta/note), `EventItem`,
+`TaskDetailPopover`, `DayColumn` inline composer and done-fold, `ListCard` menu, `AppearanceSettings`.
+Assert rendered structure + a11y roles, not pixel styles.
 
 ### Server / integration (test Postgres)
 Endpoints exercised against a disposable Postgres (a compose db or Testcontainers): task CRUD, **move/ordering

@@ -28,10 +28,13 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 |---|---|---|
 | `userId` | text PK → user | |
 | `weekStartsOn` | smallint | `0` Sun / `1` Mon (default `1`). |
-| `theme` | enum | `light` \| `dark` \| `system` (default `system`). |
-| `accentColor` | text | hex; default `#CBDDE9` (sky). |
-| `fontStyle` | enum | `plex-mono` \| `editorial` \| `grotesk` \| `typewriter` (default `plex-mono`). |
-| `tagStyle` | enum | `underline` \| `swipe` (default `underline`). |
+| `theme` | enum | `paper` \| `ink` \| `system` (default `system`). |
+| `accentColor` | enum | one of the five inks (default `persimmon`). Named, not hex, so it resolves per theme. |
+| `fontStyle` | enum | `open-sans` \| `lato` \| `roboto` \| `inter` \| `source-sans-3` (default `open-sans`). |
+| `tagStyle` | enum | `edge` \| `fill` (default `edge`) — how a highlight is drawn. |
+| `textSize` | enum | `small` \| `default` \| `large`; drives `--ow-text-scale`. |
+| `showWeekends` | boolean | default `true`; also a toolbar toggle. |
+| `collapseDone` | boolean | default `true`; folds finished tasks into a "N done" line. |
 | `showCalendarEvents` | boolean | default `true`. |
 | `rolloverEnabled` | boolean | default `false` (opt-in). |
 | `timezone` | text | IANA tz; used by rollover + event placement. |
@@ -42,9 +45,9 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 | `id` | uuidv7 PK | |
 | `userId` | → user | indexed |
 | `name` | text | |
-| `color` | text | hex dot color |
+| `color` | text | an ink name (`jade`, …); rows written before the Paper/Ink rework hold a hex and still render |
 | `isDefault` | boolean | the auto-created "Someday" list; one per user |
-| `position` | text | fractional order in the drawer |
+| `position` | text | fractional order in the rail |
 | `archivedAt` | timestamptz? | soft-hide |
 
 ### `task` — the core
@@ -57,7 +60,7 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 | `position` | text | fractional index within the bucket |
 | `title` | text | |
 | `note` | text? | italic annotation |
-| `highlightColor` | enum? | `butter` \| `mint` \| `sky` \| `rose` (the highlighter tag) |
+| `highlightColor` | enum? | `persimmon` \| `amber` \| `jade` \| `indigo` \| `magenta` (the highlighter ink) |
 | `timeOfDay` | time? | display label only (◷) — **no** hourly scheduling |
 | `completedAt` | timestamptz? | null = open; timestamp enables stats |
 | `originalDate` | date? | kept when a rollover moves the task ("rolled" ⇔ `originalDate < date`) |

@@ -21,7 +21,8 @@ An open alternative to [tweek.so](https://tweek.so), [teuxdeux.com](https://teux
 Openweek is a **minimalist weekly to-do app**. The whole interface is a **week grid**: seven day columns plus
 "Someday" lists, where each task is a bullet you can drag between days, tick off, tag with a highlighter
 color, and annotate. There's **no hourly scheduling** — the week itself is the canvas. It's designed to feel
-like a paper planner, not a SaaS dashboard: warm cream background, hairline rules, generous whitespace.
+quiet and structural, not a SaaS dashboard: a cool neutral ramp, one warm accent, hairline rules,
+generous whitespace. Ships as Paper (light) and Ink (dark).
 
 It's **AGPL-3.0** and **self-host first** — your tasks live in your own Postgres, in your own container.
 

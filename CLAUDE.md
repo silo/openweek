@@ -3,8 +3,8 @@
 Guidance for working in the Openweek repo. Keep this file and `/docs` in sync as the stack evolves.
 
 ## What this is
-Openweek — a free, AGPL-3.0, **self-hostable weekly planner**. A paper-planner week grid (7 day columns +
-"Someday"-style lists) of draggable, checkable, color-tagged tasks, with **read-only** calendar sync
+Openweek — a free, AGPL-3.0, **self-hostable weekly planner**. A week grid (7 day columns + a rail of
+"Someday"-style lists) of draggable, checkable, ink-tagged tasks, with **read-only** calendar sync
 (Google / CalDAV / iCal). Single Nuxt 4 app + Postgres; `docker compose up` to self-host.
 
 ## Read first
@@ -56,10 +56,13 @@ Before any PR: `pnpm lint && pnpm typecheck && pnpm test` must be green.
 - **Design tokens are CSS variables** (`--ow-*`); don't hard-code the hex values from `docs/design.md` in
   components — reference the tokens.
 - **Config fails fast** — `server/utils/config.ts` validates env with Zod at boot.
-- **Fonts are self-hosted** (`@fontsource/ibm-plex-mono` + `-sans`); no CDN.
+- **Fonts are self-hosted** (`@fontsource-variable/bricolage-grotesque` for display + five body faces);
+  no CDN. The design canvases link Google Fonts — do not copy that.
 
 ## Build order
-Follow the phases in [`docs/roadmap.md`](docs/roadmap.md). Status: **v1 scaffolded (Phases 0–9 implemented)** —
-tasks/lists/grid, drag-and-drop, rollover, read-only calendar sync (Google/CalDAV/iCal), search, and the
-Docker/self-host packaging are in place. Deferred (schema ready): subtasks UI, recurring materialization,
-reminders, two-way sync, offline/PWA, month view.
+Follow the phases in [`docs/roadmap.md`](docs/roadmap.md). Status: **v1 scaffolded (Phases 0–9 implemented),
+front-end rebuilt on the Paper/Ink design** — tasks/lists/grid, drag-and-drop across days *and* lists,
+rollover with a review banner, read-only calendar sync (Google/CalDAV/iCal) with per-calendar show/hide,
+search, focus-day, collapse-done, the weekends toggle, and the Docker/self-host packaging are in place.
+Deferred (schema ready): subtasks UI, recurring materialization, reminders, two-way sync, offline/PWA,
+month view. Explicitly out of scope: the design's "Manage users" / admin copy.

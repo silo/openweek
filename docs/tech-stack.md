@@ -10,7 +10,7 @@ explicit record of what we evaluated and **rejected**. Choices were verified aga
 | Framework | Nuxt | 4.4 | Already scaffolded. `app/` srcDir, `shared/`, Nitro `server/`. SSR on. |
 | Language | TypeScript (strict) | 5.x | Strict is on by default in the generated tsconfig. Build type-checking is OFF by default → wire `nuxt typecheck` (vue-tsc) in CI. |
 | Package manager | pnpm | 10.x | |
-| Fonts | `@fontsource/ibm-plex-mono`, `@fontsource/ibm-plex-sans` | 5.x | Self-hosted (offline + privacy + AGPL ethos). **Plex Mono = display** (logo, dates, headings, task text, UI chrome); **Plex Sans = body/notes**. Optional theme fonts (`@fontsource/newsreader`, `@fontsource/space-grotesk`, `@fontsource/spline-sans-mono`) power the font switcher. Supersedes the earlier Inter+Caveat pick — the approved v2 "paper" design is monospace. See [design.md](./design.md) and [decisions.md](./decisions.md). |
+| Fonts | `@fontsource-variable/bricolage-grotesque` + `@fontsource/{open-sans,lato,roboto,inter,source-sans-3}` | 5.x | Self-hosted (offline + privacy + AGPL ethos); the design canvases link Google Fonts, which we do not copy. **Bricolage Grotesque = display** (wordmark, week title, date numerals); the **body face is per-user**, defaulting to Open Sans. No monospace. Supersedes both the earlier Inter+Caveat pick and the IBM Plex monospace one. See [design.md](./design.md) and [decisions.md](./decisions.md). |
 | State | Pinia + `@pinia/nuxt` | 3.0 / 0.11 | Single optimistic-mutation store for the week grid. |
 
 ## Data & validation

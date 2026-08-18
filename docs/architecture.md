@@ -26,7 +26,7 @@ Browser ──$fetch/useFetch (typed by shared Zod)──▶ Nitro /server/api �
 app/                      # front-end (srcDir)
   pages/                  # index.vue (the week), login/register, settings/*
   components/             # TopBar, WeekGrid, DayColumn, TaskItem, EventItem,
-                          #   TaskDetailPopover, ConvertEventPopover, ListDrawer, ThemeControls, primitives
+                          #   TaskDetailPopover, ListsRail/ListCard, CalendarsMenu, RolloverReview, primitives
   stores/                 # Pinia: useWeekStore (optimistic), useUiStore, useSettingsStore
   composables/            # useTaskBoard (DnD), useWeek (date math), useAuthClient, useTheme
   middleware/             # auth.global.ts — guard + first-run redirect

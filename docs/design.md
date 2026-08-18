@@ -1,117 +1,123 @@
 # Design
 
-The "paper planner" aesthetic — warm, calm, monospace, hairline rules, generous whitespace. Tokens are taken
-verbatim from the approved Claude Design **v2 (paper)** file; the task-detail popover comes from the sidebar
-variants. Everything renders through CSS variables so the per-user theme (accent, font, tag-style, light/dark)
-is a variable swap, mirroring the design's own mechanism.
+Openweek ships one design in two palettes — **Paper** (light) and **Ink** (dark). They are the same
+markup and the same logic; only colour differs. Both are taken verbatim from the approved Claude Design
+canvases in `.context/design/` (`Openweek Light.dc.html`, `Openweek Ink.dc.html`).
+
+The look is quiet and structural: a hairline seven-column grid, generous whitespace, one warm accent
+against a cool neutral ramp, and no chrome that is not doing work.
+
+> The earlier warm monospace "paper planner" design (IBM Plex Mono, `#F2F1EC`, four highlighter colours,
+> a tabbed bottom drawer) is **superseded**. Nothing in it should be used as a reference.
+
+## How the tokens were derived
+
+The two canvases are inline-styled with `oklch()` and carry no token layer. Rather than eyeball values,
+the two documents were aligned and colours read off at matching positions — 777 of 797 colours paired
+into 101 Paper/Ink pairs, with only two paper values mapping to more than one ink value (genuine role
+collisions, which naming resolves). Those pairs became the ~50 semantic `--ow-*` variables in
+[`app/assets/css/main.css`](../app/assets/css/main.css).
+
+**Components reference the variables, never raw `oklch()`.** If a value is missing, add it to the token
+layer first.
+
+## Colour
+
+The neutral ramp sits on hue `265` and runs quiet → loud *relative to the background*, which is why
+lightness reverses between the themes. The accent is persimmon (hue `30–35`).
+
+| Role | Paper | Ink |
+|---|---|---|
+| `--ow-bg` | `oklch(0.968 0.002 265)` | `oklch(0.135 0.008 265)` |
+| `--ow-surface` | `#ffffff` | `oklch(0.215 0.011 265)` |
+| `--ow-surface-weekend` | `oklch(0.978 0.003 265)` | `oklch(0.195 0.011 265)` |
+| `--ow-sunken` | `oklch(0.963 0.003 265)` | `oklch(0.265 0.013 265)` |
+| `--ow-border` | `oklch(0.903 0.004 265)` | `oklch(0.35 0.014 265)` |
+| `--ow-hairline` | `oklch(0.928 0.003 265)` | `oklch(0.31 0.013 265)` |
+| `--ow-muted` | `oklch(0.6 0.009 265)` | `oklch(0.65 0.012 265)` |
+| `--ow-ink` | `oklch(0.24 0.014 265)` | `oklch(0.96 0.008 265)` |
+| `--ow-accent` | `oklch(0.55 0.16 30)` | `oklch(0.68 0.15 35)` |
+| `--ow-today` | `oklch(0.5 0.09 252)` | `oklch(0.62 0.11 252)` |
+
+Text runs `--ow-ghost` → `--ow-placeholder` → `--ow-done` → `--ow-muted` → `--ow-faint` →
+`--ow-secondary` → `--ow-text` → `--ow-strong` → `--ow-title` → `--ow-ink-soft` → `--ow-ink`. Lines and
+controls run `--ow-hairline` → `--ow-line` → `--ow-border` → `--ow-border-strong` → `--ow-track` →
+`--ow-control` → `--ow-control-strong` → `--ow-mark`. Elevation is `--ow-elev-1` … `--ow-elev-4`.
+
+### The five inks
+
+`persimmon` · `amber` · `jade` · `indigo` · `magenta` — each with a `-tint` and `-edge` variant for the
+`fill` highlight mode. Every ink has a **different value in each theme**, so anything persisted stores the
+*name* (see [`shared/constants/colors.ts`](../shared/constants/colors.ts)); `inkColor()` resolves it and
+passes through pre-rework hex values untouched.
+
+The same five inks serve highlighter tags, list dots, calendar colours and the accent picker.
 
 ## Typography
 
-Self-hosted via `@fontsource` (no CDN — offline + privacy + AGPL ethos):
+Self-hosted via `@fontsource` — the canvases link Google Fonts, which we deliberately do not copy
+(offline, privacy, AGPL). **There is no monospace anywhere.**
 
-- **`--ow-display`** — **IBM Plex Mono** — logo, week title, dates, day labels, task text, and UI chrome.
-- **`--ow-body`** — **IBM Plex Sans** — notes and longer-form body text.
+- **`--ow-font-display`** — **Bricolage Grotesque** (variable): wordmark, week title, date numerals,
+  popover title. Tight tracking (`-0.02em` to `-0.03em`).
+- **`--ow-font-body`** — user-selectable: Open Sans (default), Lato, Roboto, Inter, Source Sans 3.
 
-The monospace display face *is* the paper look. The `fontStyle` setting swaps `--ow-display`/`--ow-body`:
+`--ow-text-scale` multiplies the 15px root size for the Small / Default / Large setting.
 
-| `fontStyle` | display | body |
-|---|---|---|
-| `plex-mono` (default) | IBM Plex Mono | IBM Plex Sans |
-| `editorial` | Newsreader | IBM Plex Sans |
-| `grotesk` | Space Grotesk | Space Grotesk |
-| `typewriter` | Spline Sans Mono | IBM Plex Sans |
+## Highlight modes (`tagStyle`)
 
-## Color tokens
+- **`edge`** (default) — the row keeps its surface; a 3px bar in the ink runs down the left.
+- **`fill`** — the row takes the ink's `-tint` background and a 1px ring in its `-edge`.
 
-### Light (canonical, from v2)
-| Token | Value | Use |
-|---|---|---|
-| `--ow-bg` | `#F2F1EC` | app background (paper) |
-| `--ow-surface` | `#FFFFFF` | cards, grid |
-| `--ow-sunken` | `#FCFBF7` | bottom drawer |
-| `--ow-ink` | `#2A2A28` | primary text |
-| `--ow-muted` | `#8C887D` | secondary text |
-| `--ow-faint` | `#AEA99D` | labels, meta |
-| `--ow-ghost` | `#C8C4BA` | placeholders, chevrons |
-| `--ow-hairline` | `#EDEBE4` | column/row rules |
-| `--ow-border` | `#E7E4DB` | inputs, pills |
-| `--ow-selection` | `#EAD9A0` | text selection |
+Completed tasks drop the highlight, mute the text and strike it through. Calendar events keep their own
+look — a coloured dot and no checkbox — under either mode.
 
-### Dark (warm paper, derived — design ships light only, but the sidebar shows a Light/Dark toggle)
-`--ow-bg` `#1B1A17` · `--ow-surface` `#221F1B` · `--ow-sunken` `#1E1B18` · `--ow-ink` `#E8E4DA` · `--ow-muted`
-`#9A968B` · `--ow-hairline` `#33302A` · `--ow-border` `#3B372F`. Accents keep hue, lighten slightly;
-highlighter colors are dimmed ~25%.
+## Screens
 
-### Accent (`--ow-accent`, user-settable)
-Default **sky `#CBDDE9`**; options butter `#EAD9A0`, mint `#CFE0CB`, rose `#E7CDD4`. Drives: the brand square,
-Today column tint (`rgba(accent, .10)`) + filled date circle (accent bg, text `#5C5226`), the active list-tab
-underline, the "write a task" caret, and primary buttons.
+Ten frames, mirrored by the components:
 
-### Highlighter palette (the color-tag)
-butter `#EAD9A0` · mint `#D2E2CD` · sky `#CFDEEA` · rose `#E9D2D8`.
+- **`TopBar`** — `BrandMark` (five falling bars) · week nav · **Weekends** toggle · range + `W{n}` ·
+  progress bar and "X of Y done" · `CalendarsMenu` · `SearchBox` · `AccountMenu`.
+- **`WeekGrid`** → **`DayColumn`** — date numeral + weekday, `TODAY` badge, "N left", events then a
+  `TASKS` rule, tasks, the done fold, and an inline composer.
+- **`TaskItem`** / **`EventItem`** — the row in both the grid and the rail.
+- **`TaskDetailPopover`** — title · five inks + none · time · **Move to…** (every day and list) · note ·
+  delete. The footer reserves space labelled `SOON: SUBTASKS · REPEAT`.
+- **`ListsRail`** → **`ListCard`** — every list visible at once as a card with dot, name, count and a `⋯`
+  menu (rename / recolour / delete). Not a drawer, and nothing to switch between.
+- **`RolloverReview`** — "N tasks moved to today", each with *send back*, dismissed with **Keep all**.
+- **`AuthCard`** — tabbed sign in / create account on a column-ruled frame.
+- **`MobileWeek`** — day strip, one day in view, bottom nav.
+- **Primitives** — `OwButton`, `OwSwitch`.
 
-### Calendar source colors
-GCal `#86B08B` · CalDAV `#9CBBD6` · iCal `#D3B488`.
+## Behaviours the design specifies
 
-### Elevation
-Popover shadow: `0 16px 44px -12px rgba(60,52,30,.28), 0 3px 10px rgba(60,52,30,.10)`.
+- **Focus day** — clicking a day header widens it to `2.1fr` against `0.85fr` for the rest. Nothing hides.
+- **Collapse done** — finished tasks fold into a quiet "N done" line per day *and* per list.
+- **Weekends** — 7 or 5 columns, from the toolbar or Settings.
+- **Cmd/Ctrl-K** — search across this week and every list, capped at 8 results.
 
-## Highlighter rendering (`tagStyle`)
+## Theme delivery
 
-Two modes, ported exactly from the design's `hl()`:
-
-- **`underline`** (default) — a highlighter swipe *under* the text:
-  `background-image: linear-gradient(to top, <c> 0%, <c> 42%, transparent 42%)`.
-- **`swipe`** — a solid marker block: `background:<c>; padding:1px 4px; border-radius:3px;
-  box-decoration-break: clone` (wraps cleanly across lines).
-
-Completed tasks add `line-through` and mute the text (`#9A968C`).
-
-## Components (map 1:1 to the design)
-
-- **`TopBar`** — brand (accent square + `openweek` in mono) · `WeekNav` (`‹ June 22–28 ›` + Today pill + WEEK n)
-  · `CalendarsMenu` (source dots + "N calendars") · progress ("X of Y done") · search · avatar.
-- **`WeekGrid`** → **`DayColumn`** — date + weekday abbr; **today** = accent tint + filled circle; the
-  "Write a task" inline composer with a blinking caret (today only).
-- **`TaskItem`** — mark `○`/`✓`, highlighted title, meta row (`◷` time · `↻` repeat · `☑` sub x/y), the
-  "⤺ from …" provenance pill, italic note, rolled `↪` indicator.
-- **`EventItem`** — source-colored left-border box, time, source label, `＋ task` convert affordance.
-- **`TaskDetailPopover`** — circle checkbox + title + list chip · color-picker row (butter/mint/sky/rose + none)
-  · time · recurrence · **subtasks** list · note · footer (↪ Move to… · ⧉ Duplicate · 🗑 Delete).
-- **`ConvertEventPopover`** — "CONVERT EVENT TO TASK", event details, "Keep linked to calendar event"
-  checkbox, Make task / Cancel.
-- **`ListDrawer`** — active list items (2-row horizontal grid) + tab bar (colored dot + name + count, active =
-  accent underline) + "＋ New list".
-- **Primitives** — `OwButton`, `OwPill`, `TaskMark`, `ColorSwatch`.
-
-Implementation note: the design's inline styles collapse into Tailwind v4 utilities + the token variables
-above; a DaisyUI theme provides the light/dark switch. Prefer semantic component classes over re-deriving hex
-values.
+`app.vue` renders `data-theme`, `data-accent` and the font/scale variables into the initial HTML from the
+stored settings, so there is no flash. `system` cannot be resolved server-side, so it ships as Paper plus
+a small inline script that flips to Ink before first paint.
 
 ## Accessibility
 
-- **Drag-and-drop always has a keyboard path** — every reorder/move is also reachable via the "Move to…" menu
-  (also the screen-reader path). See [architecture.md](./architecture.md) and Phase 5 in [roadmap.md](./roadmap.md).
-- Popovers focus-trap and restore focus on close; `Esc` closes.
-- Checkboxes/lists carry proper ARIA roles and state; the completion `✓`/`○` is a real toggle.
-- **Color is never the only signal** — highlight tags pair with text, sources pair with labels, completion
-  pairs with the mark + strike-through.
-- `prefers-reduced-motion` disables the caret blink and DnD animations.
-- Tokens are contrast-checked (WCAG AA for text).
+- **Drag-and-drop always has a keyboard path** — "Move to…" in the popover covers every day and every
+  list. It is also the screen-reader path, and the primary cross-container action on touch.
+- Popovers and menus close on `Esc` and on outside click; the task popover focus-traps and restores focus.
+- Colour is never the only signal — inks pair with text, calendars with a name and source badge,
+  completion with the `✓` and a strike-through.
+- `prefers-reduced-motion` disables the shimmer and transitions.
 
 ## Responsive
 
-- **≥1024px** — the 7-column grid + bottom list drawer, as designed.
-- **640–1024px** — reduced column padding; drawer collapses to a launcher.
-- **<640px** — **vertical stack**: each day is a full-width section stacked top-to-bottom with a sticky
-  header; the list drawer becomes a bottom sheet; the top bar compacts. DnD reorders vertically and moves
-  across day sections; the "Move to…" menu is the primary cross-day action on touch.
-
-## States
-
-Skeleton loaders (the design's placeholder hints map to these), paper-voice empty states (empty week / empty
-list), calendar-connection error banners, and a subtle "synced Nm ago / syncing…" indicator on `CalendarsMenu`.
+- **≥1024px** — the seven-column grid with the lists rail beneath.
+- **<1024px** — `MobileWeek`: a day strip that pans the week (with an open-task pip per day), one day
+  filling the screen, and a bottom nav. The rail stacks underneath, one card per row.
 
 ## Related docs
-[decisions.md](./decisions.md) (why monospace, why full theme controls) · [architecture.md](./architecture.md)
-· [roadmap.md](./roadmap.md)
+
+[decisions.md](./decisions.md) · [architecture.md](./architecture.md) · [data-model.md](./data-model.md)

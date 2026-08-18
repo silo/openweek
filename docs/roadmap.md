@@ -16,16 +16,17 @@ migrate`. Better Auth: email/password + Google (env-gated) + admin plugin + **fi
 pages + `auth.global.ts` (guard + first-run redirect). `user_settings` row created on signup.
 
 ## Phase 2 — Design system
-Tailwind v4 `@theme` + token layer as CSS variables; DaisyUI light **and** dark themes; self-hosted IBM Plex
-Mono/Sans (+ optional switcher fonts); primitives (`OwButton`, `OwPill`, `TaskMark`, `ColorSwatch`);
-`ThemeControls` wired to settings persistence.
+Tailwind v4 `@theme` + token layer as CSS variables; DaisyUI Paper **and** Ink themes; self-hosted
+Bricolage Grotesque + the five body faces; primitives (`OwButton`, `OwSwitch`); `AppearanceSettings`
+wired to settings persistence.
 
 ## Phase 3 — Week grid + tasks (core)
 `GET /api/week` + optimistic `useWeekStore`; `WeekGrid` / `DayColumn` / `TaskItem`; create / edit / complete /
 delete; highlight colors, notes, per-task time; the inline "Write a task" composer; `TaskDetailPopover`.
 
-## Phase 4 — Lists + drawer
-List CRUD; auto-created default "Someday" list; `ListDrawer` + tabs; moving a task between a day and a list.
+## Phase 4 — Lists + rail
+List CRUD; auto-created default "Someday" list; `ListsRail` showing every list at once; moving a task
+between a day and a list.
 
 ## Phase 5 — Drag & drop
 `useTaskBoard` (Pragmatic DnD + `/auto-scroll` + `/hitbox`) — the one swappable engine file; fractional-index

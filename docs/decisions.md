@@ -4,13 +4,14 @@ Why the load-bearing choices were made. Stack-level rejections (vuedraggable, go
 Lucia, tRPC, Google Fonts CDN, plain fractional-indexing) live in [tech-stack.md](./tech-stack.md#rejected-and-why);
 this file records the **product/architecture** decisions taken during planning.
 
-## D1 — Typography: monospace, per the design (supersedes Inter + Caveat)
-The approved **v2 (paper)** design is built on **IBM Plex Mono** (display) + **IBM Plex Sans** (body); the
-monospace face is the entire "paper/typewriter" feel. The earlier `tech-stack.md` line (Inter body + Caveat
-handwriting accent) predated the final design and is **superseded**. Fonts are self-hosted via `@fontsource`
-(no CDN — offline/privacy/AGPL). *Trade-off:* a handwriting accent would have been warmer but diverges from the
-signed-off visual; the font **switcher** (editorial/grotesk/typewriter) recovers expressiveness as a per-user
-option. See [design.md](./design.md).
+## D1 — Typography: Bricolage Grotesque display + a selectable body face
+*Supersedes the earlier monospace decision.* The reworked **Paper/Ink** design drops monospace entirely:
+**Bricolage Grotesque** carries the display voice (wordmark, week title, date numerals) with tight tracking,
+and the body face is a **per-user choice** of Open Sans (default), Lato, Roboto, Inter or Source Sans 3.
+*Why:* the "typewriter" feel went with the old warm paper palette; the new design is quieter and more
+structural, and a grotesque display against a neutral body reads better at the grid's density. Fonts stay
+self-hosted via `@fontsource` — the canvases link Google Fonts, which we do not copy (offline/privacy/AGPL).
+See [design.md](./design.md).
 
 ## D2 — v1 scope: build the model wide, the UI narrow
 The design shows recurring tasks, subtasks, and per-task times, which the README marks "later". Decision: the
@@ -21,17 +22,26 @@ read-only sync) plus **convert-event → task** and **basic search**. **Subtasks
 of sync; recurrence materialization and subtask ordering carry real complexity better done once the core is
 solid. See [roadmap.md](./roadmap.md).
 
-## D3 — Full, per-user theme controls
-Expose light/dark + accent + font + tag-style (underline vs swipe) + week-start as **per-user settings**. *Why:*
-the design already parametrizes all of it and the whole UI reads from CSS variables, so exposing them is nearly
-free and differentiates the "make it yours" paper feel. *Trade-off:* a little more settings surface and testing;
-trivially reducible to a "light/dark + accent" subset if it proves noisy.
+## D3 — Full, per-user appearance controls
+Expose theme (Paper/Ink/System), accent, typeface, highlight style (`edge` vs `fill`), text size, week start,
+weekends, and collapse-done as **per-user settings**. *Why:* the design ships a full Settings → Appearance
+panel and the whole UI reads from CSS variables, so exposing them is nearly free. *Trade-off:* more settings
+surface, and it cost a migration — four enums changed their values and three columns were added
+(see `0001`). Trivially reducible to a theme-and-accent subset if it proves noisy.
 
-## D4 — Mobile: vertical stack of days
-On phones the 7-column grid becomes a **vertical stack** of full-width day sections (list drawer as a bottom
-sheet). *Why:* most readable on a narrow screen and keeps drag-and-drop / "Move to…" natural; matches
-teuxdeux/tweek mobile precedent. *Rejected:* single-day view (loses week overview) and horizontal column
-scroll-snap (awkward cross-column DnD).
+## D3a — Colours are stored by name, not by value
+Every ink has a different value in Paper and Ink, so a persisted hex renders wrong in one of them. Settings,
+lists and calendar sources therefore store an ink **name** (`jade`), resolved to a CSS variable at render.
+*Why:* one stored value stays correct under a theme switch, and the palette can be retuned without a data
+migration. Rows written before the rework hold a literal colour and pass through untouched.
+
+## D4 — Mobile: a day strip with one day in view
+*Supersedes the vertical-stack decision.* Below the grid's breakpoint the week becomes a **day strip** that
+pans the week — each day showing its date and a pip when it has open tasks — with the selected day filling
+the screen, and a bottom nav. *Why:* the reworked design specifies it, and it keeps a full week's shape
+visible in the strip while giving one day enough room for real task rows. "Move to…" remains the primary
+cross-day action on touch. *Rejected:* the earlier vertical stack (a lot of scrolling, and the week's shape
+is lost as soon as any day has more than a few tasks).
 
 ## D5 — Read-only sync via polling, events cached in Postgres
 Calendar sync is one-way (mirror-in) and driven by a **Nitro scheduled poll**, not Google push/watch (which
