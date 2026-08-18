@@ -6,22 +6,25 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@pinia/nuxt', '@nuxt/eslint'],
   css: [
-    // Self-hosted fonts (no CDN). Weights per docs/design.md; extra families power the font switcher.
-    '@fontsource/ibm-plex-mono/400.css',
-    '@fontsource/ibm-plex-mono/500.css',
-    '@fontsource/ibm-plex-mono/600.css',
-    '@fontsource/ibm-plex-mono/400-italic.css',
-    '@fontsource/ibm-plex-sans/400.css',
-    '@fontsource/ibm-plex-sans/500.css',
-    '@fontsource/newsreader/400.css',
-    '@fontsource/newsreader/500.css',
-    '@fontsource/newsreader/600.css',
-    '@fontsource/space-grotesk/400.css',
-    '@fontsource/space-grotesk/500.css',
-    '@fontsource/space-grotesk/600.css',
-    '@fontsource/spline-sans-mono/400.css',
-    '@fontsource/spline-sans-mono/500.css',
-    '@fontsource/spline-sans-mono/600.css',
+    // Self-hosted fonts (no CDN) — the design canvases link Google Fonts, which we deliberately
+    // do not copy. Weights are the 400/500/600 the design actually renders; see docs/design.md.
+    // Display face — variable, covers the whole 400..600 range in one file.
+    '@fontsource-variable/bricolage-grotesque/wght.css',
+    // Body faces — user-selectable via the Typeface setting (see app/composables/useTheme.ts).
+    '@fontsource/open-sans/400.css',
+    '@fontsource/open-sans/500.css',
+    '@fontsource/open-sans/600.css',
+    '@fontsource/lato/400.css',
+    '@fontsource/lato/700.css', // Lato ships no 500/600
+    '@fontsource/roboto/400.css',
+    '@fontsource/roboto/500.css',
+    '@fontsource/roboto/700.css',
+    '@fontsource/inter/400.css',
+    '@fontsource/inter/500.css',
+    '@fontsource/inter/600.css',
+    '@fontsource/source-sans-3/400.css',
+    '@fontsource/source-sans-3/500.css',
+    '@fontsource/source-sans-3/600.css',
     '~/assets/css/main.css',
   ],
   vite: {

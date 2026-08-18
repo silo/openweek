@@ -4,123 +4,383 @@
   themes: openweek --default, openweek-dark --prefersdark;
 }
 
-/* --- Paper (light) --------------------------------------------------------- */
+/* ===========================================================================
+   Openweek design tokens — Paper / Ink
+   ---------------------------------------------------------------------------
+   Values are lifted verbatim from the approved Claude Design canvases
+   (.context/design/Openweek Light.dc.html and Openweek Ink.dc.html). The two
+   files are one design in two palettes: identical markup and logic, differing
+   only in colour. Every pair below was extracted by aligning the two documents
+   and reading off colours at matching positions, so Paper/Ink counterparts are
+   exact rather than eyeballed.
+
+   The neutral ramp sits on hue 265 and runs quiet -> loud relative to the
+   background, which is why the lightness reverses between themes. The accent
+   is persimmon (hue 30-35).
+
+   Components reference these variables. Do not paste raw oklch() into a
+   component — if a value is missing here, add it here first.
+   =========================================================================== */
+
+/* --- DaisyUI: Paper --------------------------------------------------------- */
 @plugin "daisyui/theme" {
   name: "openweek";
   default: true;
   prefersdark: false;
   color-scheme: light;
-  --color-base-100: #FFFFFF;
-  --color-base-200: #FCFBF7;
-  --color-base-300: #EDEBE4;
-  --color-base-content: #2A2A28;
-  --color-primary: #CBDDE9;
-  --color-primary-content: #2A2A28;
-  --color-neutral: #2A2A28;
-  --color-neutral-content: #F2F1EC;
-  --color-error: #C49097;
-  --color-error-content: #FFFFFF;
+  --color-base-100: #ffffff;
+  --color-base-200: oklch(0.963 0.003 265);
+  --color-base-300: oklch(0.903 0.004 265);
+  --color-base-content: oklch(0.24 0.014 265);
+  --color-primary: oklch(0.55 0.16 30);
+  --color-primary-content: #ffffff;
+  --color-neutral: oklch(0.24 0.014 265);
+  --color-neutral-content: oklch(0.968 0.002 265);
+  --color-error: oklch(0.5 0.17 28);
+  --color-error-content: #ffffff;
   --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
+  --radius-field: 0.5625rem;
   --radius-box: 0.75rem;
   --border: 1px;
 }
 
-/* --- Paper (dark) ---------------------------------------------------------- */
+/* --- DaisyUI: Ink ----------------------------------------------------------- */
 @plugin "daisyui/theme" {
   name: "openweek-dark";
   prefersdark: true;
   color-scheme: dark;
-  --color-base-100: #221F1B;
-  --color-base-200: #1E1B18;
-  --color-base-300: #33302A;
-  --color-base-content: #E8E4DA;
-  --color-primary: #9CBBD6;
-  --color-primary-content: #14140F;
-  --color-neutral: #E8E4DA;
-  --color-neutral-content: #1B1A17;
-  --color-error: #C49097;
-  --color-error-content: #14140F;
+  --color-base-100: oklch(0.215 0.011 265);
+  --color-base-200: oklch(0.265 0.013 265);
+  --color-base-300: oklch(0.35 0.014 265);
+  --color-base-content: oklch(0.96 0.008 265);
+  --color-primary: oklch(0.68 0.15 35);
+  --color-primary-content: oklch(0.135 0.008 265);
+  --color-neutral: oklch(0.96 0.008 265);
+  --color-neutral-content: oklch(0.135 0.008 265);
+  --color-error: oklch(0.7 0.16 28);
+  --color-error-content: oklch(0.135 0.008 265);
   --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
+  --radius-field: 0.5625rem;
   --radius-box: 0.75rem;
   --border: 1px;
 }
 
-/* Map --ow-* tokens (which flip with the theme) to Tailwind color utilities. */
-@theme {
-  --color-ow-bg: var(--ow-bg);
-  --color-ow-surface: var(--ow-surface);
-  --color-ow-sunken: var(--ow-sunken);
-  --color-ow-ink: var(--ow-ink);
-  --color-ow-muted: var(--ow-muted);
-  --color-ow-faint: var(--ow-faint);
-  --color-ow-ghost: var(--ow-ghost);
-  --color-ow-hairline: var(--ow-hairline);
-  --color-ow-border: var(--ow-border);
-  --color-hl-butter: #EAD9A0;
-  --color-hl-mint: #D2E2CD;
-  --color-hl-sky: #CFDEEA;
-  --color-hl-rose: #E9D2D8;
-  --color-src-google: #86B08B;
-  --color-src-caldav: #9CBBD6;
-  --color-src-ical: #D3B488;
-  --font-display: var(--ow-display);
-  --font-body: var(--ow-body);
-}
-
+/* --- Paper (light) ---------------------------------------------------------- */
 :root,
 [data-theme="openweek"] {
-  --ow-bg: #F2F1EC;
-  --ow-surface: #FFFFFF;
-  --ow-sunken: #FCFBF7;
-  --ow-ink: #2A2A28;
-  --ow-muted: #8C887D;
-  --ow-faint: #AEA99D;
-  --ow-ghost: #C8C4BA;
-  --ow-hairline: #EDEBE4;
-  --ow-border: #E7E4DB;
-  --ow-accent: #CBDDE9;
-  --ow-accent-ink: #5C5226;
-  --ow-display: 'IBM Plex Mono', ui-monospace, monospace;
-  --ow-body: 'IBM Plex Sans', system-ui, sans-serif;
+  /* surfaces */
+  --ow-bg: oklch(0.968 0.002 265);
+  --ow-shell: oklch(0.975 0.002 265);
+  --ow-surface: #ffffff;
+  --ow-surface-weekend: oklch(0.978 0.003 265);
+  --ow-well: oklch(0.977 0.002 265);
+  --ow-sunken: oklch(0.963 0.003 265);
+  --ow-inset: oklch(0.968 0.003 265);
+
+  /* text, quiet -> loud */
+  --ow-ghost: oklch(0.7 0.008 265);
+  --ow-placeholder: oklch(0.68 0.008 265);
+  --ow-done: oklch(0.65 0.008 265);
+  --ow-muted: oklch(0.6 0.009 265);
+  --ow-faint: oklch(0.55 0.01 265);
+  --ow-secondary: oklch(0.49 0.011 265);
+  --ow-text: oklch(0.45 0.012 265);
+  --ow-strong: oklch(0.42 0.012 265);
+  --ow-title: oklch(0.36 0.013 265);
+  --ow-ink-soft: oklch(0.3 0.014 265);
+  --ow-ink: oklch(0.24 0.014 265);
+
+  /* lines and controls */
+  --ow-hairline: oklch(0.928 0.003 265);
+  --ow-line: oklch(0.918 0.004 265);
+  --ow-border: oklch(0.903 0.004 265);
+  --ow-border-strong: oklch(0.878 0.006 265);
+  --ow-track: oklch(0.875 0.006 265);
+  --ow-control: oklch(0.85 0.007 265);
+  --ow-control-strong: oklch(0.83 0.008 265);
+  --ow-mark: oklch(0.78 0.01 265);
+
+  /* accent — persimmon */
+  --ow-accent: oklch(0.55 0.16 30);
+  --ow-accent-edge: oklch(0.78 0.09 40);
+  --ow-accent-tint: oklch(0.958 0.022 30);
+  --ow-accent-content: #ffffff;
+
+  /* today / selected — blue */
+  --ow-today: oklch(0.5 0.09 252);
+  --ow-select-edge: oklch(0.62 0.07 252);
+  --ow-select-bg: oklch(0.975 0.012 250);
+  --ow-select-fg: oklch(0.3 0.05 252);
+
+  /* highlighter inks */
+  --ow-hl-persimmon: oklch(0.58 0.17 32);
+  --ow-hl-amber: oklch(0.7 0.14 72);
+  --ow-hl-jade: oklch(0.55 0.12 165);
+  --ow-hl-indigo: oklch(0.5 0.13 265);
+  --ow-hl-magenta: oklch(0.53 0.15 350);
+
+  /* highlighter "fill" mode — row tint + ring */
+  --ow-hl-persimmon-tint: oklch(0.962 0.032 32);
+  --ow-hl-amber-tint: oklch(0.966 0.036 78);
+  --ow-hl-jade-tint: oklch(0.962 0.03 165);
+  --ow-hl-indigo-tint: oklch(0.962 0.03 265);
+  --ow-hl-magenta-tint: oklch(0.962 0.03 350);
+  --ow-hl-persimmon-edge: oklch(0.9 0.045 32);
+  --ow-hl-amber-edge: oklch(0.905 0.05 78);
+  --ow-hl-jade-edge: oklch(0.9 0.04 165);
+  --ow-hl-indigo-edge: oklch(0.9 0.04 265);
+  --ow-hl-magenta-edge: oklch(0.9 0.04 350);
+
+  /* brand mark — two bars are fixed hues, two ride the track colour */
+  --ow-brand-2: oklch(0.72 0.13 55);
+  --ow-brand-3: oklch(0.62 0.12 165);
+
+  --ow-selection: oklch(0.87 0.09 72);
+  --ow-shadow: oklch(0.45 0.02 265);
+  --ow-elev-1: 0 10px 30px -22px oklch(0.45 0.02 265 / 0.4);
+  --ow-elev-2: 0 20px 50px -20px oklch(0.45 0.02 265 / 0.26);
+  --ow-elev-3: 0 24px 56px -18px oklch(0.45 0.02 265 / 0.26);
+  --ow-elev-4: 0 30px 70px -44px oklch(0.45 0.02 265 / 0.3);
 }
 
+/* --- Ink (dark) ------------------------------------------------------------- */
 [data-theme="openweek-dark"] {
-  --ow-bg: #1B1A17;
-  --ow-surface: #221F1B;
-  --ow-sunken: #1E1B18;
-  --ow-ink: #E8E4DA;
-  --ow-muted: #9A968B;
-  --ow-faint: #7C786E;
-  --ow-ghost: #5A564D;
-  --ow-hairline: #33302A;
-  --ow-border: #3B372F;
-  --ow-accent: #9CBBD6;
-  --ow-accent-ink: #14140F;
+  --ow-bg: oklch(0.135 0.008 265);
+  --ow-shell: oklch(0.185 0.01 265);
+  --ow-surface: oklch(0.215 0.011 265);
+  --ow-surface-weekend: oklch(0.195 0.011 265);
+  --ow-well: oklch(0.245 0.012 265);
+  --ow-sunken: oklch(0.265 0.013 265);
+  --ow-inset: oklch(0.27 0.013 265);
+
+  --ow-ghost: oklch(0.63 0.012 265);
+  --ow-placeholder: oklch(0.55 0.012 265);
+  --ow-done: oklch(0.58 0.012 265);
+  --ow-muted: oklch(0.65 0.012 265);
+  --ow-faint: oklch(0.69 0.012 265);
+  --ow-secondary: oklch(0.74 0.012 265);
+  --ow-text: oklch(0.8 0.012 265);
+  --ow-strong: oklch(0.83 0.012 265);
+  --ow-title: oklch(0.89 0.012 265);
+  --ow-ink-soft: oklch(0.93 0.01 265);
+  --ow-ink: oklch(0.96 0.008 265);
+
+  --ow-hairline: oklch(0.31 0.013 265);
+  --ow-line: oklch(0.32 0.013 265);
+  --ow-border: oklch(0.35 0.014 265);
+  --ow-border-strong: oklch(0.385 0.015 265);
+  --ow-track: oklch(0.4 0.015 265);
+  --ow-control: oklch(0.44 0.015 265);
+  --ow-control-strong: oklch(0.46 0.015 265);
+  --ow-mark: oklch(0.52 0.015 265);
+
+  --ow-accent: oklch(0.68 0.15 35);
+  --ow-accent-edge: oklch(0.5 0.1 45);
+  --ow-accent-tint: oklch(0.3 0.045 35);
+  --ow-accent-content: oklch(0.135 0.008 265);
+
+  --ow-today: oklch(0.62 0.11 252);
+  --ow-select-edge: oklch(0.58 0.09 252);
+  --ow-select-bg: oklch(0.255 0.03 252);
+  --ow-select-fg: oklch(0.9 0.06 252);
+
+  --ow-hl-persimmon: oklch(0.7 0.15 32);
+  --ow-hl-amber: oklch(0.79 0.13 78);
+  --ow-hl-jade: oklch(0.7 0.12 165);
+  --ow-hl-indigo: oklch(0.68 0.13 265);
+  --ow-hl-magenta: oklch(0.7 0.14 350);
+
+  --ow-hl-persimmon-tint: oklch(0.29 0.05 32);
+  --ow-hl-amber-tint: oklch(0.3 0.05 78);
+  --ow-hl-jade-tint: oklch(0.28 0.045 165);
+  --ow-hl-indigo-tint: oklch(0.28 0.045 265);
+  --ow-hl-magenta-tint: oklch(0.29 0.045 350);
+  --ow-hl-persimmon-edge: oklch(0.4 0.07 32);
+  --ow-hl-amber-edge: oklch(0.42 0.07 78);
+  --ow-hl-jade-edge: oklch(0.4 0.06 165);
+  --ow-hl-indigo-edge: oklch(0.4 0.06 265);
+  --ow-hl-magenta-edge: oklch(0.4 0.06 350);
+
+  --ow-brand-2: oklch(0.72 0.13 55);
+  --ow-brand-3: oklch(0.62 0.12 165);
+
+  --ow-selection: oklch(0.4 0.09 72);
+  --ow-shadow: oklch(0.05 0.01 265);
+  --ow-elev-1: 0 10px 30px -22px oklch(0.05 0.01 265 / 0.7);
+  --ow-elev-2: 0 20px 50px -20px oklch(0.05 0.01 265 / 0.66);
+  --ow-elev-3: 0 24px 56px -18px oklch(0.05 0.01 265 / 0.66);
+  --ow-elev-4: 0 30px 70px -44px oklch(0.05 0.01 265 / 0.7);
 }
 
+/* --- Accent choice ----------------------------------------------------------
+   The Appearance panel offers the same five inks as the highlighter. Persimmon is
+   the design's own accent and keeps the exact values set above, so the default is
+   verbatim. The other four point --ow-accent at the matching ink (which already
+   flips per theme) and derive their edge/tint from it, rather than inventing
+   twenty values the design never specified. */
+[data-accent="amber"] { --ow-accent: var(--ow-hl-amber); }
+[data-accent="jade"] { --ow-accent: var(--ow-hl-jade); }
+[data-accent="indigo"] { --ow-accent: var(--ow-hl-indigo); }
+[data-accent="magenta"] { --ow-accent: var(--ow-hl-magenta); }
+
+[data-accent="amber"],
+[data-accent="jade"],
+[data-accent="indigo"],
+[data-accent="magenta"] {
+  --ow-accent-edge: color-mix(in oklch, var(--ow-accent) 55%, var(--ow-border));
+  --ow-accent-tint: color-mix(in oklch, var(--ow-accent) 14%, var(--ow-surface));
+}
+
+/* Paper's amber sits at 0.7 lightness — too light to carry white text. */
+[data-theme="openweek"][data-accent="amber"] {
+  --ow-accent-content: oklch(0.24 0.014 265);
+}
+
+/* --- Typography and scale --------------------------------------------------- */
+/* Display is Bricolage Grotesque; the body face is user-selectable (see
+   useTheme.ts). --ow-text-scale drives the Small/Default/Large setting. */
+:root {
+  /* @fontsource-variable declares the family with a "Variable" suffix; the plain name is
+     a fallback for anyone who has the static face installed locally. */
+  --ow-font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --ow-font-body: 'Open Sans', Arial, sans-serif;
+  --ow-text-scale: 1;
+  --ow-root-size: 15px;
+}
+
+/* --- Map tokens onto Tailwind utilities ------------------------------------- */
+@theme {
+  --color-ow-bg: var(--ow-bg);
+  --color-ow-shell: var(--ow-shell);
+  --color-ow-surface: var(--ow-surface);
+  --color-ow-surface-weekend: var(--ow-surface-weekend);
+  --color-ow-well: var(--ow-well);
+  --color-ow-sunken: var(--ow-sunken);
+  --color-ow-inset: var(--ow-inset);
+
+  --color-ow-ghost: var(--ow-ghost);
+  --color-ow-placeholder: var(--ow-placeholder);
+  --color-ow-done: var(--ow-done);
+  --color-ow-muted: var(--ow-muted);
+  --color-ow-faint: var(--ow-faint);
+  --color-ow-secondary: var(--ow-secondary);
+  --color-ow-text: var(--ow-text);
+  --color-ow-strong: var(--ow-strong);
+  --color-ow-title: var(--ow-title);
+  --color-ow-ink-soft: var(--ow-ink-soft);
+  --color-ow-ink: var(--ow-ink);
+
+  --color-ow-hairline: var(--ow-hairline);
+  --color-ow-line: var(--ow-line);
+  --color-ow-border: var(--ow-border);
+  --color-ow-border-strong: var(--ow-border-strong);
+  --color-ow-track: var(--ow-track);
+  --color-ow-control: var(--ow-control);
+  --color-ow-control-strong: var(--ow-control-strong);
+  --color-ow-mark: var(--ow-mark);
+
+  --color-ow-accent: var(--ow-accent);
+  --color-ow-accent-edge: var(--ow-accent-edge);
+  --color-ow-accent-tint: var(--ow-accent-tint);
+  --color-ow-accent-content: var(--ow-accent-content);
+
+  --color-ow-today: var(--ow-today);
+  --color-ow-select-edge: var(--ow-select-edge);
+  --color-ow-select-bg: var(--ow-select-bg);
+  --color-ow-select-fg: var(--ow-select-fg);
+
+  --color-hl-persimmon: var(--ow-hl-persimmon);
+  --color-hl-amber: var(--ow-hl-amber);
+  --color-hl-jade: var(--ow-hl-jade);
+  --color-hl-indigo: var(--ow-hl-indigo);
+  --color-hl-magenta: var(--ow-hl-magenta);
+
+  --font-display: var(--ow-font-display);
+  --font-body: var(--ow-font-body);
+
+  --shadow-ow-1: var(--ow-elev-1);
+  --shadow-ow-2: var(--ow-elev-2);
+  --shadow-ow-3: var(--ow-elev-3);
+  --shadow-ow-4: var(--ow-elev-4);
+}
+
+/* --- Base ------------------------------------------------------------------- */
 @layer base {
-  html { font-family: var(--ow-body); }
+  html {
+    font-family: var(--ow-font-body);
+    font-size: calc(var(--ow-root-size) * var(--ow-text-scale));
+  }
+
   body {
     background: var(--ow-bg);
     color: var(--ow-ink);
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
   }
-  ::selection { background: #EAD9A0; color: #2A2A28; }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  a {
+    color: var(--ow-accent);
+  }
+
+  ::selection {
+    background: var(--ow-selection);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--ow-placeholder);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ow-accent);
+    outline-offset: 2px;
+  }
 }
 
-/* Highlighter tag rendering (ported from the design's hl()). */
-@utility hl-underline {
-  color: var(--ow-ink);
-  background-image: linear-gradient(to top, var(--hl) 0%, var(--hl) 42%, transparent 42%);
+/* --- Highlighter rendering (the tagStyle setting) ---------------------------- */
+/* Two modes, ported from the canvas's viewTask():
+   - edge: the row keeps its surface, a colour bar runs down the left
+   - fill: the row takes a tinted background and a 1px ring in the same hue
+   Set --hl / --hl-tint / --hl-edge on the row from the task's colour. */
+@utility hl-edge {
+  position: relative;
+  background: var(--ow-surface);
+  box-shadow: 0 0 0 1px var(--ow-hairline);
 }
-@utility hl-swipe {
-  color: var(--ow-ink);
-  background-color: var(--hl);
-  padding: 1px 4px;
-  border-radius: 3px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+
+@utility hl-edge-bar {
+  background: var(--hl);
+}
+
+@utility hl-fill {
+  background: var(--hl-tint);
+  box-shadow: 0 0 0 1px var(--hl-edge);
+}
+
+/* --- Motion ----------------------------------------------------------------- */
+@keyframes ow-shimmer {
+  0% { background-position: -260px 0; }
+  100% { background-position: 260px 0; }
+}
+
+@keyframes ow-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

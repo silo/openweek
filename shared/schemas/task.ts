@@ -1,7 +1,8 @@
 import { z } from 'zod'
+import { HIGHLIGHT_INKS } from '../constants/colors'
 
-export const HIGHLIGHT_COLORS = ['butter', 'mint', 'sky', 'rose'] as const
-export const highlightColorSchema = z.enum(HIGHLIGHT_COLORS)
+/** The five highlighter inks — defined once in constants/colors.ts. */
+export const highlightColorSchema = z.enum(HIGHLIGHT_INKS)
 
 const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD')
 
