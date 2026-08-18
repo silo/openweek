@@ -84,8 +84,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-ow-bg p-6">
-    <div class="mx-auto flex max-w-[1660px] flex-col overflow-hidden rounded-2xl border border-ow-border bg-ow-surface shadow-ow-4">
+  <div class="min-h-screen bg-ow-bg lg:p-6">
+    <!-- Below the grid's breakpoint the week becomes a day strip with one day in view. -->
+    <MobileWeek
+      class="lg:hidden"
+      :range-label="rangeLabel"
+      :week-number="weekNumber"
+      @prev="prev"
+      @next="next"
+      @open-task="openTask"
+      @convert="convert"
+    />
+
+    <div class="mx-auto hidden max-w-[1660px] flex-col overflow-hidden rounded-2xl border border-ow-border bg-ow-surface shadow-ow-4 lg:flex">
       <TopBar
         :range-label="rangeLabel"
         :week-number="weekNumber"
@@ -98,6 +109,10 @@ onMounted(() => {
       <WeekGrid @open-task="openTask" @convert="convert" />
       <ListsRail @open-task="openTask" />
     </div>
+
+    <!-- The rail stacks below the day view on small screens; the extra padding clears the
+         fixed bottom nav. -->
+    <ListsRail id="ow-lists" class="pb-24 lg:hidden" @open-task="openTask" />
 
     <TaskDetailPopover
       v-if="selected"

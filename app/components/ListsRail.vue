@@ -53,9 +53,11 @@ function commit() {
       </OwButton>
     </div>
 
+    <!-- One card per row on narrow screens; the even grid only makes sense once the week
+         grid is visible beside it. -->
     <div
-      class="grid items-start gap-2.5"
-      :style="{ gridTemplateColumns: `repeat(${columns},minmax(0,1fr))` }"
+      class="grid grid-cols-1 items-start gap-2.5 lg:[grid-template-columns:var(--ow-list-cols)]"
+      :style="{ '--ow-list-cols': `repeat(${columns},minmax(0,1fr))` }"
     >
       <ListCard
         v-for="l in week.lists"

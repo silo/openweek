@@ -7,8 +7,6 @@ const password = ref('')
 const errorMsg = ref('')
 const loading = ref(false)
 
-const inputClass = 'rounded-lg border border-ow-border bg-ow-bg px-3 py-2 font-body text-sm outline-none focus:border-ow-muted'
-
 async function submit() {
   loading.value = true
   errorMsg.value = ''
@@ -18,35 +16,62 @@ async function submit() {
     errorMsg.value = error.message ?? 'Sign up failed'
     return
   }
-  await navigateTo('/')
+  // See the note in login.vue — the middleware's session lookup is cached per navigation.
+  await navigateTo('/', { external: true })
 }
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-    <div class="mb-6 flex items-center gap-2">
-      <div class="h-4 w-4 rounded" style="background: var(--ow-accent);" />
-      <span class="font-display text-base font-semibold tracking-tight">openweek</span>
-    </div>
-    <div class="rounded-xl border border-ow-border bg-ow-surface p-6">
-      <h1 class="font-display text-lg font-semibold">Create your account</h1>
-      <p class="mt-1 font-display text-xs text-ow-muted">The first account becomes the admin of this instance.</p>
-      <form class="mt-4 flex flex-col gap-3" @submit.prevent="submit">
-        <input v-model="name" :class="inputClass" type="text" placeholder="Name" autocomplete="name" required>
-        <input v-model="email" :class="inputClass" type="email" placeholder="Email" autocomplete="email" required>
-        <input v-model="password" :class="inputClass" type="password" placeholder="Password (min 8 chars)" autocomplete="new-password" minlength="8" required>
-        <button
-          type="submit" :disabled="loading"
-          class="rounded-lg py-2 font-display text-sm font-medium disabled:opacity-60"
-          style="background: var(--ow-accent); color: var(--ow-accent-ink);"
+  <AuthCard v-slot="{ fieldLabel, field }" mode="signup">
+    <form class="flex flex-col gap-[13px]" @submit.prevent="submit">
+      <div class="flex flex-col gap-1.5">
+        <label :class="fieldLabel" for="ow-name">NAME</label>
+        <input
+          id="ow-name"
+          v-model="name"
+          :class="field"
+          type="text"
+          placeholder="Astrid"
+          autocomplete="name"
+          required
         >
-          {{ loading ? '…' : 'Register' }}
-        </button>
-        <p v-if="errorMsg" class="text-sm" style="color: #C49097;">{{ errorMsg }}</p>
-      </form>
-    </div>
-    <p class="mt-4 text-center font-display text-sm text-ow-muted">
-      Already have an account? <NuxtLink to="/login" class="text-ow-ink underline">Sign in</NuxtLink>
-    </p>
-  </main>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label :class="fieldLabel" for="ow-email">EMAIL</label>
+        <input
+          id="ow-email"
+          v-model="email"
+          :class="field"
+          type="email"
+          placeholder="astrid@example.org"
+          autocomplete="email"
+          required
+        >
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label :class="fieldLabel" for="ow-password">PASSWORD</label>
+        <input
+          id="ow-password"
+          v-model="password"
+          :class="field"
+          type="password"
+          placeholder="••••••••••"
+          autocomplete="new-password"
+          minlength="8"
+          required
+        >
+      </div>
+      <button
+        type="submit"
+        :disabled="loading"
+        class="mt-[3px] cursor-pointer rounded-[10px] border-none py-3 text-[14.5px] font-semibold disabled:opacity-60"
+        style="background: var(--ow-accent); color: var(--ow-accent-content);"
+      >
+        {{ loading ? '…' : 'Create account' }}
+      </button>
+      <p v-if="errorMsg" class="text-[13px]" style="color: var(--color-error);">
+        {{ errorMsg }}
+      </p>
+    </form>
+  </AuthCard>
 </template>

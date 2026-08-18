@@ -43,7 +43,10 @@ const colTemplate = computed(() => {
       </p>
     </div>
 
+    <WeekSkeleton v-if="week.loading && !week.days.length" :columns="visibleDays.length || 7" />
+
     <div
+      v-else
       class="grid gap-px bg-ow-line transition-[grid-template-columns]"
       :style="{ gridTemplateColumns: colTemplate }"
     >
