@@ -224,6 +224,29 @@ export const useWeekStore = defineStore('week', () => {
     }
   }
 
+  /** Reorder the rail: drop `id` before or after `overId`. */
+  async function moveList(id: string, overId: string, after: boolean) {
+    const from = lists.value.findIndex(l => l.id === id)
+    if (from < 0 || id === overId) return
+    const moved = lists.value[from]!
+    const rest = lists.value.filter(l => l.id !== id)
+    const overAt = rest.findIndex(l => l.id === overId)
+    if (overAt < 0) return
+    const to = after ? overAt + 1 : overAt
+
+    const position = keyBetween(rest[to - 1]?.position ?? null, rest[to]?.position ?? null)
+    rest.splice(to, 0, { ...moved, position })
+    const snapshot = lists.value
+    lists.value = rest
+    try {
+      await apiFetch(`/api/lists/${id}`, { method: 'PATCH', body: { position } })
+    }
+    catch (err) {
+      lists.value = snapshot
+      throw err
+    }
+  }
+
   async function deleteList(id: string) {
     const i = lists.value.findIndex(l => l.id === id)
     if (i < 0) return
@@ -244,6 +267,6 @@ export const useWeekStore = defineStore('week', () => {
     isFoldOpen, toggleFold, toggleFocus,
     loadWeek, find, containerOf, bucketFor, createTask,
     updateTask, toggleComplete, deleteTask, moveTask, moveRelative, sendBack, convertEvent,
-    createList, updateList, deleteList,
+    createList, updateList, moveList, deleteList,
   }
 })

@@ -45,7 +45,9 @@ function toggleWeekends() {
       </OwButton>
     </div>
 
-    <div class="flex items-baseline gap-[11px]">
+    <!-- items-center, not items-baseline: matching the 12.5px pill's baseline to the 23px
+         title's pushed its box ~5px below every other control in the bar. -->
+    <div class="flex items-center gap-[11px]">
       <h1 class="whitespace-nowrap font-display text-[23px] font-semibold tracking-[-0.02em] text-ow-ink">
         {{ rangeLabel }}
       </h1>

@@ -68,6 +68,54 @@ export function containerDropTarget(
   return () => { stopDrop(); stopScroll() }
 }
 
+/* --- reordering the lists themselves ---------------------------------------
+   A separate `list` drag type. Tasks live inside list cards, so sharing a type would make
+   every card a drop target for its own rows; keeping them distinct means each `canDrop`
+   ignores the other. The card is the draggable but only its header is the handle,
+   otherwise picking up a task would pick up the card too. */
+
+export function listDraggable(
+  el: HTMLElement,
+  handle: HTMLElement,
+  listId: string,
+  cb: { onStart: () => void, onEnd: () => void },
+) {
+  return draggable({
+    element: el,
+    dragHandle: handle,
+    getInitialData: () => ({ type: 'list', listId }),
+    onDragStart: cb.onStart,
+    onDrop: cb.onEnd,
+  })
+}
+
+export function listDropTarget(el: HTMLElement, listId: string, onEdge: (edge: Edge | null) => void) {
+  return dropTargetForElements({
+    element: el,
+    canDrop: ({ source }) => source.data.type === 'list' && source.data.listId !== listId,
+    getData: ({ input, element }) => attachClosestEdge({ listId }, { input, element, allowedEdges: ['left', 'right'] }),
+    getIsSticky: () => true,
+    onDrag: ({ self }) => onEdge(extractClosestEdge(self.data)),
+    onDragLeave: () => onEdge(null),
+    onDrop: () => onEdge(null),
+  })
+}
+
+export function listBoardMonitor(onDrop: (info: { listId: string, overListId: string, after: boolean }) => void) {
+  return monitorForElements({
+    canMonitor: ({ source }) => source.data.type === 'list',
+    onDrop({ source, location }) {
+      const target = location.current.dropTargets[0]
+      if (!target) return
+      onDrop({
+        listId: source.data.listId as string,
+        overListId: target.data.listId as string,
+        after: extractClosestEdge(target.data) === 'right',
+      })
+    },
+  })
+}
+
 export interface DropInfo {
   taskId: string
   over:

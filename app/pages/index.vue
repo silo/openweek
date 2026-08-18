@@ -75,11 +75,14 @@ function convert(e: CalendarEventDto) {
 
 onMounted(() => {
   cals.load(currentStart.value)
-  const stop = taskBoardMonitor(({ taskId, over }) => {
+  const stopTasks = taskBoardMonitor(({ taskId, over }) => {
     if (over.kind === 'task') week.moveRelative(taskId, over.container, over.taskId, over.after)
     else week.moveRelative(taskId, over.container, null, false)
   })
-  onUnmounted(stop)
+  const stopLists = listBoardMonitor(({ listId, overListId, after }) => {
+    week.moveList(listId, overListId, after)
+  })
+  onUnmounted(() => { stopTasks(); stopLists() })
 })
 </script>
 

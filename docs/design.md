@@ -95,7 +95,9 @@ Ten frames, mirrored by the components:
 - **`TaskDetailPopover`** — title · five inks + none · time · **Move to…** (every day and list) · note ·
   delete. The footer reserves space labelled `SOON: SUBTASKS · REPEAT`.
 - **`ListsRail`** → **`ListCard`** — every list visible at once as a card with dot, name, count and a `⋯`
-  menu (rename / recolour / delete). Not a drawer, and nothing to switch between.
+  menu (rename / recolour / delete). Not a drawer, and nothing to switch between. Cards reorder by
+  dragging their header, which is the handle: making the whole card draggable would swallow the task
+  rows inside it.
 - **`RolloverReview`** — "N tasks moved to today", each with *send back*, dismissed with **Keep all**.
 - **`AuthCard`** — tabbed sign in / create account on a column-ruled frame.
 - **`MobileWeek`** — day strip, one day in view, bottom nav.
@@ -108,7 +110,8 @@ Ten frames, mirrored by the components:
 - **Weekends** — 7 or 5 columns, from the toolbar or Settings.
 - **Cmd/Ctrl-K** — search across this week and every list, capped at 8 results.
 - **Dragging** — the row left behind fades while a drop line marks the landing place, including in a
-  day or list that is currently empty. The source row is deliberately *not* transformed: it is not the
+  day or list that is currently empty. Lists and tasks use separate drag types, so a card never
+  becomes a drop target for its own rows. The source row is deliberately *not* transformed: it is not the
   thing under the cursor, so tilting it reads as the wrong item moving.
 - **Deleting** — tasks and lists confirm inline in place, rather than through a browser `confirm()`
   that sits outside the theme and ignores `Esc`.
