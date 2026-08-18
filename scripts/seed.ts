@@ -27,6 +27,7 @@ import { auth } from '../server/utils/auth'
 import { encryptJson } from '../server/utils/crypto'
 import { keyBetween } from '../server/services/ordering'
 import { parseConfig } from '../server/utils/config'
+import { DEFAULT_ACCENT } from '../shared/constants/colors'
 import type { HighlightInk } from '../shared/constants/colors'
 
 const EMAIL = 'demo@openweek.test'
@@ -110,7 +111,7 @@ async function main() {
   // 3. settings -------------------------------------------------------------
   await db.update(userSettings).set({
     theme: 'system',
-    accentColor: 'persimmon',
+    accentColor: DEFAULT_ACCENT,
     fontStyle: 'open-sans',
     tagStyle: 'edge',
     textSize: 'default',

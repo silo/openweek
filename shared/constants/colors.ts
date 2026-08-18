@@ -47,6 +47,22 @@ export const INK_LABELS: Record<HighlightInk, string> = {
   magenta: 'Magenta',
 }
 
+/**
+ * Accents are their own palette: the five inks plus a blue (the default) and a neutral
+ * graphite. Appended rather than reordered so the database enum only ever grows.
+ */
+export const ACCENTS = [...HIGHLIGHT_INKS, 'blue', 'graphite'] as const
+
+export type Accent = (typeof ACCENTS)[number]
+
+export const DEFAULT_ACCENT: Accent = 'blue'
+
+export const ACCENT_LABELS: Record<Accent, string> = {
+  ...INK_LABELS,
+  blue: 'Blue',
+  graphite: 'Graphite',
+}
+
 function isHighlightInk(value: string): value is HighlightInk {
   return (HIGHLIGHT_INKS as readonly string[]).includes(value)
 }
@@ -61,6 +77,13 @@ function isHighlightInk(value: string): value is HighlightInk {
 export function inkColor(value: string | null | undefined, fallback = 'var(--ow-muted)'): string {
   if (!value) return fallback
   return isHighlightInk(value) ? `var(--ow-hl-${value})` : value
+}
+
+/** CSS variable for an accent's swatch. Blue and graphite are not inks. */
+export function accentVar(accent: Accent): string {
+  return accent === 'blue' || accent === 'graphite'
+    ? `var(--ow-accent-${accent})`
+    : `var(--ow-hl-${accent})`
 }
 
 /** CSS variable for an ink's "fill" row tint. */

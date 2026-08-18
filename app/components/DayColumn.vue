@@ -17,6 +17,8 @@ const settings = useSettingsStore()
 
 const col = ref<HTMLElement | null>(null)
 const container = computed(() => ({ date: props.date }))
+/** True while a dragged task is over the column itself rather than one of its rows. */
+const dropAtEnd = ref(false)
 
 const dateNum = computed(() => format(parseISO(props.date), 'd'))
 const weekdayLabel = computed(() => format(parseISO(props.date), 'EEE').toUpperCase())
@@ -38,7 +40,7 @@ const foldLabel = computed(() =>
 
 onMounted(() => {
   if (col.value) {
-    const stop = containerDropTarget(col.value, container.value)
+    const stop = containerDropTarget(col.value, container.value, a => (dropAtEnd.value = a))
     onUnmounted(stop)
   }
 })
@@ -47,7 +49,7 @@ onMounted(() => {
 <template>
   <div
     ref="col"
-    class="flex min-h-[520px] flex-col px-[11px] pb-4 pt-3.5"
+    class="flex min-h-[320px] flex-col px-[11px] pb-4 pt-3.5"
     :style="{
       background: isWeekend ? 'var(--ow-surface-weekend)' : 'var(--ow-surface)',
       boxShadow: isToday ? 'inset 0 2px 0 0 var(--ow-today)' : 'none',
@@ -99,6 +101,8 @@ onMounted(() => {
       :container="container"
       @open="(t, r) => emit('openTask', t, r)"
     />
+
+    <DropLine v-if="dropAtEnd" />
 
     <button
       v-if="hasFold"

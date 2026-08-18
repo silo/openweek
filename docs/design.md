@@ -4,8 +4,9 @@ Openweek ships one design in two palettes — **Paper** (light) and **Ink** (dar
 markup and the same logic; only colour differs. Both are taken verbatim from the approved Claude Design
 canvases in `.context/design/` (`Openweek Light.dc.html`, `Openweek Ink.dc.html`).
 
-The look is quiet and structural: a hairline seven-column grid, generous whitespace, one warm accent
-against a cool neutral ramp, and no chrome that is not doing work.
+The look is quiet and structural: a full-bleed hairline seven-column grid, generous whitespace, one
+accent against a cool neutral ramp, and no chrome that is not doing work. The week fills the window —
+it is not a card floating inside one.
 
 > The earlier warm monospace "paper planner" design (IBM Plex Mono, `#F2F1EC`, four highlighter colours,
 > a tabbed bottom drawer) is **superseded**. Nothing in it should be used as a reference.
@@ -24,7 +25,7 @@ layer first.
 ## Colour
 
 The neutral ramp sits on hue `265` and runs quiet → loud *relative to the background*, which is why
-lightness reverses between the themes. The accent is persimmon (hue `30–35`).
+lightness reverses between the themes. The accent defaults to **blue** and is user-selectable.
 
 | Role | Paper | Ink |
 |---|---|---|
@@ -36,7 +37,7 @@ lightness reverses between the themes. The accent is persimmon (hue `30–35`).
 | `--ow-hairline` | `oklch(0.928 0.003 265)` | `oklch(0.31 0.013 265)` |
 | `--ow-muted` | `oklch(0.6 0.009 265)` | `oklch(0.65 0.012 265)` |
 | `--ow-ink` | `oklch(0.24 0.014 265)` | `oklch(0.96 0.008 265)` |
-| `--ow-accent` | `oklch(0.55 0.16 30)` | `oklch(0.68 0.15 35)` |
+| `--ow-accent` | `oklch(0.52 0.15 254)` | `oklch(0.7 0.13 254)` |
 | `--ow-today` | `oklch(0.5 0.09 252)` | `oklch(0.62 0.11 252)` |
 
 Text runs `--ow-ghost` → `--ow-placeholder` → `--ow-done` → `--ow-muted` → `--ow-faint` →
@@ -51,7 +52,11 @@ controls run `--ow-hairline` → `--ow-line` → `--ow-border` → `--ow-border-
 *name* (see [`shared/constants/colors.ts`](../shared/constants/colors.ts)); `inkColor()` resolves it and
 passes through pre-rework hex values untouched.
 
-The same five inks serve highlighter tags, list dots, calendar colours and the accent picker.
+The same five inks serve highlighter tags, list dots and calendar colours. **Accents** are a superset:
+the five inks plus `blue` (the default) and a neutral `graphite`, which is deliberately *light* in Ink —
+a dark grey would vanish against the background.
+
+A task converted from a calendar event starts out wearing that calendar's ink.
 
 ## Typography
 
@@ -96,6 +101,11 @@ Ten frames, mirrored by the components:
 - **Collapse done** — finished tasks fold into a quiet "N done" line per day *and* per list.
 - **Weekends** — 7 or 5 columns, from the toolbar or Settings.
 - **Cmd/Ctrl-K** — search across this week and every list, capped at 8 results.
+- **Dragging** — the carried row lifts and tilts; a drop line marks the landing place, including in
+  a day or list that is currently empty.
+
+Calendar events are filtered client-side by both the per-calendar switches and the master
+"Show events in the week" toggle, so either takes effect without a refetch.
 
 ## Theme delivery
 
@@ -114,7 +124,8 @@ a small inline script that flips to Ink before first paint.
 
 ## Responsive
 
-- **≥1024px** — the seven-column grid with the lists rail beneath.
+- **≥1024px** — the full-bleed seven-column grid with the lists rail beneath. The rail keeps a
+  minimum card width and scrolls sideways rather than squeezing when there are many lists.
 - **<1024px** — `MobileWeek`: a day strip that pans the week (with an open-task pip per day), one day
   filling the screen, and a bottom nav. The rail stacks underneath, one card per row.
 

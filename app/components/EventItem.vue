@@ -26,9 +26,11 @@ const PROVIDER_LABEL = { google: 'Google', caldav: 'CalDAV', ical: 'iCal' } as c
           {{ event.sourceName }} · {{ PROVIDER_LABEL[event.provider] }}
         </span>
         <div class="flex-1" />
+        <!-- The visible label is just "＋ task"; name the event for screen readers. -->
         <button
           type="button"
           title="Make this a task"
+          :aria-label="`Make ${event.title} a task`"
           class="cursor-pointer whitespace-nowrap border-none bg-transparent p-0 text-[11.5px] text-ow-muted transition-colors hover:text-ow-strong"
           @click="emit('convert', event)"
         >

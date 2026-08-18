@@ -21,6 +21,8 @@ export const useWeekStore = defineStore('week', () => {
   const doneOpen = ref<Record<string, boolean>>({})
   /** Dismissal of the rollover review banner, for this session. */
   const rolloverReviewed = ref(false)
+  /** The task currently being dragged, so every container can show a drop line. */
+  const draggingId = ref<string | null>(null)
 
   const doneCount = computed(() => days.value.reduce((n, d) => n + d.tasks.filter(t => t.completedAt).length, 0))
   const totalCount = computed(() => days.value.reduce((n, d) => n + d.tasks.length, 0))
@@ -237,7 +239,7 @@ export const useWeekStore = defineStore('week', () => {
 
   return {
     weekStart, days, lists, loading,
-    focusDate, doneOpen, rolloverReviewed,
+    focusDate, doneOpen, rolloverReviewed, draggingId,
     doneCount, totalCount, weekEmpty, rolledIn,
     isFoldOpen, toggleFold, toggleFocus,
     loadWeek, find, containerOf, bucketFor, createTask,

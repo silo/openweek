@@ -2,6 +2,12 @@
 import { inkColor } from '~~/shared/constants/colors'
 
 const cals = useCalendarsStore()
+const settings = useSettingsStore()
+
+const showEvents = computed(() => settings.settings?.showCalendarEvents ?? true)
+function toggleEvents() {
+  settings.update({ showCalendarEvents: !showEvents.value })
+}
 
 const open = ref(false)
 const panel = ref<HTMLElement | null>(null)
@@ -80,6 +86,23 @@ const PROVIDER_LABEL = { google: 'GOOGLE', caldav: 'CALDAV', ical: 'ICAL' } as c
       </button>
 
       <div v-if="!cals.none" class="mx-[5px] my-1.5 h-px bg-ow-hairline" />
+
+      <!-- The master switch: hides every calendar's events without forgetting which
+           individual calendars were on. -->
+      <button
+        v-if="!cals.none"
+        type="button"
+        role="switch"
+        :aria-checked="showEvents"
+        class="flex w-full cursor-pointer items-center gap-2.5 rounded-[9px] border-none bg-transparent px-[9px] py-2 text-left transition-colors hover:bg-ow-inset"
+        @click="toggleEvents"
+      >
+        <OwSwitch :model-value="showEvents" as="span" size="sm" />
+        <span class="text-[13.5px]" :class="showEvents ? 'text-ow-ink' : 'text-ow-muted'">
+          Show events in the week
+        </span>
+      </button>
+
       <p v-if="!cals.none" class="px-[9px] pb-[7px] pt-0.5 text-[12.5px] leading-relaxed text-ow-muted">
         Events are read-only and carry their calendar's name. Add or remove feeds in
         <NuxtLink to="/settings" class="underline">

@@ -32,11 +32,13 @@ function toggleWeekends() {
     <div class="h-[22px] w-px bg-ow-line" />
 
     <div class="flex items-center gap-[7px]">
+      <!-- SVG rather than ‹ / › : the glyphs carry asymmetric side bearings and never sit
+           centred in a square button, whatever the padding. -->
       <OwButton square title="Previous week" aria-label="Previous week" @click="emit('prev')">
-        ‹
+        <ChevronIcon direction="left" />
       </OwButton>
       <OwButton square title="Next week" aria-label="Next week" @click="emit('next')">
-        ›
+        <ChevronIcon direction="right" />
       </OwButton>
       <OwButton @click="emit('today')">
         Today

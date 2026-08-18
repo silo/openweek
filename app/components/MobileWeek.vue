@@ -13,8 +13,11 @@ const emit = defineEmits<{
 }>()
 
 const week = useWeekStore()
+const settings = useSettingsStore()
+const cals = useCalendarsStore()
 
 const today = todayStr()
+
 const selectedDate = ref<string | null>(null)
 
 /** Default to today when it is in view, otherwise the first day of the week. */
@@ -23,6 +26,12 @@ const activeDate = computed(() =>
 )
 const activeDay = computed(() => week.days.find(d => d.date === activeDate.value))
 const container = computed(() => ({ date: activeDate.value }))
+
+/** Mirrors WeekGrid — see the note there. */
+const visibleEvents = computed(() => {
+  if (settings.settings?.showCalendarEvents === false) return []
+  return (activeDay.value?.events ?? []).filter(e => !cals.hiddenSourceIds.has(e.sourceId))
+})
 
 const dayLabel = computed(() => {
   if (!activeDay.value) return ''
@@ -64,11 +73,11 @@ function strip(date: string) {
 
     <div class="flex items-center gap-2 px-4 py-2.5">
       <OwButton square size="sm" aria-label="Previous week" @click="emit('prev')">
-        ‹
+        <ChevronIcon direction="left" :size="14" />
       </OwButton>
       <span class="text-[13.5px] font-semibold text-ow-ink">{{ props.rangeLabel }}</span>
       <OwButton square size="sm" aria-label="Next week" @click="emit('next')">
-        ›
+        <ChevronIcon direction="right" :size="14" />
       </OwButton>
       <div class="flex-1" />
       <span class="text-[12.5px] text-ow-muted">{{ doneLabel }}</span>
@@ -109,13 +118,13 @@ function strip(date: string) {
       </div>
 
       <EventItem
-        v-for="ev in activeDay.events"
+        v-for="ev in visibleEvents"
         :key="ev.id"
         :event="ev"
         @convert="emit('convert', $event)"
       />
 
-      <div v-if="activeDay.events.length" class="mb-3 mt-2 flex items-center gap-[7px]">
+      <div v-if="visibleEvents.length" class="mb-3 mt-2 flex items-center gap-[7px]">
         <span class="text-[10.5px] font-semibold tracking-[0.07em] text-ow-ghost">TASKS</span>
         <span class="h-px flex-1 bg-ow-hairline" />
       </div>

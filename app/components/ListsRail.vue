@@ -9,9 +9,6 @@ const creating = ref(false)
 const draft = ref('')
 const input = ref<HTMLInputElement | null>(null)
 
-/** Keep the grid even when there are only a couple of lists. */
-const columns = computed(() => Math.max(week.lists.length, 4))
-
 async function start() {
   creating.value = true
   await nextTick()
@@ -53,11 +50,11 @@ function commit() {
       </OwButton>
     </div>
 
-    <!-- One card per row on narrow screens; the even grid only makes sense once the week
-         grid is visible beside it. -->
+    <!-- One card per row on narrow screens. On the grid, cards hold a minimum width and the
+         rail scrolls sideways once they no longer fit, rather than squeezing to nothing. -->
     <div
-      class="grid grid-cols-1 items-start gap-2.5 lg:[grid-template-columns:var(--ow-list-cols)]"
-      :style="{ '--ow-list-cols': `repeat(${columns},minmax(0,1fr))` }"
+      class="grid grid-cols-1 items-start gap-2.5 lg:auto-cols-[minmax(var(--ow-list-min),1fr)] lg:grid-flow-col lg:grid-cols-none lg:overflow-x-auto lg:pb-1"
+      style="--ow-list-min: 264px"
     >
       <ListCard
         v-for="l in week.lists"

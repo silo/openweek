@@ -13,8 +13,8 @@ async function handleSignOut() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-ow-bg p-6">
-    <main class="mx-auto max-w-[980px] overflow-hidden rounded-2xl border border-ow-border bg-ow-surface shadow-ow-4">
+  <div class="min-h-screen bg-ow-surface">
+    <main class="min-h-screen">
       <header class="flex items-center gap-4 border-b border-ow-line px-5 py-3.5">
         <NuxtLink
           to="/"
@@ -41,7 +41,7 @@ async function handleSignOut() {
         </nav>
       </header>
 
-      <div class="px-6 py-7">
+      <div class="mx-auto max-w-[980px] px-6 py-7">
         <AppearanceSettings v-if="tab === 'Appearance'" />
         <CalendarSettings v-else-if="tab === 'Calendars'" />
         <section v-else class="flex flex-col gap-4">

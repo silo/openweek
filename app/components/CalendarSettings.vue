@@ -8,7 +8,7 @@ const icalUrl = ref('')
 const icalName = ref('')
 const showCaldav = ref(false)
 const caldav = reactive({ serverUrl: '', username: '', password: '', displayName: '' })
-const busy = ref(false)
+const busy = ref<'ical' | 'caldav' | string | null>(null)
 const errorMsg = ref('')
 const editing = ref<string | null>(null)
 const draftName = ref('')
@@ -24,7 +24,7 @@ function syncedLabel(at: string | null) {
 
 async function addIcal() {
   if (!icalUrl.value.trim()) return
-  busy.value = true
+  busy.value = 'ical'
   errorMsg.value = ''
   try {
     await apiFetch('/api/calendars', {
@@ -36,11 +36,11 @@ async function addIcal() {
     await cals.load()
   }
   catch (e) { errorMsg.value = readErr(e) }
-  finally { busy.value = false }
+  finally { busy.value = null }
 }
 
 async function addCaldav() {
-  busy.value = true
+  busy.value = 'caldav'
   errorMsg.value = ''
   try {
     await apiFetch('/api/calendars', {
@@ -52,16 +52,16 @@ async function addCaldav() {
     await cals.load()
   }
   catch (e) { errorMsg.value = readErr(e) }
-  finally { busy.value = false }
+  finally { busy.value = null }
 }
 
 async function syncNow(id: string) {
-  busy.value = true
+  busy.value = id
   try {
     await apiFetch(`/api/calendars/${id}/sync`, { method: 'POST' })
     await cals.load()
   }
-  finally { busy.value = false }
+  finally { busy.value = null }
 }
 
 function startEdit(id: string, name: string) {
@@ -113,8 +113,8 @@ onMounted(() => {
             >{{ c.lastError || 'error' }}</span>
             <span v-else class="text-[12.5px] text-ow-ghost">{{ syncedLabel(c.lastSyncedAt) }}</span>
             <div class="flex-1" />
-            <OwButton size="sm" :disabled="busy" @click="syncNow(c.id)">
-              Sync
+            <OwButton size="sm" :loading="busy === c.id" @click="syncNow(c.id)">
+              {{ busy === c.id ? 'Syncing…' : 'Sync' }}
             </OwButton>
             <button
               type="button"
@@ -217,8 +217,8 @@ onMounted(() => {
           <div class="flex flex-col gap-2 sm:flex-row">
             <input v-model="icalUrl" :class="inputClass" class="flex-1" placeholder="https://…/basic.ics">
             <input v-model="icalName" :class="[inputClass, 'sm:w-44']" placeholder="Name (optional)">
-            <OwButton variant="accent" :disabled="busy" @click="addIcal">
-              Add
+            <OwButton variant="accent" :loading="busy === 'ical'" @click="addIcal">
+              {{ busy === 'ical' ? 'Connecting…' : 'Add' }}
             </OwButton>
           </div>
         </div>
@@ -235,8 +235,8 @@ onMounted(() => {
             <input v-model="caldav.serverUrl" :class="inputClass" placeholder="Server URL (e.g. https://caldav.icloud.com)">
             <input v-model="caldav.username" :class="inputClass" placeholder="Username / email">
             <input v-model="caldav.password" :class="inputClass" type="password" placeholder="App-specific password">
-            <OwButton variant="accent" class="self-start" :disabled="busy" @click="addCaldav">
-              Connect
+            <OwButton variant="accent" class="self-start" :loading="busy === 'caldav'" @click="addCaldav">
+              {{ busy === 'caldav' ? 'Connecting…' : 'Connect' }}
             </OwButton>
           </div>
         </div>

@@ -84,7 +84,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-ow-bg lg:p-6">
+  <div class="min-h-screen bg-ow-surface">
     <!-- Below the grid's breakpoint the week becomes a day strip with one day in view. -->
     <MobileWeek
       class="lg:hidden"
@@ -96,7 +96,8 @@ onMounted(() => {
       @convert="convert"
     />
 
-    <div class="mx-auto hidden max-w-[1660px] flex-col overflow-hidden rounded-2xl border border-ow-border bg-ow-surface shadow-ow-4 lg:flex">
+    <!-- Full-bleed: the week is the window, not a card floating in it. -->
+    <div class="hidden h-screen flex-col lg:flex">
       <TopBar
         :range-label="rangeLabel"
         :week-number="weekNumber"
@@ -106,7 +107,7 @@ onMounted(() => {
         @open-task="openFromSearch"
       />
       <RolloverReview />
-      <WeekGrid @open-task="openTask" @convert="convert" />
+      <WeekGrid class="min-h-0 flex-1" @open-task="openTask" @convert="convert" />
       <ListsRail @open-task="openTask" />
     </div>
 

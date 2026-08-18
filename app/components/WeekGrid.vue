@@ -8,8 +8,15 @@ const emit = defineEmits<{ openTask: [Task, DOMRect], convert: [CalendarEventDto
 
 const week = useWeekStore()
 const settings = useSettingsStore()
+const cals = useCalendarsStore()
 
 const today = todayStr()
+
+/** Applied here rather than server-side so both toggles take effect without a refetch. */
+function visibleEvents(events: CalendarEventDto[]) {
+  if (settings.settings?.showCalendarEvents === false) return []
+  return events.filter(e => !cals.hiddenSourceIds.has(e.sourceId))
+}
 
 function isWeekend(date: string) {
   const d = getDay(parseISO(date))
@@ -33,21 +40,12 @@ const colTemplate = computed(() => {
 </script>
 
 <template>
-  <div>
-    <div v-if="week.weekEmpty" class="pb-0.5 pt-[26px] text-center">
-      <p class="font-display text-2xl font-semibold tracking-[-0.02em] text-ow-title">
-        A clear week.
-      </p>
-      <p class="mt-1 text-sm text-ow-muted">
-        Add a task on any day, or drag one up from a list below.
-      </p>
-    </div>
-
+  <div class="relative overflow-auto">
     <WeekSkeleton v-if="week.loading && !week.days.length" :columns="visibleDays.length || 7" />
 
     <div
       v-else
-      class="grid gap-px bg-ow-line transition-[grid-template-columns]"
+      class="grid min-h-full gap-px bg-ow-line transition-[grid-template-columns]"
       :style="{ gridTemplateColumns: colTemplate }"
     >
       <DayColumn
@@ -55,12 +53,21 @@ const colTemplate = computed(() => {
         :key="d.date"
         :date="d.date"
         :tasks="d.tasks"
-        :events="d.events"
+        :events="visibleEvents(d.events)"
         :is-today="d.date === today"
         :is-weekend="isWeekend(d.date)"
         @open-task="(t, r) => emit('openTask', t, r)"
         @convert="emit('convert', $event)"
       />
     </div>
+
+    <!-- Floated over the grid rather than stacked above it: as a block it pushed the whole
+         week down whenever you paged onto an empty one. -->
+    <p
+      v-if="week.weekEmpty && !week.loading"
+      class="pointer-events-none absolute inset-x-0 top-[38%] text-center text-[13.5px] text-ow-ghost"
+    >
+      A clear week — add a task on any day, or drag one up from a list below.
+    </p>
   </div>
 </template>

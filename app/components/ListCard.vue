@@ -15,6 +15,8 @@ const trigger = ref<HTMLElement | null>(null)
 const renameInput = ref<HTMLInputElement | null>(null)
 
 const menuOpen = ref(false)
+/** True while a dragged task is over the card itself rather than one of its rows. */
+const dropAtEnd = ref(false)
 const renaming = ref(false)
 const draftName = ref('')
 
@@ -52,7 +54,7 @@ function remove() {
 
 onMounted(() => {
   if (card.value) {
-    const stop = containerDropTarget(card.value, container.value)
+    const stop = containerDropTarget(card.value, container.value, a => (dropAtEnd.value = a))
     onUnmounted(stop)
   }
 })
@@ -150,7 +152,9 @@ onMounted(() => {
       @open="(t, r) => emit('openTask', t, r)"
     />
 
-    <p v-if="!list.tasks.length" class="px-1 pb-1 text-[13px] text-ow-muted">
+    <DropLine v-if="dropAtEnd" />
+
+    <p v-if="!list.tasks.length && !dropAtEnd" class="px-1 pb-1 text-[13px] text-ow-muted">
       Nothing here yet.
     </p>
 

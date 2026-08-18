@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { HIGHLIGHT_INKS } from '../constants/colors'
+import { ACCENTS } from '../constants/colors'
 
 /** Body faces offered by the Typeface setting. Values match the @fontsource packages. */
 export const FONT_STYLES = ['open-sans', 'lato', 'roboto', 'inter', 'source-sans-3'] as const
@@ -18,7 +18,7 @@ export const settingsSchema = z.object({
   weekStartsOn: z.union([z.literal(0), z.literal(1)]),
   theme: z.enum(THEMES),
   // Named rather than a hex literal, so it resolves per theme.
-  accentColor: z.enum(HIGHLIGHT_INKS),
+  accentColor: z.enum(ACCENTS),
   fontStyle: z.enum(FONT_STYLES),
   tagStyle: z.enum(TAG_STYLES),
   textSize: z.enum(TEXT_SIZES),

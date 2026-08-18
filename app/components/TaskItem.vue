@@ -41,8 +41,14 @@ const hasMeta = computed(() => !!props.task.timeOfDay || !!props.task.note || !!
 onMounted(() => {
   if (!row.value) return
   const stopDrag = taskDraggable(row.value, props.task.id, {
-    onStart: () => (dragging.value = true),
-    onEnd: () => (dragging.value = false),
+    onStart: () => {
+      dragging.value = true
+      week.draggingId = props.task.id
+    },
+    onEnd: () => {
+      dragging.value = false
+      week.draggingId = null
+    },
   })
   const stopDrop = taskDropTarget(row.value, props.task.id, props.container, e => (edge.value = e))
   onUnmounted(() => { stopDrag(); stopDrop() })
@@ -51,12 +57,12 @@ onMounted(() => {
 
 <template>
   <div>
-    <div v-if="edge === 'top'" class="mx-1 my-[3px] h-[3px] rounded-sm bg-ow-accent" />
+    <DropLine v-if="edge === 'top'" />
 
     <div
       ref="row"
-      class="relative mb-2 flex cursor-grab items-start gap-[9px] rounded-[9px] px-[9px] py-2 transition-shadow"
-      :class="dragging && 'opacity-50'"
+      class="ow-row relative mb-2 flex cursor-grab items-start gap-[9px] rounded-[9px] px-[9px] py-2"
+      :class="dragging && 'ow-row-dragging'"
       :style="rowStyle"
       @click="row && emit('open', task, row.getBoundingClientRect())"
     >
@@ -98,6 +104,25 @@ onMounted(() => {
       </div>
     </div>
 
-    <div v-if="edge === 'bottom'" class="mx-1 my-[3px] h-[3px] rounded-sm bg-ow-accent" />
+    <DropLine v-if="edge === 'bottom'" />
   </div>
 </template>
+
+<style scoped>
+.ow-row {
+  transition: transform 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+}
+
+/* Lifted and tilted off-axis while it is being carried, so the row reads as picked up
+   rather than merely faded. */
+.ow-row-dragging {
+  opacity: 0.55;
+  transform: rotate(-1.4deg) scale(1.02);
+  box-shadow: var(--ow-elev-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow-row { transition: none; }
+  .ow-row-dragging { transform: none; }
+}
+</style>

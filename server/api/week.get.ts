@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
 
   const [settings] = await db.select({
     rolloverEnabled: userSettings.rolloverEnabled,
-    showCalendarEvents: userSettings.showCalendarEvents,
     timezone: userSettings.timezone,
   }).from(userSettings).where(eq(userSettings.userId, userId))
 
@@ -38,27 +37,28 @@ export default defineEventHandler(async (event) => {
     .where(and(eq(task.userId, userId), isNotNull(task.listId)))
     .orderBy(asc(task.position), asc(task.id))
 
-  const events = (settings?.showCalendarEvents ?? true)
-    ? await db.select({
-        id: calendarEvent.id,
-        title: calendarEvent.title,
-        timeLabel: calendarEvent.timeLabel,
-        localDate: calendarEvent.localDate,
-        provider: calendarConnection.provider,
-        color: calendarSource.color,
-        sourceName: calendarSource.name,
-      }).from(calendarEvent)
-        .innerJoin(calendarSource, eq(calendarEvent.sourceId, calendarSource.id))
-        .innerJoin(calendarConnection, eq(calendarSource.connectionId, calendarConnection.id))
-        .where(and(
-          eq(calendarEvent.userId, userId),
-          gte(calendarEvent.localDate, weekStart),
-          lte(calendarEvent.localDate, endDate),
-          eq(calendarSource.enabled, true),
-          eq(calendarEvent.status, 'confirmed'),
-        ))
-        .orderBy(asc(calendarEvent.startAt))
-    : []
+  // Events always come down unfiltered — both `showCalendarEvents` and each calendar's
+  // on/off state are applied in the client, so those toggles take effect immediately
+  // instead of waiting for a refetch.
+  const events = await db.select({
+    id: calendarEvent.id,
+    sourceId: calendarEvent.sourceId,
+    title: calendarEvent.title,
+    timeLabel: calendarEvent.timeLabel,
+    localDate: calendarEvent.localDate,
+    provider: calendarConnection.provider,
+    color: calendarSource.color,
+    sourceName: calendarSource.name,
+  }).from(calendarEvent)
+    .innerJoin(calendarSource, eq(calendarEvent.sourceId, calendarSource.id))
+    .innerJoin(calendarConnection, eq(calendarSource.connectionId, calendarConnection.id))
+    .where(and(
+      eq(calendarEvent.userId, userId),
+      gte(calendarEvent.localDate, weekStart),
+      lte(calendarEvent.localDate, endDate),
+      eq(calendarEvent.status, 'confirmed'),
+    ))
+    .orderBy(asc(calendarEvent.startAt))
 
   const days = dates.map(date => ({
     date,

@@ -29,7 +29,7 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 | `userId` | text PK → user | |
 | `weekStartsOn` | smallint | `0` Sun / `1` Mon (default `1`). |
 | `theme` | enum | `paper` \| `ink` \| `system` (default `system`). |
-| `accentColor` | enum | one of the five inks (default `persimmon`). Named, not hex, so it resolves per theme. |
+| `accentColor` | enum | the five inks plus `blue` (default) and `graphite`. Named, not hex, so it resolves per theme. |
 | `fontStyle` | enum | `open-sans` \| `lato` \| `roboto` \| `inter` \| `source-sans-3` (default `open-sans`). |
 | `tagStyle` | enum | `edge` \| `fill` (default `edge`) — how a highlight is drawn. |
 | `textSize` | enum | `small` \| `default` \| `large`; drives `--ow-text-scale`. |

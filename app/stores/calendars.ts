@@ -12,6 +12,9 @@ export const useCalendarsStore = defineStore('calendars', () => {
   const allShown = computed(() => totalCount.value > 0 && shownCount.value === totalCount.value)
   const none = computed(() => totalCount.value === 0)
 
+  /** Ids of calendars currently switched off, for filtering the week without a refetch. */
+  const hiddenSourceIds = computed(() => new Set(sources.value.filter(s => !s.enabled).map(s => s.id)))
+
   /** The account line under a calendar's name — whichever identifier the connection carries. */
   function accountFor(source: CalendarSourceDto): string {
     return connections.value.find(c => c.id === source.connectionId)?.displayName ?? ''
@@ -67,7 +70,7 @@ export const useCalendarsStore = defineStore('calendars', () => {
   }
 
   return {
-    connections, loaded, sources, shownCount, totalCount, allShown, none,
+    connections, loaded, sources, shownCount, totalCount, allShown, none, hiddenSourceIds,
     accountFor, providerFor, load, patchSource, toggle, toggleAll, disconnect,
   }
 })

@@ -16,7 +16,7 @@
 
    The neutral ramp sits on hue 265 and runs quiet -> loud relative to the
    background, which is why the lightness reverses between themes. The accent
-   is persimmon (hue 30-35).
+   defaults to blue and is user-selectable (see the [data-accent] block).
 
    Components reference these variables. Do not paste raw oklch() into a
    component — if a value is missing here, add it here first.
@@ -32,7 +32,7 @@
   --color-base-200: oklch(0.963 0.003 265);
   --color-base-300: oklch(0.903 0.004 265);
   --color-base-content: oklch(0.24 0.014 265);
-  --color-primary: oklch(0.55 0.16 30);
+  --color-primary: oklch(0.52 0.15 254);
   --color-primary-content: #ffffff;
   --color-neutral: oklch(0.24 0.014 265);
   --color-neutral-content: oklch(0.968 0.002 265);
@@ -53,7 +53,7 @@
   --color-base-200: oklch(0.265 0.013 265);
   --color-base-300: oklch(0.35 0.014 265);
   --color-base-content: oklch(0.96 0.008 265);
-  --color-primary: oklch(0.68 0.15 35);
+  --color-primary: oklch(0.7 0.13 254);
   --color-primary-content: oklch(0.135 0.008 265);
   --color-neutral: oklch(0.96 0.008 265);
   --color-neutral-content: oklch(0.135 0.008 265);
@@ -100,10 +100,10 @@
   --ow-control-strong: oklch(0.83 0.008 265);
   --ow-mark: oklch(0.78 0.01 265);
 
-  /* accent — persimmon */
-  --ow-accent: oklch(0.55 0.16 30);
-  --ow-accent-edge: oklch(0.78 0.09 40);
-  --ow-accent-tint: oklch(0.958 0.022 30);
+  /* accent — blue by default; [data-accent] below swaps it */
+  --ow-accent: oklch(0.52 0.15 254);
+  --ow-accent-edge: oklch(0.76 0.09 254);
+  --ow-accent-tint: oklch(0.958 0.022 254);
   --ow-accent-content: #ffffff;
 
   /* today / selected — blue */
@@ -130,6 +130,10 @@
   --ow-hl-jade-edge: oklch(0.9 0.04 165);
   --ow-hl-indigo-edge: oklch(0.9 0.04 265);
   --ow-hl-magenta-edge: oklch(0.9 0.04 350);
+
+  /* accent swatches for the two non-ink options (the rest reuse --ow-hl-*) */
+  --ow-accent-blue: oklch(0.52 0.15 254);
+  --ow-accent-graphite: oklch(0.38 0.014 265);
 
   /* brand mark — two bars are fixed hues, two ride the track colour */
   --ow-brand-2: oklch(0.72 0.13 55);
@@ -174,9 +178,9 @@
   --ow-control-strong: oklch(0.46 0.015 265);
   --ow-mark: oklch(0.52 0.015 265);
 
-  --ow-accent: oklch(0.68 0.15 35);
-  --ow-accent-edge: oklch(0.5 0.1 45);
-  --ow-accent-tint: oklch(0.3 0.045 35);
+  --ow-accent: oklch(0.7 0.13 254);
+  --ow-accent-edge: oklch(0.48 0.09 254);
+  --ow-accent-tint: oklch(0.29 0.04 254);
   --ow-accent-content: oklch(0.135 0.008 265);
 
   --ow-today: oklch(0.62 0.11 252);
@@ -201,6 +205,9 @@
   --ow-hl-indigo-edge: oklch(0.4 0.06 265);
   --ow-hl-magenta-edge: oklch(0.4 0.06 350);
 
+  --ow-accent-blue: oklch(0.7 0.13 254);
+  --ow-accent-graphite: oklch(0.78 0.012 265);
+
   --ow-brand-2: oklch(0.72 0.13 55);
   --ow-brand-3: oklch(0.62 0.12 165);
 
@@ -213,20 +220,26 @@
 }
 
 /* --- Accent choice ----------------------------------------------------------
-   The Appearance panel offers the same five inks as the highlighter. Persimmon is
-   the design's own accent and keeps the exact values set above, so the default is
-   verbatim. The other four point --ow-accent at the matching ink (which already
-   flips per theme) and derive their edge/tint from it, rather than inventing
-   twenty values the design never specified. */
+   Blue is the default and keeps the exact values set above. The five inks reuse the
+   highlighter palette (which already flips per theme); graphite is a neutral drawn
+   from the ramp — deliberately light in Ink, since a dark grey would disappear
+   against the background. Edge and tint are derived rather than inventing another
+   two dozen values by hand. */
+[data-accent="persimmon"] { --ow-accent: var(--ow-hl-persimmon); }
 [data-accent="amber"] { --ow-accent: var(--ow-hl-amber); }
 [data-accent="jade"] { --ow-accent: var(--ow-hl-jade); }
 [data-accent="indigo"] { --ow-accent: var(--ow-hl-indigo); }
 [data-accent="magenta"] { --ow-accent: var(--ow-hl-magenta); }
 
+[data-theme="openweek"][data-accent="graphite"] { --ow-accent: oklch(0.38 0.014 265); }
+[data-theme="openweek-dark"][data-accent="graphite"] { --ow-accent: oklch(0.78 0.012 265); }
+
+[data-accent="persimmon"],
 [data-accent="amber"],
 [data-accent="jade"],
 [data-accent="indigo"],
-[data-accent="magenta"] {
+[data-accent="magenta"],
+[data-accent="graphite"] {
   --ow-accent-edge: color-mix(in oklch, var(--ow-accent) 55%, var(--ow-border));
   --ow-accent-tint: color-mix(in oklch, var(--ow-accent) 14%, var(--ow-surface));
 }

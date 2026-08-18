@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { format, parseISO } from 'date-fns'
-import type { Task } from '~~/shared/schemas/task'
+import type { Task, TaskUpdate } from '~~/shared/schemas/task'
 import { HIGHLIGHT_INKS, INK_LABELS } from '~~/shared/constants/colors'
 import { containerKey, parseContainer } from '~/composables/useTaskBoard'
 
@@ -39,17 +39,40 @@ function onMove(e: Event) {
 function pickInk(ink: Task['highlightColor']) {
   week.updateTask(props.task.id, { highlightColor: props.task.highlightColor === ink ? null : ink })
 }
-function commitTitle() {
-  const next = title.value.trim()
-  if (next && next !== props.task.title) week.updateTask(props.task.id, { title: next })
+
+/**
+ * Text fields autosave.
+ *
+ * Relying on `blur` alone lost edits: clicking outside closes the popover on mousedown,
+ * which unmounts the field before it can blur. So each keystroke queues a save, and
+ * whatever is still pending is flushed on unmount.
+ */
+const SAVE_DELAY = 500
+let pending: ReturnType<typeof setTimeout> | undefined
+
+function commit() {
+  clearTimeout(pending)
+  pending = undefined
+
+  const patch: TaskUpdate = {}
+  const nextTitle = title.value.trim()
+  if (nextTitle && nextTitle !== props.task.title) patch.title = nextTitle
+
+  const nextTime = time.value.trim() || null
+  if (nextTime !== (props.task.timeOfDay?.slice(0, 5) ?? null)) patch.timeOfDay = nextTime
+
+  const nextNote = note.value.trim() || null
+  if (nextNote !== (props.task.note || null)) patch.note = nextNote
+
+  if (Object.keys(patch).length) week.updateTask(props.task.id, patch)
 }
-function commitTime() {
-  const next = time.value.trim()
-  week.updateTask(props.task.id, { timeOfDay: next || null })
+
+function queueCommit() {
+  clearTimeout(pending)
+  pending = setTimeout(commit, SAVE_DELAY)
 }
-function commitNote() {
-  week.updateTask(props.task.id, { note: note.value.trim() || null })
-}
+
+onBeforeUnmount(commit)
 async function remove() {
   await week.deleteTask(props.task.id)
   emit('close')
@@ -79,8 +102,9 @@ async function remove() {
       aria-label="Task title"
       class="w-full border-none border-b border-ow-hairline bg-transparent pb-[9px] pr-[22px] font-display text-lg font-semibold tracking-[-0.02em] outline-none"
       style="border-bottom: 1px solid var(--ow-hairline);"
-      @blur="commitTitle"
-      @keydown.enter.prevent="commitTitle"
+      @input="queueCommit"
+      @blur="commit"
+      @keydown.enter.prevent="commit"
     >
 
     <div class="flex items-center gap-2">
@@ -124,7 +148,8 @@ async function remove() {
           type="time"
           placeholder="––:––"
           class="w-20 rounded-[9px] border border-ow-border bg-ow-surface px-[9px] py-2 text-[13px] tabular-nums outline-none"
-          @blur="commitTime"
+          @input="queueCommit"
+          @blur="commit"
         >
       </div>
       <div class="flex min-w-0 flex-1 flex-col gap-[5px]">
@@ -156,7 +181,8 @@ async function remove() {
         rows="2"
         placeholder="Add a note…"
         class="resize-none rounded-[9px] border border-ow-border bg-ow-surface px-[9px] py-2 font-body text-[13.5px] leading-relaxed outline-none"
-        @blur="commitNote"
+        @input="queueCommit"
+        @blur="commit"
       />
     </div>
 

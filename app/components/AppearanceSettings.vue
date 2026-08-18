@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Settings } from '~~/shared/schemas/settings'
-import { HIGHLIGHT_INKS, INK_LABELS } from '~~/shared/constants/colors'
+import { ACCENTS, ACCENT_LABELS, accentVar } from '~~/shared/constants/colors'
 import { FONT_STACKS } from '~/composables/useTheme'
 
 const store = useSettingsStore()
@@ -69,20 +69,20 @@ const WEEK_STARTS = [
       </h3>
       <div class="flex gap-2">
         <button
-          v-for="ink in HIGHLIGHT_INKS"
-          :key="ink"
+          v-for="a in ACCENTS"
+          :key="a"
           type="button"
-          :title="INK_LABELS[ink]"
-          :aria-label="INK_LABELS[ink]"
-          :aria-pressed="store.settings.accentColor === ink"
+          :title="ACCENT_LABELS[a]"
+          :aria-label="ACCENT_LABELS[a]"
+          :aria-pressed="store.settings.accentColor === a"
           class="h-7 w-7 cursor-pointer rounded-lg border-none"
           :style="{
-            background: `var(--ow-hl-${ink})`,
-            boxShadow: store.settings.accentColor === ink
+            background: accentVar(a),
+            boxShadow: store.settings.accentColor === a
               ? '0 0 0 2px var(--ow-surface), 0 0 0 3.5px var(--ow-ink)'
               : 'none',
           }"
-          @click="set('accentColor', ink)"
+          @click="set('accentColor', a)"
         />
       </div>
     </section>

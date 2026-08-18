@@ -29,7 +29,9 @@ const userId = () => text('user_id').notNull().references(() => user.id, { onDel
 // The Paper/Ink design names its colours rather than storing literals, so a value renders
 // correctly in either theme. See shared/constants/colors.ts.
 export const themeEnum = pgEnum('theme', ['paper', 'ink', 'system'])
-export const accentEnum = pgEnum('accent', ['persimmon', 'amber', 'jade', 'indigo', 'magenta'])
+// Accents are their own palette — the five inks plus blue and graphite. Appended rather
+// than reordered so the type only ever grows.
+export const accentEnum = pgEnum('accent', ['persimmon', 'amber', 'jade', 'indigo', 'magenta', 'blue', 'graphite'])
 export const fontStyleEnum = pgEnum('font_style', ['open-sans', 'lato', 'roboto', 'inter', 'source-sans-3'])
 export const tagStyleEnum = pgEnum('tag_style', ['edge', 'fill'])
 export const textSizeEnum = pgEnum('text_size', ['small', 'default', 'large'])
@@ -43,7 +45,7 @@ export const userSettings = pgTable('user_settings', {
   userId: text('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
   weekStartsOn: smallint('week_starts_on').notNull().default(1),
   theme: themeEnum('theme').notNull().default('system'),
-  accentColor: accentEnum('accent_color').notNull().default('persimmon'),
+  accentColor: accentEnum('accent_color').notNull().default('blue'),
   fontStyle: fontStyleEnum('font_style').notNull().default('open-sans'),
   tagStyle: tagStyleEnum('tag_style').notNull().default('edge'),
   textSize: textSizeEnum('text_size').notNull().default('default'),

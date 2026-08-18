@@ -42,12 +42,27 @@ export function taskDropTarget(el: HTMLElement, taskId: string, container: Conta
   })
 }
 
-export function containerDropTarget(el: HTMLElement, container: Container) {
+/**
+ * `onActive` fires only while this container is the *innermost* target — hovering one of
+ * its task rows hands the highlight to that row instead. It is what lets an empty column
+ * show a drop line, which rows alone cannot do.
+ */
+export function containerDropTarget(
+  el: HTMLElement,
+  container: Container,
+  onActive?: (active: boolean) => void,
+) {
   const key = containerKey(container)
+  const innermost = (targets: { element: Element }[]) => targets[0]?.element === el
+
   const stopDrop = dropTargetForElements({
     element: el,
     canDrop: ({ source }) => source.data.type === 'task',
     getData: () => ({ kind: 'container', container: key }),
+    onDragEnter: ({ location }) => onActive?.(innermost(location.current.dropTargets)),
+    onDrag: ({ location }) => onActive?.(innermost(location.current.dropTargets)),
+    onDragLeave: () => onActive?.(false),
+    onDrop: () => onActive?.(false),
   })
   const stopScroll = autoScrollForElements({ element: el, canScroll: ({ source }) => source.data.type === 'task' })
   return () => { stopDrop(); stopScroll() }

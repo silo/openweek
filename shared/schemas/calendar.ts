@@ -19,6 +19,8 @@ export type ConnectInput = z.infer<typeof connectSchema>
 /** An imported event as rendered in the grid. */
 export const calendarEventDtoSchema = z.object({
   id: z.string(),
+  /** Lets the client hide events when their calendar is switched off. */
+  sourceId: z.string(),
   title: z.string(),
   timeLabel: z.string().nullable(),
   localDate: z.string(),
