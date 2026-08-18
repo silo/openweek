@@ -26,10 +26,14 @@ const timestamps = {
 const userId = () => text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' })
 
 // --- enums -----------------------------------------------------------------
-export const themeEnum = pgEnum('theme', ['light', 'dark', 'system'])
-export const fontStyleEnum = pgEnum('font_style', ['plex-mono', 'editorial', 'grotesk', 'typewriter'])
-export const tagStyleEnum = pgEnum('tag_style', ['underline', 'swipe'])
-export const highlightColorEnum = pgEnum('highlight_color', ['butter', 'mint', 'sky', 'rose'])
+// The Paper/Ink design names its colours rather than storing literals, so a value renders
+// correctly in either theme. See shared/constants/colors.ts.
+export const themeEnum = pgEnum('theme', ['paper', 'ink', 'system'])
+export const accentEnum = pgEnum('accent', ['persimmon', 'amber', 'jade', 'indigo', 'magenta'])
+export const fontStyleEnum = pgEnum('font_style', ['open-sans', 'lato', 'roboto', 'inter', 'source-sans-3'])
+export const tagStyleEnum = pgEnum('tag_style', ['edge', 'fill'])
+export const textSizeEnum = pgEnum('text_size', ['small', 'default', 'large'])
+export const highlightColorEnum = pgEnum('highlight_color', ['persimmon', 'amber', 'jade', 'indigo', 'magenta'])
 export const calendarProviderEnum = pgEnum('calendar_provider', ['google', 'caldav', 'ical'])
 export const calendarConnectionStatusEnum = pgEnum('calendar_connection_status', ['active', 'error', 'reauth_required'])
 export const calendarEventStatusEnum = pgEnum('calendar_event_status', ['confirmed', 'cancelled'])
@@ -39,9 +43,12 @@ export const userSettings = pgTable('user_settings', {
   userId: text('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
   weekStartsOn: smallint('week_starts_on').notNull().default(1),
   theme: themeEnum('theme').notNull().default('system'),
-  accentColor: text('accent_color').notNull().default('#CBDDE9'),
-  fontStyle: fontStyleEnum('font_style').notNull().default('plex-mono'),
-  tagStyle: tagStyleEnum('tag_style').notNull().default('underline'),
+  accentColor: accentEnum('accent_color').notNull().default('persimmon'),
+  fontStyle: fontStyleEnum('font_style').notNull().default('open-sans'),
+  tagStyle: tagStyleEnum('tag_style').notNull().default('edge'),
+  textSize: textSizeEnum('text_size').notNull().default('default'),
+  showWeekends: boolean('show_weekends').notNull().default(true),
+  collapseDone: boolean('collapse_done').notNull().default(true),
   showCalendarEvents: boolean('show_calendar_events').notNull().default(true),
   rolloverEnabled: boolean('rollover_enabled').notNull().default(false),
   timezone: text('timezone').notNull().default('UTC'),

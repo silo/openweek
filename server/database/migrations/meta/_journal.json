@@ -8,6 +8,13 @@
       "when": 1784026317817,
       "tag": "0000_glossy_glorian",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787068061133,
+      "tag": "0001_sloppy_miracleman",
+      "breakpoints": true
     }
   ]
 }

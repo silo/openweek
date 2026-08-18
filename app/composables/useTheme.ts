@@ -1,23 +1,40 @@
 import type { Settings } from '~~/shared/schemas/settings'
 
 type FontStyle = Settings['fontStyle']
+type TextSize = Settings['textSize']
 
-export const FONT_STACKS: Record<FontStyle, { display: string, body: string }> = {
-  'plex-mono': { display: "'IBM Plex Mono', ui-monospace, monospace", body: "'IBM Plex Sans', system-ui, sans-serif" },
-  'editorial': { display: "'Newsreader', Georgia, serif", body: "'IBM Plex Sans', system-ui, sans-serif" },
-  'grotesk': { display: "'Space Grotesk', system-ui, sans-serif", body: "'Space Grotesk', system-ui, sans-serif" },
-  'typewriter': { display: "'Spline Sans Mono', ui-monospace, monospace", body: "'IBM Plex Sans', system-ui, sans-serif" },
+/** Body face stacks, matching the design's `fontStacks`. Display is always Bricolage Grotesque. */
+export const FONT_STACKS: Record<FontStyle, string> = {
+  'open-sans': '"Open Sans", Arial, sans-serif',
+  'lato': 'Lato, Arial, sans-serif',
+  'roboto': 'Roboto, Arial, sans-serif',
+  'inter': 'Inter, Arial, sans-serif',
+  'source-sans-3': '"Source Sans 3", Arial, sans-serif',
 }
 
-/** Apply theme-affecting settings to <html> (client only). */
-export function applyTheme(s: Pick<Settings, 'theme' | 'accentColor' | 'fontStyle'>) {
+/** Root font-size multipliers for the Text size setting (base is 15px). */
+export const TEXT_SCALES: Record<TextSize, string> = {
+  small: '0.9333',
+  default: '1',
+  large: '1.1',
+}
+
+type ThemeSettings = Pick<Settings, 'theme' | 'accentColor' | 'fontStyle' | 'textSize'>
+
+/** Does the given theme setting resolve to Ink right now? */
+export function prefersInk(theme: Settings['theme']): boolean {
+  if (theme === 'ink') return true
+  if (theme === 'paper') return false
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+/** Apply the appearance settings to <html> (client only). */
+export function applyTheme(s: ThemeSettings) {
   if (import.meta.server) return
   const root = document.documentElement
-  const dark = s.theme === 'dark'
-    || (s.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  root.dataset.theme = dark ? 'openweek-dark' : 'openweek'
-  root.style.setProperty('--ow-accent', s.accentColor)
-  const font = FONT_STACKS[s.fontStyle]
-  root.style.setProperty('--ow-display', font.display)
-  root.style.setProperty('--ow-body', font.body)
+  root.dataset.theme = prefersInk(s.theme) ? 'openweek-dark' : 'openweek'
+  // The accent is a named ink; main.css maps [data-accent] onto --ow-accent per theme.
+  root.dataset.accent = s.accentColor
+  root.style.setProperty('--ow-font-body', FONT_STACKS[s.fontStyle])
+  root.style.setProperty('--ow-text-scale', TEXT_SCALES[s.textSize])
 }

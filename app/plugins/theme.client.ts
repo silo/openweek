@@ -1,4 +1,5 @@
-// Loads the user's settings and keeps the theme (data-theme + accent + fonts) in sync.
+// Loads the user's settings and keeps the appearance (theme, accent, body face, text size)
+// in sync with them.
 export default defineNuxtPlugin(async () => {
   const store = useSettingsStore()
 
