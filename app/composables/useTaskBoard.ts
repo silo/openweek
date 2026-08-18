@@ -5,6 +5,21 @@ import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-sc
 
 export type { Edge }
 
+/**
+ * Where a task can live: a day column or a list card. Encoded as a string so it can ride
+ * along in drop-target data, mirroring the design's own `d:`/`l:` container keys.
+ */
+export type Container = { date: string } | { listId: string }
+
+export function containerKey(c: Container): string {
+  return 'date' in c ? `d:${c.date}` : `l:${c.listId}`
+}
+
+export function parseContainer(key: string): Container {
+  const id = key.slice(2)
+  return key.startsWith('d:') ? { date: id } : { listId: id }
+}
+
 export function taskDraggable(el: HTMLElement, taskId: string, cb: { onStart: () => void, onEnd: () => void }) {
   return draggable({
     element: el,
@@ -14,11 +29,12 @@ export function taskDraggable(el: HTMLElement, taskId: string, cb: { onStart: ()
   })
 }
 
-export function taskDropTarget(el: HTMLElement, taskId: string, date: string, onEdge: (edge: Edge | null) => void) {
+export function taskDropTarget(el: HTMLElement, taskId: string, container: Container, onEdge: (edge: Edge | null) => void) {
+  const key = containerKey(container)
   return dropTargetForElements({
     element: el,
     canDrop: ({ source }) => source.data.type === 'task' && source.data.taskId !== taskId,
-    getData: ({ input, element }) => attachClosestEdge({ kind: 'task', taskId, date }, { input, element, allowedEdges: ['top', 'bottom'] }),
+    getData: ({ input, element }) => attachClosestEdge({ kind: 'task', taskId, container: key }, { input, element, allowedEdges: ['top', 'bottom'] }),
     getIsSticky: () => true,
     onDrag: ({ self }) => onEdge(extractClosestEdge(self.data)),
     onDragLeave: () => onEdge(null),
@@ -26,11 +42,12 @@ export function taskDropTarget(el: HTMLElement, taskId: string, date: string, on
   })
 }
 
-export function columnDropTarget(el: HTMLElement, date: string) {
+export function containerDropTarget(el: HTMLElement, container: Container) {
+  const key = containerKey(container)
   const stopDrop = dropTargetForElements({
     element: el,
     canDrop: ({ source }) => source.data.type === 'task',
-    getData: () => ({ kind: 'column', date }),
+    getData: () => ({ kind: 'container', container: key }),
   })
   const stopScroll = autoScrollForElements({ element: el, canScroll: ({ source }) => source.data.type === 'task' })
   return () => { stopDrop(); stopScroll() }
@@ -39,8 +56,8 @@ export function columnDropTarget(el: HTMLElement, date: string) {
 export interface DropInfo {
   taskId: string
   over:
-    | { kind: 'task', taskId: string, date: string, after: boolean }
-    | { kind: 'column', date: string }
+    | { kind: 'task', taskId: string, container: Container, after: boolean }
+    | { kind: 'container', container: Container }
 }
 
 export function taskBoardMonitor(onDrop: (info: DropInfo) => void) {
@@ -51,11 +68,12 @@ export function taskBoardMonitor(onDrop: (info: DropInfo) => void) {
       const target = location.current.dropTargets[0]
       if (!target) return
       const data = target.data
+      const container = parseContainer(data.container as string)
       if (data.kind === 'task') {
-        onDrop({ taskId, over: { kind: 'task', taskId: data.taskId as string, date: data.date as string, after: extractClosestEdge(data) === 'bottom' } })
+        onDrop({ taskId, over: { kind: 'task', taskId: data.taskId as string, container, after: extractClosestEdge(data) === 'bottom' } })
       }
-      else if (data.kind === 'column') {
-        onDrop({ taskId, over: { kind: 'column', date: data.date as string } })
+      else if (data.kind === 'container') {
+        onDrop({ taskId, over: { kind: 'container', container } })
       }
     },
   })

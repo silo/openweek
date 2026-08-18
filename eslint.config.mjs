@@ -3,5 +3,10 @@
 import withNuxt from './.nuxt/eslint.config.mjs'
 
 export default withNuxt(
+  {
+    // Scratch space shared between agents, and the vendored Claude Design canvases and their
+    // runtime. Not ours to lint.
+    ignores: ['.context/**'],
+  },
   // Project-wide overrides go here.
 )

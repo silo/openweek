@@ -5,6 +5,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['@pinia/nuxt', '@nuxt/eslint'],
+  // Components keep their own names regardless of subdirectory, so the primitives in
+  // components/ui are <OwButton> rather than <UiOwButton>.
+  components: [{ path: '~/components', pathPrefix: false }],
   css: [
     // Self-hosted fonts (no CDN) — the design canvases link Google Fonts, which we deliberately
     // do not copy. Weights are the 400/500/600 the design actually renders; see docs/design.md.

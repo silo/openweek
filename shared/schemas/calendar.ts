@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { HIGHLIGHT_INKS } from '../constants/colors'
 
 const httpUrl = z.string().regex(/^https?:\/\//, 'must be an http(s) URL')
 
@@ -27,6 +28,25 @@ export const calendarEventDtoSchema = z.object({
 })
 export type CalendarEventDto = z.infer<typeof calendarEventDtoSchema>
 
+/** One calendar within a connection — a row in the calendars menu and in Settings. */
+export const calendarSourceDtoSchema = z.object({
+  id: z.string(),
+  connectionId: z.string(),
+  name: z.string(),
+  color: z.string(),
+  enabled: z.boolean(),
+  /** Events this calendar contributes to the week being shown. */
+  eventCount: z.number(),
+})
+export type CalendarSourceDto = z.infer<typeof calendarSourceDtoSchema>
+
+export const calendarSourceUpdateSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  color: z.enum(HIGHLIGHT_INKS).optional(),
+  enabled: z.boolean().optional(),
+})
+export type CalendarSourceUpdate = z.infer<typeof calendarSourceUpdateSchema>
+
 export const calendarConnectionDtoSchema = z.object({
   id: z.string(),
   provider: z.enum(['google', 'caldav', 'ical']),
@@ -35,6 +55,7 @@ export const calendarConnectionDtoSchema = z.object({
   status: z.enum(['active', 'error', 'reauth_required']),
   lastError: z.string().nullable(),
   lastSyncedAt: z.string().nullable(),
+  sources: z.array(calendarSourceDtoSchema),
 })
 export type CalendarConnectionDto = z.infer<typeof calendarConnectionDtoSchema>
 

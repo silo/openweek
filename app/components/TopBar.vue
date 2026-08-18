@@ -1,38 +1,87 @@
 <script setup lang="ts">
+import type { Task } from '~~/shared/schemas/task'
+
 defineProps<{ rangeLabel: string, weekNumber: number }>()
-const emit = defineEmits<{ prev: [], next: [], today: [], search: [] }>()
+const emit = defineEmits<{
+  prev: []
+  next: []
+  today: []
+  openTask: [Task]
+}>()
+
 const week = useWeekStore()
+const settings = useSettingsStore()
+
+const progressPct = computed(() =>
+  week.totalCount > 0 ? Math.round((week.doneCount / week.totalCount) * 100) : 0,
+)
+const doneLabel = computed(() =>
+  week.totalCount > 0 ? `${week.doneCount} of ${week.totalCount} done` : 'nothing planned',
+)
+
+const showWeekends = computed(() => settings.settings?.showWeekends ?? true)
+function toggleWeekends() {
+  settings.update({ showWeekends: !showWeekends.value })
+}
 </script>
 
 <template>
-  <header class="flex items-center gap-6 border-b border-ow-hairline px-7 pb-3.5 pt-4">
-    <div class="flex items-center gap-2">
-      <div class="h-[15px] w-[15px] rounded" style="background: var(--ow-accent);" />
-      <span class="font-display text-[15px] font-semibold tracking-tight">openweek</span>
-    </div>
+  <header class="flex h-[62px] items-center gap-4 border-b border-ow-line pl-5 pr-[18px]">
+    <BrandMark />
 
-    <div class="ml-1 flex items-baseline gap-3">
-      <button class="cursor-pointer text-ow-ghost hover:text-ow-muted" aria-label="Previous week" @click="emit('prev')">‹</button>
-      <h1 class="font-display text-xl font-semibold tracking-tight">{{ rangeLabel }}</h1>
-      <button class="cursor-pointer text-ow-ghost hover:text-ow-muted" aria-label="Next week" @click="emit('next')">›</button>
-      <button class="cursor-pointer rounded-full border border-ow-border px-2.5 py-0.5 font-display text-[11px] text-ow-faint hover:text-ow-muted" @click="emit('today')">Today</button>
-      <span class="font-display text-[10px] tracking-widest text-ow-ghost">WEEK {{ weekNumber }}</span>
-    </div>
+    <div class="h-[22px] w-px bg-ow-line" />
 
-    <div class="ml-auto flex items-center gap-4 font-display text-[11px] text-ow-muted">
-      <span class="hidden sm:inline">{{ week.doneCount }} of {{ week.totalCount }} done</span>
+    <div class="flex items-center gap-[7px]">
+      <OwButton square title="Previous week" aria-label="Previous week" @click="emit('prev')">
+        ‹
+      </OwButton>
+      <OwButton square title="Next week" aria-label="Next week" @click="emit('next')">
+        ›
+      </OwButton>
+      <OwButton @click="emit('today')">
+        Today
+      </OwButton>
       <button
-        class="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-ow-border text-ow-muted hover:text-ow-ink"
-        aria-label="Search"
-        @click="emit('search')"
-      >⌕</button>
-      <NuxtLink
-        to="/settings"
-        class="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-ow-border text-ow-muted hover:text-ow-ink"
-        aria-label="Settings"
+        type="button"
+        title="Show or hide Saturday and Sunday"
+        role="switch"
+        :aria-checked="showWeekends"
+        class="flex h-[30px] cursor-pointer items-center gap-2 rounded-[9px] border border-ow-border bg-ow-surface py-0 pl-2 pr-[11px] text-[13.5px] transition-colors hover:bg-ow-sunken"
+        :class="showWeekends ? 'text-ow-title' : 'text-ow-ghost'"
+        @click="toggleWeekends"
       >
-        ⚙
-      </NuxtLink>
+        <OwSwitch :model-value="showWeekends" as="span" size="sm" />
+        <span>Weekends</span>
+      </button>
     </div>
+
+    <div class="flex items-baseline gap-[11px]">
+      <h1 class="whitespace-nowrap font-display text-[23px] font-semibold tracking-[-0.02em] text-ow-ink">
+        {{ rangeLabel }}
+      </h1>
+      <span class="rounded-md bg-ow-sunken px-[7px] py-[3px] text-[12.5px] font-semibold text-ow-secondary">
+        W{{ weekNumber }}
+      </span>
+    </div>
+
+    <div class="ml-0.5 flex items-center gap-[9px]">
+      <div
+        class="h-1.5 w-[92px] overflow-hidden rounded-[3px] bg-ow-hairline"
+        role="progressbar"
+        :aria-valuenow="progressPct"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-label="doneLabel"
+      >
+        <div class="h-full rounded-[3px] bg-ow-accent transition-[width]" :style="{ width: `${progressPct}%` }" />
+      </div>
+      <span class="whitespace-nowrap text-[13px] text-ow-text">{{ doneLabel }}</span>
+    </div>
+
+    <div class="flex-1" />
+
+    <CalendarsMenu />
+    <SearchBox @open="(t) => emit('openTask', t)" />
+    <AccountMenu />
   </header>
 </template>

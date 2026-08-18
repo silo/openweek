@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia'
 import type { CalendarEventDto } from '~~/shared/schemas/calendar'
-import type { List } from '~~/shared/schemas/list'
+import type { List, ListUpdate } from '~~/shared/schemas/list'
 import type { Task, TaskUpdate } from '~~/shared/schemas/task'
-import type { WeekPayload } from '~~/shared/schemas/week'
+import type { ListWithTasks, WeekPayload } from '~~/shared/schemas/week'
+import type { Container } from '~/composables/useTaskBoard'
+import { containerKey } from '~/composables/useTaskBoard'
+import { inkForIndex } from '~~/shared/constants/colors'
 
 interface Day { date: string, tasks: Task[], events: CalendarEventDto[] }
 let tempCounter = 0
@@ -10,14 +13,34 @@ let tempCounter = 0
 export const useWeekStore = defineStore('week', () => {
   const weekStart = ref('')
   const days = ref<Day[]>([])
-  const lists = ref<List[]>([])
-  const activeListId = ref<string | null>(null)
-  const listTasks = ref<Task[]>([])
+  const lists = ref<ListWithTasks[]>([])
   const loading = ref(false)
 
-  const activeList = computed(() => lists.value.find(l => l.id === activeListId.value) ?? null)
+  /** Ephemeral view state — which day is focused, and which "N done" folds are open. */
+  const focusDate = ref<string | null>(null)
+  const doneOpen = ref<Record<string, boolean>>({})
+  /** Dismissal of the rollover review banner, for this session. */
+  const rolloverReviewed = ref(false)
+
   const doneCount = computed(() => days.value.reduce((n, d) => n + d.tasks.filter(t => t.completedAt).length, 0))
   const totalCount = computed(() => days.value.reduce((n, d) => n + d.tasks.length, 0))
+  const weekEmpty = computed(() => totalCount.value === 0)
+
+  /** Tasks that rolled onto today and can still be sent back. */
+  const rolledIn = computed(() =>
+    days.value.flatMap(d => d.tasks.filter(t => t.originalDate && !t.completedAt)),
+  )
+
+  function isFoldOpen(c: Container) {
+    return doneOpen.value[containerKey(c)] ?? false
+  }
+  function toggleFold(c: Container) {
+    const k = containerKey(c)
+    doneOpen.value = { ...doneOpen.value, [k]: !doneOpen.value[k] }
+  }
+  function toggleFocus(date: string) {
+    focusDate.value = focusDate.value === date ? null : date
+  }
 
   async function loadWeek(start: string) {
     loading.value = true
@@ -26,23 +49,18 @@ export const useWeekStore = defineStore('week', () => {
       weekStart.value = payload.weekStart
       days.value = payload.days
       lists.value = payload.lists
-      if (lists.value.length && !lists.value.some(l => l.id === activeListId.value)) {
-        await loadList(lists.value[0]!.id)
-      }
     }
     finally {
       loading.value = false
     }
   }
 
-  async function loadList(id: string) {
-    const res = await apiFetch<{ list: List, tasks: Task[] }>(`/api/lists/${id}`)
-    activeListId.value = res.list.id
-    listTasks.value = res.tasks
+  function bucketFor(c: Container): Task[] | null {
+    if ('date' in c) return days.value.find(d => d.date === c.date)?.tasks ?? null
+    return lists.value.find(l => l.id === c.listId)?.tasks ?? null
   }
-
   function buckets(): Task[][] {
-    return [...days.value.map(d => d.tasks), listTasks.value]
+    return [...days.value.map(d => d.tasks), ...lists.value.map(l => l.tasks)]
   }
   function locate(id: string): { arr: Task[], index: number } | null {
     for (const arr of buckets()) {
@@ -54,6 +72,13 @@ export const useWeekStore = defineStore('week', () => {
   function find(id: string): Task | undefined {
     const loc = locate(id)
     return loc ? loc.arr[loc.index] : undefined
+  }
+  /** Which container a task currently sits in — backs the popover's "Move to…". */
+  function containerOf(id: string): Container | null {
+    const day = days.value.find(d => d.tasks.some(t => t.id === id))
+    if (day) return { date: day.date }
+    const list = lists.value.find(l => l.tasks.some(t => t.id === id))
+    return list ? { listId: list.id } : null
   }
 
   function tempTask(partial: Partial<Task>): Task {
@@ -77,13 +102,12 @@ export const useWeekStore = defineStore('week', () => {
     }
   }
 
-  function createTask(date: string, title: string) {
-    const day = days.value.find(d => d.date === date)
-    if (!day) return
-    return insertTask(day.tasks, { title, date }, tempTask({ date, title }))
-  }
-  function createTaskInList(listId: string, title: string) {
-    return insertTask(listTasks.value, { title, listId }, tempTask({ listId, title }))
+  /** Add a task to a day or a list — the inline composer in both the grid and the rail. */
+  function createTask(c: Container, title: string) {
+    const bucket = bucketFor(c)
+    if (!bucket) return
+    const body = 'date' in c ? { title, date: c.date } : { title, listId: c.listId }
+    return insertTask(bucket, body, tempTask({ ...c, title }))
   }
 
   async function updateTask(id: string, patch: TaskUpdate) {
@@ -121,39 +145,19 @@ export const useWeekStore = defineStore('week', () => {
     }
   }
 
+  function targetBody(c: Container) {
+    return 'date' in c ? { date: c.date, listId: null } : { listId: c.listId, date: null }
+  }
+
   /** Move a task to a day or a list (the non-drag "Move to…" path). */
-  async function moveTask(id: string, target: { date: string } | { listId: string }) {
-    const loc = locate(id)
-    if (!loc) return
-    const [t] = loc.arr.splice(loc.index, 1)
-    if (!t) return
-    if ('date' in target) {
-      days.value.find(d => d.date === target.date)?.tasks.push({ ...t, date: target.date, listId: null })
-    }
-    else if (target.listId === activeListId.value) {
-      listTasks.value.push({ ...t, listId: target.listId, date: null })
-    }
-    try {
-      const updated = await apiFetch<Task>(`/api/tasks/${id}`, { method: 'PATCH', body: target })
-      const nl = locate(id)
-      if (nl) nl.arr.splice(nl.index, 1, updated)
-    }
-    catch (err) {
-      await loadWeek(weekStart.value)
-      if (activeListId.value) await loadList(activeListId.value)
-      throw err
-    }
+  async function moveTask(id: string, dest: Container) {
+    return moveRelative(id, dest, null, false)
   }
 
-  function destArray(dest: { date: string } | { listId: string }): Task[] | null {
-    if ('date' in dest) return days.value.find(d => d.date === dest.date)?.tasks ?? null
-    return dest.listId === activeListId.value ? listTasks.value : null
-  }
-
-  /** Reorder / cross-bucket move from a drag-drop: place the task relative to `overTaskId` (or append). */
+  /** Reorder / cross-container move: place the task relative to `overTaskId` (or append). */
   async function moveRelative(
     taskId: string,
-    dest: { date: string } | { listId: string },
+    dest: Container,
     overTaskId: string | null,
     after: boolean,
   ) {
@@ -161,9 +165,9 @@ export const useWeekStore = defineStore('week', () => {
     if (!loc) return
     const [t] = loc.arr.splice(loc.index, 1)
     if (!t) return
-    const arr = destArray(dest)
+    const arr = bucketFor(dest)
     if (!arr) {
-      try { await apiFetch(`/api/tasks/${taskId}`, { method: 'PATCH', body: dest }) }
+      try { await apiFetch(`/api/tasks/${taskId}`, { method: 'PATCH', body: targetBody(dest) }) }
       catch (err) { await loadWeek(weekStart.value); throw err }
       return
     }
@@ -173,22 +177,23 @@ export const useWeekStore = defineStore('week', () => {
       if (oi >= 0) index = after ? oi + 1 : oi
     }
     const position = keyBetween(arr[index - 1]?.position ?? null, arr[index]?.position ?? null)
-    arr.splice(index, 0, {
-      ...t,
-      position,
-      date: 'date' in dest ? dest.date : null,
-      listId: 'listId' in dest ? dest.listId : null,
-    })
+    arr.splice(index, 0, { ...t, position, ...targetBody(dest) })
     try {
-      const updated = await apiFetch<Task>(`/api/tasks/${taskId}`, { method: 'PATCH', body: { ...dest, position } })
+      const updated = await apiFetch<Task>(`/api/tasks/${taskId}`, { method: 'PATCH', body: { ...targetBody(dest), position } })
       const nl = locate(taskId)
       if (nl) nl.arr.splice(nl.index, 1, updated)
     }
     catch (err) {
       await loadWeek(weekStart.value)
-      if (activeListId.value) await loadList(activeListId.value)
       throw err
     }
+  }
+
+  /** Send a rolled-over task back where it came from. */
+  async function sendBack(id: string) {
+    const t = find(id)
+    if (!t?.originalDate) return
+    return moveTask(id, { date: t.originalDate })
   }
 
   async function convertEvent(eventId: string, keepLinked: boolean, date?: string) {
@@ -198,15 +203,45 @@ export const useWeekStore = defineStore('week', () => {
   }
 
   async function createList(name: string) {
-    const created = await apiFetch<List>('/api/lists', { method: 'POST', body: { name } })
-    lists.value.push(created)
-    await loadList(created.id)
+    const color = inkForIndex(lists.value.length)
+    const created = await apiFetch<List>('/api/lists', { method: 'POST', body: { name, color } })
+    lists.value.push({ ...created, tasks: [] })
+  }
+
+  async function updateList(id: string, patch: ListUpdate) {
+    const l = lists.value.find(x => x.id === id)
+    if (!l) return
+    const snapshot = { name: l.name, color: l.color }
+    Object.assign(l, patch)
+    try {
+      await apiFetch<List>(`/api/lists/${id}`, { method: 'PATCH', body: patch })
+    }
+    catch (err) {
+      Object.assign(l, snapshot)
+      throw err
+    }
+  }
+
+  async function deleteList(id: string) {
+    const i = lists.value.findIndex(l => l.id === id)
+    if (i < 0) return
+    const [removed] = lists.value.splice(i, 1)
+    try {
+      await apiFetch(`/api/lists/${id}`, { method: 'DELETE' })
+    }
+    catch (err) {
+      if (removed) lists.value.splice(i, 0, removed)
+      throw err
+    }
   }
 
   return {
-    weekStart, days, lists, activeListId, listTasks, loading,
-    activeList, doneCount, totalCount,
-    loadWeek, loadList, find, createTask, createTaskInList,
-    updateTask, toggleComplete, deleteTask, moveTask, moveRelative, convertEvent, createList,
+    weekStart, days, lists, loading,
+    focusDate, doneOpen, rolloverReviewed,
+    doneCount, totalCount, weekEmpty, rolledIn,
+    isFoldOpen, toggleFold, toggleFocus,
+    loadWeek, find, containerOf, bucketFor, createTask,
+    updateTask, toggleComplete, deleteTask, moveTask, moveRelative, sendBack, convertEvent,
+    createList, updateList, deleteList,
   }
 })

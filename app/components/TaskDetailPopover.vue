@@ -1,116 +1,177 @@
 <script setup lang="ts">
+import { format, parseISO } from 'date-fns'
 import type { Task } from '~~/shared/schemas/task'
-import { HIGHLIGHT } from '~~/shared/constants/colors'
+import { HIGHLIGHT_INKS, INK_LABELS } from '~~/shared/constants/colors'
+import { containerKey, parseContainer } from '~/composables/useTaskBoard'
 
 const props = defineProps<{ task: Task }>()
 const emit = defineEmits<{ close: [] }>()
+
 const week = useWeekStore()
 
-const title = ref(props.task.title)
-const note = ref(props.task.note ?? '')
-const time = ref(props.task.timeOfDay?.slice(0, 5) ?? '')
-const colors = Object.entries(HIGHLIGHT) as [keyof typeof HIGHLIGHT, string][]
+const panel = ref<HTMLElement | null>(null)
+useDismissable(panel, () => emit('close'))
+useFocusTrap(panel)
 
-function setColor(c: keyof typeof HIGHLIGHT | null) {
-  week.updateTask(props.task.id, { highlightColor: c })
+const title = ref(props.task.title)
+const time = ref(props.task.timeOfDay?.slice(0, 5) ?? '')
+const note = ref(props.task.note ?? '')
+
+/**
+ * "Move to…" spans every day and every list — this is the keyboard path that pairs with
+ * dragging, so it must stay exhaustive.
+ */
+const moveValue = computed(() => {
+  const c = week.containerOf(props.task.id)
+  return c ? containerKey(c) : ''
+})
+const dayOptions = computed(() =>
+  week.days.map(d => ({ value: containerKey({ date: d.date }), label: format(parseISO(d.date), 'EEEE d') })),
+)
+const listOptions = computed(() =>
+  week.lists.map(l => ({ value: containerKey({ listId: l.id }), label: l.name })),
+)
+
+function onMove(e: Event) {
+  const value = (e.target as HTMLSelectElement).value
+  if (value) week.moveTask(props.task.id, parseContainer(value))
 }
-function saveTitle() {
-  const v = title.value.trim()
-  if (v && v !== props.task.title) week.updateTask(props.task.id, { title: v })
+function pickInk(ink: Task['highlightColor']) {
+  week.updateTask(props.task.id, { highlightColor: props.task.highlightColor === ink ? null : ink })
 }
-function saveNote() {
+function commitTitle() {
+  const next = title.value.trim()
+  if (next && next !== props.task.title) week.updateTask(props.task.id, { title: next })
+}
+function commitTime() {
+  const next = time.value.trim()
+  week.updateTask(props.task.id, { timeOfDay: next || null })
+}
+function commitNote() {
   week.updateTask(props.task.id, { note: note.value.trim() || null })
-}
-function saveTime() {
-  week.updateTask(props.task.id, { timeOfDay: time.value || null })
 }
 async function remove() {
   await week.deleteTask(props.task.id)
-  emit('close')
-}
-function dayLabel(dateStr: string) {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  const wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(Date.UTC(y!, m! - 1, d!)).getUTCDay()]
-  return `${wd} ${d}`
-}
-function onMove(e: Event) {
-  const v = (e.target as HTMLSelectElement).value
-  if (!v) return
-  const [kind, val] = [v.slice(0, v.indexOf(':')), v.slice(v.indexOf(':') + 1)]
-  week.moveTask(props.task.id, kind === 'date' ? { date: val } : { listId: val })
   emit('close')
 }
 </script>
 
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-start justify-center bg-black/20 p-4 pt-24"
-    @click.self="emit('close')"
+    ref="panel"
+    role="dialog"
+    aria-label="Task details"
+    class="absolute z-[60] flex w-[320px] flex-col gap-3 rounded-[14px] border border-ow-border-strong bg-ow-surface p-4 shadow-ow-3"
   >
-    <div class="w-[340px] overflow-hidden rounded-xl border border-ow-border bg-ow-surface shadow-2xl">
-      <div class="flex items-start gap-2.5 p-4">
-        <button class="mt-0.5 cursor-pointer font-display text-ow-ghost" @click="week.toggleComplete(task.id)">
-          {{ task.completedAt ? '✓' : '○' }}
-        </button>
+    <button
+      type="button"
+      title="Close"
+      aria-label="Close"
+      class="absolute right-3 top-2.5 cursor-pointer border-none bg-transparent p-0.5 text-base leading-none text-ow-muted"
+      @click="emit('close')"
+    >
+      ×
+    </button>
+
+    <input
+      v-model="title"
+      type="text"
+      aria-label="Task title"
+      class="w-full border-none border-b border-ow-hairline bg-transparent pb-[9px] pr-[22px] font-display text-lg font-semibold tracking-[-0.02em] outline-none"
+      style="border-bottom: 1px solid var(--ow-hairline);"
+      @blur="commitTitle"
+      @keydown.enter.prevent="commitTitle"
+    >
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        title="None"
+        aria-label="No highlight"
+        :aria-pressed="task.highlightColor === null"
+        class="h-[22px] w-[22px] cursor-pointer rounded-[7px] border border-ow-control p-0"
+        :style="{
+          background: 'linear-gradient(135deg,transparent 44%,var(--ow-control) 44%,var(--ow-control) 56%,transparent 56%)',
+          boxShadow: task.highlightColor === null ? '0 0 0 2px var(--ow-surface), 0 0 0 3.5px var(--ow-ink)' : 'none',
+        }"
+        @click="week.updateTask(task.id, { highlightColor: null })"
+      />
+      <button
+        v-for="ink in HIGHLIGHT_INKS"
+        :key="ink"
+        type="button"
+        :title="INK_LABELS[ink]"
+        :aria-label="INK_LABELS[ink]"
+        :aria-pressed="task.highlightColor === ink"
+        class="h-[22px] w-[22px] cursor-pointer rounded-[7px] p-0"
+        :style="{
+          background: `var(--ow-hl-${ink})`,
+          border: `1px solid var(--ow-hl-${ink})`,
+          boxShadow: task.highlightColor === ink ? '0 0 0 2px var(--ow-surface), 0 0 0 3.5px var(--ow-ink)' : 'none',
+        }"
+        @click="pickInk(ink)"
+      />
+      <div class="flex-1" />
+      <span class="text-[11.5px] font-semibold tracking-[0.06em] text-ow-muted">HIGHLIGHT</span>
+    </div>
+
+    <div class="flex gap-[9px]">
+      <div class="flex flex-none flex-col gap-[5px]">
+        <label for="ow-task-time" class="text-[11.5px] font-semibold tracking-[0.06em] text-ow-muted">TIME</label>
         <input
-          v-model="title"
-          class="flex-1 bg-transparent font-display text-sm font-medium focus:outline-none"
-          @blur="saveTitle"
-          @keydown.enter="saveTitle"
+          id="ow-task-time"
+          v-model="time"
+          type="time"
+          placeholder="––:––"
+          class="w-20 rounded-[9px] border border-ow-border bg-ow-surface px-[9px] py-2 text-[13px] tabular-nums outline-none"
+          @blur="commitTime"
         >
-        <button class="cursor-pointer text-ow-ghost hover:text-ow-muted" aria-label="Close" @click="emit('close')">×</button>
       </div>
-
-      <div class="flex gap-1.5 px-4 pb-3">
-        <button
-          v-for="[name, hex] in colors"
-          :key="name"
-          class="h-[22px] w-[22px] cursor-pointer rounded-md"
-          :style="{ background: hex, boxShadow: task.highlightColor === name ? '0 0 0 2px var(--ow-surface), 0 0 0 3.5px var(--ow-ink)' : 'none' }"
-          :aria-label="`Highlight ${name}`"
-          @click="setColor(name)"
-        />
-        <button
-          class="flex h-[22px] w-[22px] cursor-pointer items-center justify-center rounded-md border border-ow-border text-ow-ghost"
-          aria-label="No highlight"
-          @click="setColor(null)"
-        >⊘</button>
+      <div class="flex min-w-0 flex-1 flex-col gap-[5px]">
+        <label for="ow-task-move" class="text-[11.5px] font-semibold tracking-[0.06em] text-ow-muted">MOVE TO</label>
+        <select
+          id="ow-task-move"
+          :value="moveValue"
+          class="w-full rounded-[9px] border border-ow-border bg-ow-surface px-[7px] py-2 text-[13.5px] text-ow-ink"
+          @change="onMove"
+        >
+          <option v-for="o in dayOptions" :key="o.value" :value="o.value">
+            {{ o.label }}
+          </option>
+          <option disabled>
+            — lists —
+          </option>
+          <option v-for="o in listOptions" :key="o.value" :value="o.value">
+            {{ o.label }}
+          </option>
+        </select>
       </div>
+    </div>
 
-      <div class="border-t border-ow-hairline px-4 py-3">
-        <label class="flex items-center gap-2 font-display text-[11.5px] text-ow-muted">
-          <span class="w-4 text-center">◷</span>
-          <input v-model="time" type="time" class="bg-transparent focus:outline-none" @change="saveTime">
-        </label>
-      </div>
+    <div class="flex flex-col gap-[5px]">
+      <label for="ow-task-note" class="text-[11.5px] font-semibold tracking-[0.06em] text-ow-muted">NOTE</label>
+      <textarea
+        id="ow-task-note"
+        v-model="note"
+        rows="2"
+        placeholder="Add a note…"
+        class="resize-none rounded-[9px] border border-ow-border bg-ow-surface px-[9px] py-2 font-body text-[13.5px] leading-relaxed outline-none"
+        @blur="commitNote"
+      />
+    </div>
 
-      <div class="border-t border-ow-hairline px-4 py-3">
-        <label class="flex items-center gap-2 font-display text-[11.5px] text-ow-muted">
-          <span class="w-4 text-center">↪</span>
-          <select class="flex-1 cursor-pointer bg-transparent focus:outline-none" @change="onMove">
-            <option value="">Move to…</option>
-            <optgroup label="This week">
-              <option v-for="d in week.days" :key="d.date" :value="`date:${d.date}`">{{ dayLabel(d.date) }}</option>
-            </optgroup>
-            <optgroup label="Lists">
-              <option v-for="l in week.lists" :key="l.id" :value="`list:${l.id}`">{{ l.name }}</option>
-            </optgroup>
-          </select>
-        </label>
-      </div>
-
-      <div class="border-t border-ow-hairline px-4 py-3">
-        <textarea
-          v-model="note"
-          rows="2"
-          placeholder="Add a note…"
-          class="w-full resize-none bg-transparent font-body text-[11.5px] italic text-ow-muted placeholder:text-ow-ghost focus:outline-none"
-          @blur="saveNote"
-        />
-      </div>
-
-      <div class="flex items-center border-t border-ow-hairline px-3 py-2.5 font-display text-[11px]">
-        <button class="ml-auto cursor-pointer hover:opacity-80" style="color: #C49097;" @click="remove">🗑 Delete</button>
+    <div class="flex items-center gap-2.5 border-t border-ow-hairline pt-[11px]">
+      <button
+        type="button"
+        class="cursor-pointer border-none bg-transparent p-0 text-[13.5px]"
+        style="color: var(--color-error);"
+        @click="remove"
+      >
+        Delete
+      </button>
+      <!-- The schema already carries subtasks and recurrence; the UI is deliberately deferred. -->
+      <div class="flex-1 text-right text-[11.5px] font-semibold tracking-[0.04em] text-ow-ghost">
+        SOON: SUBTASKS · REPEAT
       </div>
     </div>
   </div>

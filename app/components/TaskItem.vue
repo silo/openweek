@@ -1,59 +1,103 @@
 <script setup lang="ts">
+import { format, parseISO } from 'date-fns'
 import type { Task } from '~~/shared/schemas/task'
-import { HIGHLIGHT } from '~~/shared/constants/colors'
-import type { Edge } from '~/composables/useTaskBoard'
+import type { Container, Edge } from '~/composables/useTaskBoard'
+import { inkColor } from '~~/shared/constants/colors'
 
-const props = defineProps<{ task: Task }>()
-const emit = defineEmits<{ open: [] }>()
+const props = defineProps<{ task: Task, container: Container }>()
+/** The row's rect travels with the event so the detail popover can anchor to it. */
+const emit = defineEmits<{ open: [Task, DOMRect] }>()
+
 const week = useWeekStore()
 const settings = useSettingsStore()
 
-const done = computed(() => !!props.task.completedAt)
-const rolled = computed(() => !!props.task.originalDate && !!props.task.date && props.task.originalDate < props.task.date)
-const hlHex = computed(() => (props.task.highlightColor ? HIGHLIGHT[props.task.highlightColor] : null))
-const hlClass = computed(() => (settings.settings?.tagStyle === 'swipe' ? 'hl-swipe' : 'hl-underline'))
-
-const rootEl = ref<HTMLElement>()
-const dragging = ref(false)
+const row = ref<HTMLElement | null>(null)
 const edge = ref<Edge | null>(null)
+const dragging = ref(false)
+
+const done = computed(() => !!props.task.completedAt)
+const ink = computed(() => props.task.highlightColor)
+const fillMode = computed(() => settings.settings?.tagStyle === 'fill')
+
+/** In `fill` the whole row takes a tint and a matching ring; in `edge` a bar runs down the left. */
+const rowStyle = computed(() => {
+  if (done.value) return { background: 'transparent', boxShadow: 'none' }
+  if (ink.value && fillMode.value) {
+    return {
+      background: `var(--ow-hl-${ink.value}-tint)`,
+      boxShadow: `0 0 0 1px var(--ow-hl-${ink.value}-edge)`,
+    }
+  }
+  return { background: 'var(--ow-surface)', boxShadow: '0 0 0 1px var(--ow-hairline)' }
+})
+const showBar = computed(() => !!ink.value && !done.value && !fillMode.value)
+
+const rolledFrom = computed(() => {
+  if (!props.task.originalDate) return null
+  return `from ${format(parseISO(props.task.originalDate), 'EEE d MMM')}`
+})
+const hasMeta = computed(() => !!props.task.timeOfDay || !!props.task.note || !!rolledFrom.value)
 
 onMounted(() => {
-  const el = rootEl.value
-  const date = props.task.date
-  if (!el || !date) return
-  const cleanups = [
-    taskDraggable(el, props.task.id, { onStart: () => (dragging.value = true), onEnd: () => (dragging.value = false) }),
-    taskDropTarget(el, props.task.id, date, e => (edge.value = e)),
-  ]
-  onUnmounted(() => cleanups.forEach(fn => fn()))
+  if (!row.value) return
+  const stopDrag = taskDraggable(row.value, props.task.id, {
+    onStart: () => (dragging.value = true),
+    onEnd: () => (dragging.value = false),
+  })
+  const stopDrop = taskDropTarget(row.value, props.task.id, props.container, e => (edge.value = e))
+  onUnmounted(() => { stopDrag(); stopDrop() })
 })
 </script>
 
 <template>
-  <div ref="rootEl" class="group relative flex items-start gap-2.5" :class="dragging ? 'opacity-40' : ''">
-    <div v-if="edge === 'top'" class="pointer-events-none absolute -top-1.5 left-4 right-0 h-0.5 rounded-full" style="background: var(--ow-accent);" />
+  <div>
+    <div v-if="edge === 'top'" class="mx-1 my-[3px] h-[3px] rounded-sm bg-ow-accent" />
 
-    <button
-      class="mt-px shrink-0 cursor-grab font-display text-[12px] leading-normal active:cursor-grabbing"
-      :class="done ? 'text-ow-faint' : 'text-ow-ghost hover:text-ow-muted'"
-      :aria-pressed="done"
-      :aria-label="done ? 'Mark incomplete' : 'Mark complete'"
-      @click="week.toggleComplete(task.id)"
+    <div
+      ref="row"
+      class="relative mb-2 flex cursor-grab items-start gap-[9px] rounded-[9px] px-[9px] py-2 transition-shadow"
+      :class="dragging && 'opacity-50'"
+      :style="rowStyle"
+      @click="row && emit('open', task, row.getBoundingClientRect())"
     >
-      {{ done ? '✓' : '○' }}
-    </button>
+      <span
+        v-if="showBar"
+        class="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-[9px]"
+        :style="{ background: inkColor(ink) }"
+        aria-hidden="true"
+      />
 
-    <div class="min-w-0 flex-1 cursor-text" @click="emit('open')">
-      <div class="font-display text-[12.5px] leading-normal">
-        <span v-if="rolled" class="text-ow-ghost">↪ </span>
-        <span v-if="hlHex" :class="[hlClass, done ? 'line-through opacity-70' : '']" :style="{ '--hl': hlHex }">{{ task.title }}</span>
-        <span v-else :class="done ? 'text-ow-faint line-through' : 'text-ow-ink'">{{ task.title }}</span>
+      <button
+        type="button"
+        title="Mark done"
+        :aria-label="done ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`"
+        :aria-pressed="done"
+        class="mt-px h-[19px] w-[19px] flex-none cursor-pointer rounded-md p-0 text-[11px] leading-[15px] transition-colors"
+        :style="{
+          border: `1.6px solid ${done ? 'var(--ow-today)' : 'var(--ow-mark)'}`,
+          background: done ? 'var(--ow-today)' : 'var(--ow-surface)',
+          color: 'var(--ow-surface)',
+        }"
+        @click.stop="week.toggleComplete(task.id)"
+      >
+        {{ done ? '✓' : '' }}
+      </button>
+
+      <div class="min-w-0 flex-1">
+        <div
+          class="text-[14.5px] leading-[1.4]"
+          :class="done ? 'text-ow-done line-through decoration-ow-ghost' : 'text-ow-ink'"
+        >
+          {{ task.title }}
+        </div>
+        <div v-if="hasMeta" class="mt-[3px] flex items-center gap-[9px] text-xs text-ow-secondary">
+          <span v-if="task.timeOfDay" class="tabular-nums">{{ task.timeOfDay.slice(0, 5) }}</span>
+          <span v-if="rolledFrom" title="Carried over" :style="{ color: 'var(--ow-accent)' }">↻ {{ rolledFrom }}</span>
+          <span v-if="task.note" title="Has a note">≡</span>
+        </div>
       </div>
-      <div v-if="task.timeOfDay" class="mt-1 font-display text-[9.5px] text-ow-faint">◷ {{ task.timeOfDay.slice(0, 5) }}</div>
-      <div v-if="task.sourceLabel" class="mt-1 inline-flex items-center gap-1 rounded-full bg-ow-sunken px-2 py-0.5 font-display text-[8.5px] text-ow-muted">⤺ from {{ task.sourceLabel }}</div>
-      <div v-if="task.note" class="mt-1 font-body text-[10.5px] italic leading-snug text-ow-faint">{{ task.note }}</div>
     </div>
 
-    <div v-if="edge === 'bottom'" class="pointer-events-none absolute -bottom-1.5 left-4 right-0 h-0.5 rounded-full" style="background: var(--ow-accent);" />
+    <div v-if="edge === 'bottom'" class="mx-1 my-[3px] h-[3px] rounded-sm bg-ow-accent" />
   </div>
 </template>

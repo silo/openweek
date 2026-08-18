@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, isNull, lte } from 'drizzle-orm'
+import { and, asc, eq, gte, isNotNull, isNull, lte } from 'drizzle-orm'
 import { db } from '../database/client'
 import { calendarConnection, calendarEvent, calendarSource, list, task, userSettings } from '../database/schema'
 import { requireUserId } from '../utils/session'
@@ -28,9 +28,15 @@ export default defineEventHandler(async (event) => {
     .orderBy(asc(task.position), asc(task.id))
 
   await ensureDefaultList(userId)
-  const lists = await db.select().from(list)
+  const listRows = await db.select().from(list)
     .where(and(eq(list.userId, userId), isNull(list.archivedAt)))
     .orderBy(asc(list.position), asc(list.id))
+
+  // The rail shows every list at once, so their tasks come down with the week rather than
+  // through a separate per-list fetch.
+  const listTasks = await db.select().from(task)
+    .where(and(eq(task.userId, userId), isNotNull(task.listId)))
+    .orderBy(asc(task.position), asc(task.id))
 
   const events = (settings?.showCalendarEvents ?? true)
     ? await db.select({
@@ -59,5 +65,6 @@ export default defineEventHandler(async (event) => {
     tasks: rows.filter(r => r.date === date),
     events: events.filter(e => e.localDate === date),
   }))
+  const lists = listRows.map(l => ({ ...l, tasks: listTasks.filter(t => t.listId === l.id) }))
   return { weekStart, days, lists }
 })
