@@ -20,6 +20,7 @@ const container = computed(() => ({ date: props.date }))
 
 const dateNum = computed(() => format(parseISO(props.date), 'd'))
 const weekdayLabel = computed(() => format(parseISO(props.date), 'EEE').toUpperCase())
+const fullDate = computed(() => format(parseISO(props.date), 'EEEE d MMMM'))
 
 const isFocused = computed(() => week.focusDate === props.date)
 const openLeft = computed(() => props.tasks.filter(t => !t.completedAt).length)
@@ -52,9 +53,11 @@ onMounted(() => {
       boxShadow: isToday ? 'inset 0 2px 0 0 var(--ow-today)' : 'none',
     }"
   >
+    <!-- The visible label is just "17 MON"; spell out what the button does for screen readers. -->
     <button
       type="button"
       :title="isFocused ? 'Back to the even week' : 'Focus this day'"
+      :aria-label="`${fullDate} — ${isFocused ? 'back to the even week' : 'focus this day'}`"
       :aria-pressed="isFocused"
       class="flex cursor-pointer items-baseline gap-2 border-none bg-transparent px-0.5 text-left"
       @click="week.toggleFocus(date)"
