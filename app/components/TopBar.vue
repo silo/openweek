@@ -43,18 +43,6 @@ function toggleWeekends() {
       <OwButton @click="emit('today')">
         Today
       </OwButton>
-      <button
-        type="button"
-        title="Show or hide Saturday and Sunday"
-        role="switch"
-        :aria-checked="showWeekends"
-        class="flex h-[30px] cursor-pointer items-center gap-2 rounded-[9px] border border-ow-border bg-ow-surface py-0 pl-2 pr-[11px] text-[13.5px] transition-colors hover:bg-ow-sunken"
-        :class="showWeekends ? 'text-ow-title' : 'text-ow-ghost'"
-        @click="toggleWeekends"
-      >
-        <OwSwitch :model-value="showWeekends" as="span" size="sm" />
-        <span>Weekends</span>
-      </button>
     </div>
 
     <div class="flex items-baseline gap-[11px]">
@@ -82,6 +70,18 @@ function toggleWeekends() {
 
     <div class="flex-1" />
 
+    <button
+      type="button"
+      title="Show or hide Saturday and Sunday"
+      role="switch"
+      :aria-checked="showWeekends"
+      class="flex h-[34px] cursor-pointer items-center gap-2 rounded-[9px] border border-ow-border bg-ow-surface py-0 pl-2 pr-[11px] text-[13.5px] transition-colors hover:bg-ow-sunken"
+      :class="showWeekends ? 'text-ow-title' : 'text-ow-ghost'"
+      @click="toggleWeekends"
+    >
+      <OwSwitch :model-value="showWeekends" as="span" size="sm" />
+      <span>Weekends</span>
+    </button>
     <CalendarsMenu />
     <SearchBox @open="(t) => emit('openTask', t)" />
     <AccountMenu />

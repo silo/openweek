@@ -24,7 +24,7 @@ const field = 'rounded-[10px] border border-ow-border bg-ow-surface px-3 py-2.5 
       <div class="flex w-[366px] flex-col gap-[18px] rounded-[18px] border border-ow-border bg-ow-surface px-7 pb-[22px] pt-7 shadow-ow-3">
         <div class="flex flex-col items-center gap-[11px] pt-1">
           <BrandMark :show-wordmark="false" class="scale-150" />
-          <h1 class="font-display text-[27px] font-semibold tracking-[-0.025em] text-ow-ink">
+          <h1 class="font-brand text-[27px] font-semibold tracking-[-0.025em] text-ow-ink">
             Openweek
           </h1>
         </div>

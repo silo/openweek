@@ -47,7 +47,11 @@ function commitRename() {
   if (name && name !== props.list.name) week.updateList(props.list.id, { name })
 }
 
+// "Delete list…" promises a confirmation step; deleting takes its tasks with it.
+const confirmingDelete = ref(false)
+
 function remove() {
+  confirmingDelete.value = false
   menuOpen.value = false
   week.deleteList(props.list.id)
 }
@@ -130,11 +134,35 @@ onMounted(() => {
             />
           </div>
           <div class="mx-1.5 my-1 h-px bg-ow-hairline" />
+          <template v-if="confirmingDelete">
+            <p class="px-2.5 pb-1.5 pt-1 text-[12.5px] leading-relaxed text-ow-muted">
+              Delete “{{ list.name }}” and its {{ list.tasks.length }}
+              {{ list.tasks.length === 1 ? 'task' : 'tasks' }}?
+            </p>
+            <div class="flex gap-1.5 px-2.5 pb-1">
+              <button
+                type="button"
+                class="cursor-pointer rounded-[7px] border-none px-2.5 py-1 text-[13px] font-semibold text-white"
+                style="background: var(--color-error);"
+                @click="remove"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                class="cursor-pointer border-none bg-transparent px-1 text-[13px] text-ow-muted hover:text-ow-ink"
+                @click="confirmingDelete = false"
+              >
+                Cancel
+              </button>
+            </div>
+          </template>
           <button
+            v-else
             type="button"
             class="w-full cursor-pointer rounded-lg border-none bg-transparent px-2.5 py-[7px] text-left text-[13.5px] transition-colors hover:bg-ow-inset"
             style="color: var(--color-error);"
-            @click="remove"
+            @click="confirmingDelete = true"
           >
             Delete list…
           </button>

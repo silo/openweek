@@ -63,7 +63,7 @@ function strip(date: string) {
   <div class="flex min-h-screen flex-col bg-ow-surface pb-[68px]">
     <header class="flex items-center gap-3 border-b border-ow-line px-4 py-3">
       <BrandMark :show-wordmark="false" />
-      <span class="font-display text-base font-semibold tracking-[-0.02em] text-ow-ink">Openweek</span>
+      <span class="font-brand text-base font-semibold tracking-[-0.02em] text-ow-ink">Openweek</span>
       <span class="rounded-md bg-ow-sunken px-1.5 py-0.5 text-[11.5px] font-semibold text-ow-secondary">
         W{{ props.weekNumber }}
       </span>

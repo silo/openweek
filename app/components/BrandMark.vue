@@ -24,7 +24,7 @@ const BARS = [
     </div>
     <div
       v-if="showWordmark"
-      class="font-display text-[19px] font-semibold tracking-[-0.02em] text-ow-ink"
+      class="font-brand text-[19px] font-semibold tracking-[-0.02em] text-ow-ink"
     >
       Openweek
     </div>

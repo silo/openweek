@@ -110,19 +110,16 @@ onMounted(() => {
 
 <style scoped>
 .ow-row {
-  transition: transform 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+  transition: opacity 140ms ease;
 }
 
-/* Lifted and tilted off-axis while it is being carried, so the row reads as picked up
-   rather than merely faded. */
+/* The row left behind fades to show it is in transit. No transform: this is the source
+   element, not the thing under the cursor, so tilting it reads as the wrong item moving. */
 .ow-row-dragging {
-  opacity: 0.55;
-  transform: rotate(-1.4deg) scale(1.02);
-  box-shadow: var(--ow-elev-2);
+  opacity: 0.45;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ow-row { transition: none; }
-  .ow-row-dragging { transform: none; }
 }
 </style>

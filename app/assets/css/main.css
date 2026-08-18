@@ -250,12 +250,14 @@
 }
 
 /* --- Typography and scale --------------------------------------------------- */
-/* Display is Bricolage Grotesque; the body face is user-selectable (see
+/* The wordmark is always Bricolage Grotesque — it is the identity mark. Everything else,
+   display text included, follows the Typeface setting so the UI reads as one face (see
    useTheme.ts). --ow-text-scale drives the Small/Default/Large setting. */
 :root {
   /* @fontsource-variable declares the family with a "Variable" suffix; the plain name is
      a fallback for anyone who has the static face installed locally. */
-  --ow-font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --ow-font-brand: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --ow-font-display: 'Open Sans', Arial, sans-serif;
   --ow-font-body: 'Open Sans', Arial, sans-serif;
   --ow-text-scale: 1;
   --ow-root-size: 15px;
@@ -308,6 +310,7 @@
   --color-hl-indigo: var(--ow-hl-indigo);
   --color-hl-magenta: var(--ow-hl-magenta);
 
+  --font-brand: var(--ow-font-brand);
   --font-display: var(--ow-font-display);
   --font-body: var(--ow-font-body);
 

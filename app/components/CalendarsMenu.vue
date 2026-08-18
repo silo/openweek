@@ -20,26 +20,49 @@ const PROVIDER_LABEL = { google: 'GOOGLE', caldav: 'CALDAV', ical: 'ICAL' } as c
 
 <template>
   <div class="relative">
-    <button
+    <!-- Split control: the switch shows/hides every event, the rest opens the list. Two
+         sibling buttons rather than one nested inside the other, which is invalid. -->
+    <div
       ref="trigger"
-      type="button"
-      class="flex h-[34px] cursor-pointer items-center gap-2 rounded-[9px] border px-[11px] text-[13.5px] text-ow-title transition-colors hover:bg-ow-sunken"
+      class="flex h-[34px] items-stretch overflow-hidden rounded-[9px] border transition-colors"
       :class="open ? 'border-ow-accent-edge bg-ow-accent-tint' : 'border-ow-border bg-ow-surface'"
-      :aria-expanded="open"
-      aria-haspopup="true"
-      @click="open = !open"
     >
-      <span class="flex gap-[3px]" aria-hidden="true">
-        <span
-          v-for="s in cals.sources"
-          :key="s.id"
-          class="h-[14px] w-[6px] rounded-[2px]"
-          :style="{ background: s.enabled ? inkColor(s.color) : 'var(--ow-track)' }"
-        />
-      </span>
-      <span>Calendars</span>
-      <span class="font-semibold text-ow-secondary">{{ cals.shownCount }}/{{ cals.totalCount }}</span>
-    </button>
+      <button
+        type="button"
+        role="switch"
+        :aria-checked="showEvents"
+        title="Show or hide calendar events in the week"
+        aria-label="Show calendar events in the week"
+        class="flex cursor-pointer items-center border-none bg-transparent pl-[9px] pr-2 transition-colors hover:bg-ow-sunken"
+        @click="toggleEvents"
+      >
+        <OwSwitch :model-value="showEvents" as="span" size="sm" />
+      </button>
+
+      <span class="my-[6px] w-px flex-none bg-ow-border" aria-hidden="true" />
+
+      <button
+        type="button"
+        class="flex cursor-pointer items-center gap-2 border-none bg-transparent px-[11px] text-[13.5px] transition-colors hover:bg-ow-sunken"
+        :class="showEvents ? 'text-ow-title' : 'text-ow-ghost'"
+        :aria-expanded="open"
+        aria-haspopup="true"
+        @click="open = !open"
+      >
+        <span class="flex gap-[3px]" aria-hidden="true">
+          <span
+            v-for="s in cals.sources"
+            :key="s.id"
+            class="h-[14px] w-[6px] rounded-[2px]"
+            :style="{ background: showEvents && s.enabled ? inkColor(s.color) : 'var(--ow-track)' }"
+          />
+        </span>
+        <span>Calendars</span>
+        <span class="font-semibold" :class="showEvents ? 'text-ow-secondary' : 'text-ow-ghost'">
+          {{ cals.shownCount }}/{{ cals.totalCount }}
+        </span>
+      </button>
+    </div>
 
     <div
       v-if="open"
@@ -86,22 +109,6 @@ const PROVIDER_LABEL = { google: 'GOOGLE', caldav: 'CALDAV', ical: 'ICAL' } as c
       </button>
 
       <div v-if="!cals.none" class="mx-[5px] my-1.5 h-px bg-ow-hairline" />
-
-      <!-- The master switch: hides every calendar's events without forgetting which
-           individual calendars were on. -->
-      <button
-        v-if="!cals.none"
-        type="button"
-        role="switch"
-        :aria-checked="showEvents"
-        class="flex w-full cursor-pointer items-center gap-2.5 rounded-[9px] border-none bg-transparent px-[9px] py-2 text-left transition-colors hover:bg-ow-inset"
-        @click="toggleEvents"
-      >
-        <OwSwitch :model-value="showEvents" as="span" size="sm" />
-        <span class="text-[13.5px]" :class="showEvents ? 'text-ow-ink' : 'text-ow-muted'">
-          Show events in the week
-        </span>
-      </button>
 
       <p v-if="!cals.none" class="px-[9px] pb-[7px] pt-0.5 text-[12.5px] leading-relaxed text-ow-muted">
         Events are read-only and carry their calendar's name. Add or remove feeds in

@@ -21,6 +21,7 @@ const TYPEFACES = [
   { v: 'roboto', label: 'Roboto' },
   { v: 'inter', label: 'Inter' },
   { v: 'source-sans-3', label: 'Source Sans 3' },
+  { v: 'bricolage-grotesque', label: 'Bricolage' },
 ] as const
 
 const TEXT_SIZES = [

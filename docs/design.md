@@ -63,9 +63,13 @@ A task converted from a calendar event starts out wearing that calendar's ink.
 Self-hosted via `@fontsource` — the canvases link Google Fonts, which we deliberately do not copy
 (offline, privacy, AGPL). **There is no monospace anywhere.**
 
-- **`--ow-font-display`** — **Bricolage Grotesque** (variable): wordmark, week title, date numerals,
-  popover title. Tight tracking (`-0.02em` to `-0.03em`).
-- **`--ow-font-body`** — user-selectable: Open Sans (default), Lato, Roboto, Inter, Source Sans 3.
+- **`--ow-font-brand`** — **Bricolage Grotesque** (variable), the identity mark. Used only by the
+  wordmark, so the logo stays constant whatever face is chosen.
+- **`--ow-font-display`** / **`--ow-font-body`** — both follow the Typeface setting, so the week title,
+  date numerals and popover title read in the same face as everything else. Display text keeps its own
+  scale and tracking (`-0.02em` to `-0.03em`), just not its own family.
+
+Typeface options: Open Sans (default), Lato, Roboto, Inter, Source Sans 3, Bricolage.
 
 `--ow-text-scale` multiplies the 15px root size for the Small / Default / Large setting.
 
@@ -81,8 +85,10 @@ look — a coloured dot and no checkbox — under either mode.
 
 Ten frames, mirrored by the components:
 
-- **`TopBar`** — `BrandMark` (five falling bars) · week nav · **Weekends** toggle · range + `W{n}` ·
-  progress bar and "X of Y done" · `CalendarsMenu` · `SearchBox` · `AccountMenu`.
+- **`TopBar`** — `BrandMark` (five falling bars) · week nav · range + `W{n}` · progress bar and
+  "X of Y done" · **Weekends** toggle · `CalendarsMenu` · `SearchBox` · `AccountMenu`.
+- **`CalendarsMenu`** — a split control: the switch shows or hides every event, the rest opens the
+  per-calendar list.
 - **`WeekGrid`** → **`DayColumn`** — date numeral + weekday, `TODAY` badge, "N left", events then a
   `TASKS` rule, tasks, the done fold, and an inline composer.
 - **`TaskItem`** / **`EventItem`** — the row in both the grid and the rail.
@@ -101,8 +107,11 @@ Ten frames, mirrored by the components:
 - **Collapse done** — finished tasks fold into a quiet "N done" line per day *and* per list.
 - **Weekends** — 7 or 5 columns, from the toolbar or Settings.
 - **Cmd/Ctrl-K** — search across this week and every list, capped at 8 results.
-- **Dragging** — the carried row lifts and tilts; a drop line marks the landing place, including in
-  a day or list that is currently empty.
+- **Dragging** — the row left behind fades while a drop line marks the landing place, including in a
+  day or list that is currently empty. The source row is deliberately *not* transformed: it is not the
+  thing under the cursor, so tilting it reads as the wrong item moving.
+- **Deleting** — tasks and lists confirm inline in place, rather than through a browser `confirm()`
+  that sits outside the theme and ignores `Esc`.
 
 Calendar events are filtered client-side by both the per-calendar switches and the master
 "Show events in the week" toggle, so either takes effect without a refetch.

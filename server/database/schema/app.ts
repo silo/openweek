@@ -32,7 +32,7 @@ export const themeEnum = pgEnum('theme', ['paper', 'ink', 'system'])
 // Accents are their own palette — the five inks plus blue and graphite. Appended rather
 // than reordered so the type only ever grows.
 export const accentEnum = pgEnum('accent', ['persimmon', 'amber', 'jade', 'indigo', 'magenta', 'blue', 'graphite'])
-export const fontStyleEnum = pgEnum('font_style', ['open-sans', 'lato', 'roboto', 'inter', 'source-sans-3'])
+export const fontStyleEnum = pgEnum('font_style', ['open-sans', 'lato', 'roboto', 'inter', 'source-sans-3', 'bricolage-grotesque'])
 export const tagStyleEnum = pgEnum('tag_style', ['edge', 'fill'])
 export const textSizeEnum = pgEnum('text_size', ['small', 'default', 'large'])
 export const highlightColorEnum = pgEnum('highlight_color', ['persimmon', 'amber', 'jade', 'indigo', 'magenta'])

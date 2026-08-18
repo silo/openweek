@@ -3,8 +3,12 @@ import type { Settings } from '~~/shared/schemas/settings'
 type FontStyle = Settings['fontStyle']
 type TextSize = Settings['textSize']
 
-/** Body face stacks, matching the design's `fontStacks`. Display is always Bricolage Grotesque. */
+/**
+ * The chosen face drives every bit of text except the wordmark, which keeps Bricolage
+ * Grotesque as the identity mark (`--ow-font-brand`).
+ */
 export const FONT_STACKS: Record<FontStyle, string> = {
+  'bricolage-grotesque': '"Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif',
   'open-sans': '"Open Sans", Arial, sans-serif',
   'lato': 'Lato, Arial, sans-serif',
   'roboto': 'Roboto, Arial, sans-serif',
@@ -35,6 +39,8 @@ export function applyTheme(s: ThemeSettings) {
   root.dataset.theme = prefersInk(s.theme) ? 'openweek-dark' : 'openweek'
   // The accent is a named ink; main.css maps [data-accent] onto --ow-accent per theme.
   root.dataset.accent = s.accentColor
-  root.style.setProperty('--ow-font-body', FONT_STACKS[s.fontStyle])
+  const face = FONT_STACKS[s.fontStyle]
+  root.style.setProperty('--ow-font-display', face)
+  root.style.setProperty('--ow-font-body', face)
   root.style.setProperty('--ow-text-scale', TEXT_SCALES[s.textSize])
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { FONT_STACKS, TEXT_SCALES } from '~/composables/useTheme'
+import { DEFAULT_ACCENT } from '~~/shared/constants/colors'
 
 const settings = useSettingsStore()
 
@@ -18,15 +19,16 @@ const isSystem = computed(() => (settings.settings?.theme ?? 'system') === 'syst
 useHead({
   htmlAttrs: {
     'data-theme': themeAttr,
-    'data-accent': computed(() => settings.settings?.accentColor ?? 'persimmon'),
+    'data-accent': computed(() => settings.settings?.accentColor ?? DEFAULT_ACCENT),
     'data-follow-system': computed(() => (isSystem.value ? '1' : undefined)),
   },
   style: [{
     id: 'ow-appearance',
     innerHTML: computed(() => {
       const s = settings.settings
+      const face = FONT_STACKS[s?.fontStyle ?? 'open-sans']
       return `:root{--ow-text-scale:${TEXT_SCALES[s?.textSize ?? 'default']};`
-        + `--ow-font-body:${FONT_STACKS[s?.fontStyle ?? 'open-sans']}}`
+        + `--ow-font-display:${face};--ow-font-body:${face}}`
     }),
   }],
   script: [{

@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { ACCENTS } from '../constants/colors'
 
-/** Body faces offered by the Typeface setting. Values match the @fontsource packages. */
-export const FONT_STYLES = ['open-sans', 'lato', 'roboto', 'inter', 'source-sans-3'] as const
+/** Faces offered by the Typeface setting. Values match the @fontsource packages. */
+export const FONT_STYLES = ['open-sans', 'lato', 'roboto', 'inter', 'source-sans-3', 'bricolage-grotesque'] as const
 
 /** Themes. `system` follows prefers-color-scheme. */
 export const THEMES = ['paper', 'ink', 'system'] as const

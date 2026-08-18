@@ -73,7 +73,16 @@ function queueCommit() {
 }
 
 onBeforeUnmount(commit)
+
+// Deleting is unrecoverable, so the button asks first. Inline rather than a browser
+// confirm(), which would sit outside the theme and cannot be dismissed with Esc.
+const confirmingDelete = ref(false)
+
 async function remove() {
+  if (!confirmingDelete.value) {
+    confirmingDelete.value = true
+    return
+  }
   await week.deleteTask(props.task.id)
   emit('close')
 }
@@ -147,7 +156,7 @@ async function remove() {
           v-model="time"
           type="time"
           placeholder="––:––"
-          class="w-20 rounded-[9px] border border-ow-border bg-ow-surface px-[9px] py-2 text-[13px] tabular-nums outline-none"
+          class="w-[104px] rounded-[9px] border border-ow-border bg-ow-surface px-[9px] py-2 text-[13px] tabular-nums outline-none"
           @input="queueCommit"
           @blur="commit"
         >
@@ -187,18 +196,38 @@ async function remove() {
     </div>
 
     <div class="flex items-center gap-2.5 border-t border-ow-hairline pt-[11px]">
-      <button
-        type="button"
-        class="cursor-pointer border-none bg-transparent p-0 text-[13.5px]"
-        style="color: var(--color-error);"
-        @click="remove"
-      >
-        Delete
-      </button>
-      <!-- The schema already carries subtasks and recurrence; the UI is deliberately deferred. -->
-      <div class="flex-1 text-right text-[11.5px] font-semibold tracking-[0.04em] text-ow-ghost">
-        SOON: SUBTASKS · REPEAT
-      </div>
+      <template v-if="confirmingDelete">
+        <span class="text-[13px] text-ow-ink">Delete this task?</span>
+        <button
+          type="button"
+          class="cursor-pointer rounded-[7px] border-none px-2.5 py-1 text-[13px] font-semibold text-white"
+          style="background: var(--color-error);"
+          @click="remove"
+        >
+          Delete
+        </button>
+        <button
+          type="button"
+          class="cursor-pointer border-none bg-transparent p-0 text-[13px] text-ow-muted hover:text-ow-ink"
+          @click="confirmingDelete = false"
+        >
+          Cancel
+        </button>
+      </template>
+      <template v-else>
+        <button
+          type="button"
+          class="cursor-pointer border-none bg-transparent p-0 text-[13.5px]"
+          style="color: var(--color-error);"
+          @click="remove"
+        >
+          Delete
+        </button>
+        <!-- The schema already carries subtasks and recurrence; the UI is deliberately deferred. -->
+        <div class="flex-1 text-right text-[11.5px] font-semibold tracking-[0.04em] text-ow-ghost">
+          SOON: SUBTASKS · REPEAT
+        </div>
+      </template>
     </div>
   </div>
 </template>

@@ -29,6 +29,13 @@
       "when": 1787082803122,
       "tag": "0003_faithful_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787083953233,
+      "tag": "0004_massive_ego",
+      "breakpoints": true
     }
   ]
 }
