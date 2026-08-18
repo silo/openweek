@@ -1,0 +1,1 @@
+ALTER TABLE "list" ALTER COLUMN "color" SET DEFAULT 'indigo';

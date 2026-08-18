@@ -42,7 +42,8 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      htmlAttrs: { lang: 'en', 'data-theme': 'openweek' },
+      // data-theme / data-accent are set in app.vue from the user's settings.
+      htmlAttrs: { lang: 'en' },
       title: 'Openweek',
     },
   },

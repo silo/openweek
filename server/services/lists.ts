@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../database/client'
 import { list } from '../database/schema'
 import { keyBetween } from './ordering'
+import { inkForIndex } from '~~/shared/constants/colors'
 
 /** Ensure the user has at least the default "Someday" list. Cheap no-op once it exists. */
 export async function ensureDefaultList(userId: string): Promise<void> {
@@ -10,7 +11,7 @@ export async function ensureDefaultList(userId: string): Promise<void> {
   await db.insert(list).values({
     userId,
     name: 'Someday',
-    color: '#C6C1B5',
+    color: inkForIndex(0),
     isDefault: true,
     position: keyBetween(null, null),
   })

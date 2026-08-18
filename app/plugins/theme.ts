@@ -1,5 +1,6 @@
-// Loads the user's settings and keeps the appearance (theme, accent, body face, text size)
-// in sync with them.
+// Loads the user's settings on both server and client. Loading them during SSR is what
+// lets app.vue render the right theme in the initial HTML instead of flashing Paper and
+// correcting after hydration.
 export default defineNuxtPlugin(async () => {
   const store = useSettingsStore()
 
@@ -11,6 +12,8 @@ export default defineNuxtPlugin(async () => {
       // Unauthenticated (e.g. on /login) — nothing to apply yet.
     }
   }
+
+  if (!import.meta.client) return
 
   watchEffect(() => {
     if (store.settings) applyTheme(store.settings)

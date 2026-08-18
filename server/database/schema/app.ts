@@ -60,7 +60,7 @@ export const list = pgTable('list', {
   id: primaryId(),
   userId: userId(),
   name: text('name').notNull(),
-  color: text('color').notNull().default('#C6C1B5'),
+  color: text('color').notNull().default('indigo'),
   isDefault: boolean('is_default').notNull().default(false),
   position: text('position').notNull(),
   archivedAt: timestamp('archived_at', { withTimezone: true }),
