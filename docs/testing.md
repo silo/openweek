@@ -25,6 +25,19 @@ integration layer against a real Postgres, all gated in CI.
 `TaskDetailPopover`, `DayColumn` inline composer and done-fold, `ListCard` menu, `AppearanceSettings`.
 Assert rendered structure + a11y roles, not pixel styles.
 
+## Local demo data
+
+`pnpm db:seed` creates (or reuses) **demo@openweek.test** / **demo1234** and replaces its data with a
+week built to exercise the whole design: all five inks, per-task times and notes, a done-fold on a day
+*and* a list, the rollover banner, four lists, and events across a Google / CalDAV / iCal connection with
+one calendar switched off so the `3/4` count is visible.
+
+It is idempotent — re-running replaces that user's rows and leaves every other account alone.
+
+Task placement is deliberate: days before today carry **completed tasks only**. Rollover is enabled so
+the review banner has something to show, and rollover moves unfinished tasks off past days, so open
+tasks seeded there would be scrambled on first load.
+
 ### Server / integration (test Postgres)
 Endpoints exercised against a disposable Postgres (a compose db or Testcontainers): task CRUD, **move/ordering
 persistence**, list CRUD, convert-event, settings read/write, the **auth guard** (401 when unauthenticated,

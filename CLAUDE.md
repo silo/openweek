@@ -29,6 +29,7 @@ pnpm db:psql        # psql shell inside the container
 pnpm db:logs        # tail Postgres logs
 pnpm db:generate    # generate a migration after editing the schema
 pnpm db:migrate     # apply migrations
+pnpm db:seed        # demo account + a week of test data (see docs/testing.md)
 pnpm auth:gen       # regenerate Better Auth tables after auth changes
 ```
 First run: `cp .env.example .env`, then `pnpm db:up && pnpm db:migrate && pnpm dev`.

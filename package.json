@@ -23,6 +23,7 @@
     "db:reset": "docker compose down -v && pnpm run db:up && pnpm run db:migrate",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node --env-file=.env --import tsx scripts/seed.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "auth:gen": "npx --yes @better-auth/cli@latest generate --config server/utils/auth.ts --output server/database/schema/auth.ts --yes"
@@ -67,6 +68,7 @@
     "eslint": "^9.0.0",
     "happy-dom": "^20.0.0",
     "tailwindcss": "^4.3.2",
+    "tsx": "^4.23.12",
     "typescript": "^5.6.0",
     "vitest": "^4.1.0",
     "vue-tsc": "^3.0.0"
