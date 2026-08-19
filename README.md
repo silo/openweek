@@ -194,9 +194,8 @@ Proxmox doesn't run OCI containers itself; you give it a guest that runs Docker.
 The path Proxmox itself recommends for Docker — full kernel isolation, no nesting caveats, and snapshots that
 actually capture the whole thing.
 
-1. Create a VM from a Debian 12 or Ubuntu Server 24.04 cloud image. **2 vCPU / 4 GB RAM / 20 GB disk** is a
-   comfortable starting point; the Nuxt build is the memory-hungry step, so don't go below 2 GB or the first
-   `docker compose up --build` may be killed part-way.
+1. Create a VM from a Debian 12 or Ubuntu Server 24.04 cloud image. **2 vCPU / 2 GB RAM / 20 GB disk** is a
+   comfortable starting point.
 2. Install Docker: `curl -fsSL https://get.docker.com | sh`
 3. Follow [Docker Compose](#docker-compose) above.
 4. Snapshot the VM once it's up, before you put real data in it.
@@ -207,7 +206,7 @@ Uses noticeably less RAM and disk, at the cost of some setup friction. Docker in
 needs two features enabled — without them the daemon starts but containers fail with cryptic overlayfs or
 keyring errors.
 
-1. Create a Debian 12 container, **unprivileged**, 2 vCPU / 4 GB RAM / 20 GB disk.
+1. Create a Debian 12 container, **unprivileged**, 2 vCPU / 2 GB RAM / 20 GB disk.
 2. On the Proxmox host, enable nesting and keyctl for it (replace `110` with your CTID):
 
    ```bash
