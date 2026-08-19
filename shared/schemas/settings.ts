@@ -23,8 +23,10 @@ export const settingsSchema = z.object({
   tagStyle: z.enum(TAG_STYLES),
   textSize: z.enum(TEXT_SIZES),
   showWeekends: z.boolean(),
+  showLists: z.boolean(),
   collapseDone: z.boolean(),
   showCalendarEvents: z.boolean(),
+  hideConvertedEvents: z.boolean(),
   rolloverEnabled: z.boolean(),
   timezone: z.string().min(1),
 })

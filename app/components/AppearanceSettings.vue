@@ -140,6 +140,20 @@ const note = 'mt-2.5 max-w-[560px] text-[13px] leading-relaxed text-ow-muted'
         <span>Show weekends</span>
         <span class="text-[13px] text-ow-muted">also a toggle in the toolbar</span>
       </label>
+      <label class="mt-3.5 flex items-center gap-3 text-sm text-ow-ink">
+        <OwSwitch
+          :model-value="store.settings.showLists"
+          size="lg"
+          label="Show lists under the week"
+          @update:model-value="set('showLists', $event)"
+        />
+        <span>Show lists under the week</span>
+        <span class="text-[13px] text-ow-muted">also a toggle in the toolbar</span>
+      </label>
+      <p :class="note">
+        Off gives the week the whole window. The lists themselves are untouched — a task can
+        still be sent to one from its “Move to…” menu.
+      </p>
     </section>
 
     <section>
@@ -193,6 +207,19 @@ const note = 'mt-2.5 max-w-[560px] text-[13px] leading-relaxed text-ow-muted'
         />
         <span>Show calendar events in the week</span>
       </label>
+      <label class="mt-3.5 flex items-center gap-3 text-sm text-ow-ink">
+        <OwSwitch
+          :model-value="store.settings.hideConvertedEvents"
+          size="lg"
+          label="Hide events that became tasks"
+          @update:model-value="set('hideConvertedEvents', $event)"
+        />
+        <span>Hide events that became tasks</span>
+      </label>
+      <p :class="note">
+        When you turn an event into a task with ＋ task, the event itself steps aside so the
+        same meeting is not listed twice. Delete the task and the event comes back.
+      </p>
     </section>
   </div>
   <p v-else class="text-sm text-ow-muted">

@@ -27,6 +27,8 @@ export const calendarEventDtoSchema = z.object({
   provider: z.enum(['google', 'caldav', 'ical']),
   color: z.string(),
   sourceName: z.string(),
+  /** A task was made from this event and still exists — `hideConvertedEvents` drops it. */
+  converted: z.boolean(),
 })
 export type CalendarEventDto = z.infer<typeof calendarEventDtoSchema>
 
@@ -60,6 +62,15 @@ export const calendarConnectionDtoSchema = z.object({
   sources: z.array(calendarSourceDtoSchema),
 })
 export type CalendarConnectionDto = z.infer<typeof calendarConnectionDtoSchema>
+
+/**
+ * Which connect flows this deployment can offer. Google's needs `GOOGLE_CLIENT_ID` /
+ * `GOOGLE_CLIENT_SECRET` in the server's env; CalDAV and iCal need nothing.
+ */
+export const calendarProvidersDtoSchema = z.object({
+  google: z.object({ configured: z.boolean(), redirectUri: z.string() }),
+})
+export type CalendarProvidersDto = z.infer<typeof calendarProvidersDtoSchema>
 
 export const convertEventSchema = z.object({
   keepLinked: z.boolean().default(true),

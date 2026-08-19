@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
 
   // Nothing below depends on anything else except lists-after-ensureDefaultList, so the
   // four reads go out in one wave rather than four sequential round-trips.
-  const [rows, listRows, listTasks, events] = await Promise.all([
+  const [rows, listRows, listTasks, events, converted] = await Promise.all([
     db.select().from(task)
       .where(and(eq(task.userId, userId), gte(task.date, weekStart), lte(task.date, endDate)))
       .orderBy(asc(task.position), asc(task.id)),
@@ -61,12 +61,21 @@ export default defineEventHandler(async (event) => {
         eq(calendarEvent.status, 'confirmed'),
       ))
       .orderBy(asc(calendarEvent.startAt)),
+
+    // Events that already became a task, so the grid can drop them rather than list the
+    // same meeting twice. Whole-account rather than windowed: a converted task can be
+    // moved to another day or into a list, and the link survives that.
+    db.selectDistinct({ eventId: task.sourceEventId }).from(task)
+      .where(and(eq(task.userId, userId), isNotNull(task.sourceEventId))),
   ])
+
+  const convertedIds = new Set(converted.map(c => c.eventId))
+  const eventDtos = events.map(e => ({ ...e, converted: convertedIds.has(e.id) }))
 
   const days = dates.map(date => ({
     date,
     tasks: rows.filter(r => r.date === date),
-    events: events.filter(e => e.localDate === date),
+    events: eventDtos.filter(e => e.localDate === date),
   }))
   const lists = listRows.map(l => ({ ...l, tasks: listTasks.filter(t => t.listId === l.id) }))
   return { weekStart, days, lists }

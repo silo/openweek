@@ -51,7 +51,11 @@ onMounted(() => {
       week.draggingId = null
     },
   })
-  const stopDrop = taskDropTarget(row.value, props.task.id, props.container, e => (edge.value = e))
+  // A row on a day that has gone still drags out, but nothing drops onto it — the whole
+  // column is closed to new tasks.
+  const stopDrop = week.isPastContainer(props.container)
+    ? () => {}
+    : taskDropTarget(row.value, props.task.id, props.container, e => (edge.value = e))
   onUnmounted(() => { stopDrag(); stopDrop() })
 })
 </script>

@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import type { CalendarEventDto } from '~~/shared/schemas/calendar'
 import { PROVIDER_LABELS, inkColor } from '~~/shared/constants/colors'
+import { isPastDate, todayStr } from '~~/shared/utils/week'
 
-defineProps<{ event: CalendarEventDto }>()
+const props = defineProps<{ event: CalendarEventDto }>()
 const emit = defineEmits<{ convert: [CalendarEventDto] }>()
+
+// The sync window reaches a week back, and the task an event becomes carries its date —
+// which cannot be in the past. So last week's events are shown but not convertible.
+const convertible = computed(() => !isPastDate(props.event.localDate, todayStr()))
 
 </script>
 
@@ -25,8 +30,14 @@ const emit = defineEmits<{ convert: [CalendarEventDto] }>()
           {{ event.sourceName }} · {{ PROVIDER_LABELS[event.provider] }}
         </span>
         <div class="flex-1" />
+        <!-- Only shown when "hide events that became tasks" is off — otherwise this row
+             would already be gone. It marks the event as spoken for, so it is not
+             converted a second time. -->
+        <span v-if="event.converted" class="whitespace-nowrap text-[11.5px] text-ow-ghost">✓ task</span>
+
         <!-- The visible label is just "＋ task"; name the event for screen readers. -->
         <button
+          v-else-if="convertible"
           type="button"
           title="Make this a task"
           :aria-label="`Make ${event.title} a task`"

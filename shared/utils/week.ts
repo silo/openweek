@@ -32,6 +32,15 @@ export function todayInTz(timezone: string): string {
   }
 }
 
+/**
+ * A day that has already gone. The planner refuses to put a task there — you cannot plan
+ * into the past — so this is the one rule the composer, drops, "Move to…", convert, and the
+ * task endpoints all share. ISO dates compare correctly as strings.
+ */
+export function isPastDate(dateStr: string, today: string): boolean {
+  return dateStr < today
+}
+
 /** Start-of-week for the date, given the user's week-start (0 = Sunday, 1 = Monday). */
 export function startOfWeekStr(dateStr: string, weekStartsOn: 0 | 1): string {
   const [y, m, d] = dateStr.split('-').map(Number)

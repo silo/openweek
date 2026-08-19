@@ -27,6 +27,16 @@ const visibleDays = computed(() =>
 )
 
 /**
+ * The hint is for a genuinely blank week only. A week with no tasks but a full calendar is
+ * not "clear", and the line used to float straight across those event rows.
+ */
+const showEmptyHint = computed(() =>
+  week.weekEmpty
+  && !week.loading
+  && !visibleDays.value.some(d => eventsByDate.value.get(d.date)?.length),
+)
+
+/**
  * Focusing a day widens its column and narrows the rest, rather than hiding anything.
  * Ratios are the design's: 2.1fr against 0.85fr.
  *
@@ -69,10 +79,11 @@ const colTemplate = computed(() => {
     </div>
 
     <!-- Floated over the grid rather than stacked above it: as a block it pushed the whole
-         week down whenever you paged onto an empty one. -->
+         week down whenever you paged onto an empty one. Parked at the foot rather than
+         mid-column, where it sat over the top of every day's contents. -->
     <p
-      v-if="week.weekEmpty && !week.loading"
-      class="pointer-events-none absolute inset-x-0 top-[38%] text-center text-[13.5px] text-ow-ghost"
+      v-if="showEmptyHint"
+      class="pointer-events-none absolute inset-x-0 bottom-5 text-center text-[13.5px] text-ow-ghost"
     >
       A clear week — add a task on any day, or drag one up from a list below.
     </p>

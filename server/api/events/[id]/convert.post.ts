@@ -2,6 +2,7 @@ import { and, desc, eq } from 'drizzle-orm'
 import { db } from '../../../database/client'
 import { calendarConnection, calendarEvent, calendarSource, task } from '../../../database/schema'
 import { requireUserId } from '../../../utils/session'
+import { assertNotPast, userToday } from '../../../utils/today'
 import { keyBetween } from '../../../services/ordering'
 import { convertEventSchema } from '~~/shared/schemas/calendar'
 import { HIGHLIGHT_INKS } from '~~/shared/constants/colors'
@@ -33,7 +34,10 @@ export default defineEventHandler(async (event) => {
     ? ev.sourceColor as HighlightInk
     : null
 
+  // Events reach a week back (the sync window), but the task they become cannot land there.
   const date = input.date ?? ev.localDate
+  assertNotPast(date, await userToday(userId))
+
   const [last] = await db.select({ position: task.position }).from(task)
     .where(and(eq(task.userId, userId), eq(task.date, date)))
     .orderBy(desc(task.position)).limit(1)

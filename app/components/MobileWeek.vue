@@ -2,7 +2,7 @@
 import { format, parseISO } from 'date-fns'
 import type { CalendarEventDto } from '~~/shared/schemas/calendar'
 import type { Task } from '~~/shared/schemas/task'
-import { todayStr } from '~~/shared/utils/week'
+import { isPastDate, todayStr } from '~~/shared/utils/week'
 
 const props = defineProps<{ rangeLabel: string, weekNumber: number }>()
 const emit = defineEmits<{
@@ -14,6 +14,7 @@ const emit = defineEmits<{
 
 const week = useWeekStore()
 const cals = useCalendarsStore()
+const settings = useSettingsStore()
 
 const today = todayStr()
 
@@ -37,6 +38,8 @@ const shortLabel = computed(() =>
   activeDay.value ? format(parseISO(activeDay.value.date), 'EEE') : '',
 )
 const openCount = computed(() => activeDay.value?.tasks.filter(t => !t.completedAt).length ?? 0)
+/** Days that have gone take no new tasks — same rule as the grid's columns. */
+const isPast = computed(() => isPastDate(activeDate.value, today))
 
 /** One row object per day. Built as a computed because the template reads six fields
  *  per button — calling a function per field re-parsed the date and rescanned the week. */
@@ -132,7 +135,7 @@ const strips = computed(() => week.days.map((d) => {
         @open="(task, rect) => emit('openTask', task, rect)"
       />
 
-      <TaskComposer :container="container" :label="`＋ Add to ${shortLabel}`" />
+      <TaskComposer v-if="!isPast" :container="container" :label="`＋ Add to ${shortLabel}`" />
     </section>
 
     <nav class="fixed bottom-0 left-0 right-0 flex border-t border-ow-line bg-ow-surface">
@@ -142,7 +145,12 @@ const strips = computed(() => week.days.map((d) => {
       >
         Week
       </NuxtLink>
-      <a href="#ow-lists" class="flex-1 py-3 text-center text-[12.5px] text-ow-muted no-underline">Lists</a>
+      <!-- Nothing to jump to when the rail is switched off; the switch lives in Settings. -->
+      <a
+        v-if="settings.settings?.showLists ?? true"
+        href="#ow-lists"
+        class="flex-1 py-3 text-center text-[12.5px] text-ow-muted no-underline"
+      >Lists</a>
       <NuxtLink to="/settings" class="flex-1 py-3 text-center text-[12.5px] text-ow-muted no-underline">
         Settings
       </NuxtLink>

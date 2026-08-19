@@ -34,8 +34,10 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 | `tagStyle` | enum | `edge` \| `fill` (default `edge`) — how a highlight is drawn. |
 | `textSize` | enum | `small` \| `default` \| `large`; drives `--ow-text-scale`. |
 | `showWeekends` | boolean | default `true`; also a toolbar toggle. |
+| `showLists` | boolean | default `true`; hides the lists rail under the week so the grid has the whole window. Also a toolbar toggle. |
 | `collapseDone` | boolean | default `true`; folds finished tasks into a "N done" line. |
 | `showCalendarEvents` | boolean | default `true`. |
+| `hideConvertedEvents` | boolean | default `true`; an event that became a task steps out of the grid, so the same meeting is not listed twice. Deleting the task brings it back. |
 | `rolloverEnabled` | boolean | default `false` (opt-in). |
 | `timezone` | text | IANA tz; used by rollover + event placement. |
 
@@ -70,6 +72,11 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 
 **Bucket invariant** — a task is on a day **or** in a list, never both, never neither:
 `CHECK (num_nonnulls(date, list_id) = 1)`.
+**No planning into the past** — `date` may not be **before today** in the user's `timezone`. Enforced by
+`POST /api/tasks`, `PATCH /api/tasks/:id` and the event convert endpoint (`server/utils/today.ts`), and mirrored
+in the UI: past columns drop their composer and their drop targets, past days are disabled in "Move to…", and
+past events lose their "＋ task" button. The one exception is the rollover banner's **send back**, which
+restores a task to its own `originalDate`. Rows already sitting on a past day are left alone.
 **Indexes** — `(userId, date)`, `(userId, listId)`, `(userId, completedAt)`.
 
 ### `subtask` — schema-ready (UI deferred, see [decisions.md](./decisions.md))

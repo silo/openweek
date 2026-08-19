@@ -60,7 +60,9 @@ Credentials are encrypted **at rest** with **AES-256-GCM** (`node:crypto`, no de
 
 - **Google** — a **dedicated** OAuth flow (scope `calendar.readonly`), separate from Google **sign-in**.
   Redirect → consent → `GET /api/calendars/google/callback` → exchange the code (`google-auth-library`) →
-  encrypt tokens → enumerate calendars into `calendar_source` rows.
+  encrypt tokens → enumerate calendars into `calendar_source` rows. Needs `GOOGLE_CLIENT_ID`/`SECRET`, which
+  only the self-hoster can supply: `GET /api/calendars/providers` reports whether they are set, and Settings
+  shows the env keys and the redirect URI to register instead of a button that would 400.
 - **CalDAV** — server URL + username + **app-specific password**; validated by a probe `fetchCalendars`
   (`tsdav` handles Apple/Nextcloud/Fastmail discovery).
 - **iCal** — a feed URL, validated by a probe GET.
@@ -76,7 +78,14 @@ draggable, not checkable. The `showCalendarEvents` setting hides them entirely.
 `POST /api/events/:id/convert { keepLinked: boolean, date? }` creates a `task` on the event's `localDate`
 (or a chosen date), copying the title and time. When `keepLinked` is true it sets `sourceEventId` +
 `sourceLabel`, so the task shows a "⤺ from Google Calendar" pill and stays associated with its origin. This is
-the one bridge between the read-only mirror and editable tasks.
+the one bridge between the read-only mirror and editable tasks. The window reaches a week back, so events on
+days that have gone are still shown — but they cannot be converted: a task may not be dated before today
+(see [data-model.md](./data-model.md)).
+
+`GET /api/week` marks each event `converted` when a task still links to it, and the **`hideConvertedEvents`**
+setting (default on) drops those rows in the client alongside the other visibility rules — so a converted
+meeting appears once, as a task. Deleting the task unhides the event; with the setting off the event stays and
+shows a quiet "✓ task" instead of its ＋ button.
 
 ## Related docs
 [data-model.md](./data-model.md) (`calendar_*` tables) · [architecture.md](./architecture.md) ·

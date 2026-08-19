@@ -75,8 +75,12 @@ function commitEdit(id: string) {
 
 const inputClass = 'rounded-[9px] border border-ow-border bg-ow-surface px-3 py-2 text-sm outline-none focus:border-ow-mark'
 
+/** Undefined while the answer is still in flight — neither branch shows until it lands. */
+const googleReady = computed(() => cals.providers?.google.configured)
+
 onMounted(() => {
   if (!cals.loaded) cals.load()
+  if (!cals.providers) cals.loadProviders()
 })
 </script>
 
@@ -200,11 +204,43 @@ onMounted(() => {
       </h3>
       <div class="flex flex-col gap-4">
         <a
+          v-if="googleReady"
           href="/api/calendars/google/start"
           class="self-start rounded-[9px] border border-ow-border px-3 py-2 text-sm text-ow-text no-underline transition-colors hover:bg-ow-sunken hover:text-ow-ink"
         >
           ＋ Add Google account
         </a>
+
+        <!-- Google's OAuth credentials can only come from whoever runs the server, so an
+             unconfigured install says what to set rather than offering a button that 400s. -->
+        <div
+          v-else-if="googleReady === false"
+          class="flex flex-col gap-2 rounded-xl border border-ow-border bg-ow-sunken px-3.5 py-3"
+        >
+          <span class="text-sm font-semibold text-ow-ink">Google Calendar is not set up on this server</span>
+          <p class="max-w-[620px] text-[13px] leading-relaxed text-ow-muted">
+            Connecting a Google account needs OAuth credentials from the
+            <a
+              href="https://console.cloud.google.com/apis/credentials"
+              target="_blank"
+              rel="noreferrer"
+              class="underline"
+            >Google Cloud Console</a>.
+            Create an OAuth client (type <em>Web application</em>) with this redirect URI:
+          </p>
+          <code class="select-all break-all rounded-md bg-ow-surface px-2 py-1.5 text-[12.5px] text-ow-ink">{{ cals.providers?.google.redirectUri }}</code>
+          <p class="max-w-[620px] text-[13px] leading-relaxed text-ow-muted">
+            Then put its id and secret in the server's <code>.env</code> as
+            <code class="text-ow-ink">GOOGLE_CLIENT_ID</code> and
+            <code class="text-ow-ink">GOOGLE_CLIENT_SECRET</code>, and restart Openweek.
+            Both are optional settings — see <code>docs/self-hosting.md</code>.
+          </p>
+          <p class="max-w-[620px] text-[13px] leading-relaxed text-ow-muted">
+            No access to the server? A Google calendar can also be mirrored with no setup at all:
+            in Google Calendar open <em>Settings → your calendar → Secret address in iCal format</em>
+            and paste it below.
+          </p>
+        </div>
 
         <div class="flex flex-col gap-2">
           <span class="text-[12.5px] text-ow-muted">Add an iCal URL</span>

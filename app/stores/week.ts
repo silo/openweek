@@ -7,6 +7,7 @@ import type { Container } from '~/composables/useTaskBoard'
 import { containerKey } from '~/composables/useTaskBoard'
 import { inkForIndex } from '~~/shared/constants/colors'
 import { isRolledOver } from '~~/shared/utils/task'
+import { isPastDate, todayStr } from '~~/shared/utils/week'
 
 interface Day { date: string, tasks: Task[], events: CalendarEventDto[] }
 let tempCounter = 0
@@ -37,6 +38,19 @@ export const useWeekStore = defineStore('week', () => {
   const rolledIn = computed(() =>
     days.value.flatMap(d => d.tasks.filter(t => isRolledOver(t) && !t.completedAt)),
   )
+
+  /**
+   * The client half of "no planning into the past" (the endpoints enforce it too). Past
+   * days drop their composer and their drop targets, so this is the backstop for the paths
+   * that stay reachable — "Move to…", and a drag that started before midnight.
+   */
+  function isPastContainer(c: Container) {
+    return 'date' in c && isPastDate(c.date, todayStr())
+  }
+  /** …with the one exception the server also makes: sending a rolled-over task back. */
+  function refusesPast(taskId: string, dest: Container) {
+    return isPastContainer(dest) && find(taskId)?.originalDate !== (dest as { date: string }).date
+  }
 
   function isFoldOpen(c: Container) {
     return doneOpen.value[containerKey(c)] ?? false
@@ -112,7 +126,7 @@ export const useWeekStore = defineStore('week', () => {
   /** Add a task to a day or a list — the inline composer in both the grid and the rail. */
   function createTask(c: Container, title: string) {
     const bucket = bucketFor(c)
-    if (!bucket) return
+    if (!bucket || isPastContainer(c)) return
     const body = 'date' in c ? { title, date: c.date } : { title, listId: c.listId }
     return insertTask(bucket, body, tempTask({ ...c, title }))
   }
@@ -145,6 +159,11 @@ export const useWeekStore = defineStore('week', () => {
     const [removed] = loc.arr.splice(loc.index, 1)
     try {
       await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' })
+      // Delete the task made from an event and the event comes back to the day it hid from.
+      if (removed?.sourceEventId) {
+        const ev = findEvent(removed.sourceEventId)
+        if (ev) ev.converted = false
+      }
     }
     catch (err) {
       if (removed) loc.arr.splice(loc.index, 0, removed)
@@ -169,7 +188,7 @@ export const useWeekStore = defineStore('week', () => {
     after: boolean,
   ) {
     const loc = locate(taskId)
-    if (!loc) return
+    if (!loc || refusesPast(taskId, dest)) return
     const [t] = loc.arr.splice(loc.index, 1)
     if (!t) return
     const arr = bucketFor(dest)
@@ -203,9 +222,23 @@ export const useWeekStore = defineStore('week', () => {
     return moveTask(id, { date: t.originalDate })
   }
 
+  /** The event a linked task came from, wherever in the week it sits. */
+  function findEvent(eventId: string): CalendarEventDto | undefined {
+    for (const d of days.value) {
+      const ev = d.events.find(e => e.id === eventId)
+      if (ev) return ev
+    }
+  }
+
   async function convertEvent(eventId: string, keepLinked: boolean, date?: string) {
     const created = await apiFetch<Task>(`/api/events/${eventId}/convert`, { method: 'POST', body: { keepLinked, date } })
     if (created.date) days.value.find(d => d.date === created.date)?.tasks.push(created)
+    // Flag it here rather than waiting for the next week load, so `hideConvertedEvents`
+    // takes the row away in the same beat the task appears.
+    if (created.sourceEventId) {
+      const ev = findEvent(created.sourceEventId)
+      if (ev) ev.converted = true
+    }
     return created
   }
 
@@ -269,7 +302,7 @@ export const useWeekStore = defineStore('week', () => {
     weekStart, days, lists, loading,
     focusDate, doneOpen, rolloverReviewed, draggingId,
     doneCount, totalCount, weekEmpty, doneLabel, rolledIn,
-    isFoldOpen, toggleFold, toggleFocus,
+    isFoldOpen, toggleFold, toggleFocus, isPastContainer,
     loadWeek, find, containerOf, bucketFor, createTask,
     updateTask, toggleComplete, deleteTask, moveTask, moveRelative, sendBack, convertEvent,
     createList, updateList, moveList, deleteList,

@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "show_lists" boolean DEFAULT true NOT NULL;

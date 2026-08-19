@@ -15,6 +15,7 @@ await useAsyncData('settings', async () => {
 })
 
 const weekStartsOn = computed(() => (settings.settings?.weekStartsOn ?? 1) as 0 | 1)
+const showLists = computed(() => settings.settings?.showLists ?? true)
 const currentStart = ref(startOfWeekStr(todayStr(), weekStartsOn.value))
 
 // The calendars come down with the week, not on mount: which calendars are switched off is
@@ -118,8 +119,9 @@ onMounted(() => {
     </div>
 
     <!-- One instance for both layouts. Rendering it inside each tree meant every list card
-         and its drag registrations existed twice on every device. -->
-    <ListsRail id="ow-lists" class="pb-24 lg:pb-0" @open-task="openTask" />
+         and its drag registrations existed twice on every device. Hidden by the toolbar's
+         "Lists" switch, which gives the week the whole window. -->
+    <ListsRail v-if="showLists" id="ow-lists" class="pb-24 lg:pb-0" @open-task="openTask" />
 
     <TaskDetailPopover
       v-if="selected"

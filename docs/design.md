@@ -86,7 +86,8 @@ look — a coloured dot and no checkbox — under either mode.
 Ten frames, mirrored by the components:
 
 - **`TopBar`** — `BrandMark` (five falling bars) · week nav · range + `W{n}` · progress bar and
-  "X of Y done" · **Weekends** toggle · `CalendarsMenu` · `SearchBox` · `AccountMenu`.
+  "X of Y done" · a split control holding the **Weekends** and **Lists** toggles ·
+  `CalendarsMenu` · `SearchBox` · `AccountMenu`.
 - **`CalendarsMenu`** — a split control: the switch shows or hides every event, the rest opens the
   per-calendar list.
 - **`WeekGrid`** → **`DayColumn`** — date numeral + weekday, `TODAY` badge, "N left", events then a
@@ -108,6 +109,8 @@ Ten frames, mirrored by the components:
 - **Focus day** — clicking a day header widens it to `2.1fr` against `0.85fr` for the rest. Nothing hides.
 - **Collapse done** — finished tasks fold into a quiet "N done" line per day *and* per list.
 - **Weekends** — 7 or 5 columns, from the toolbar or Settings.
+- **Lists** — the rail under the week can be switched off from the same control, giving the grid the
+  whole window. The lists keep working: "Move to…" still reaches them.
 - **Cmd/Ctrl-K** — search across this week and every list, capped at 8 results.
 - **Dragging** — the row left behind fades while a drop line marks the landing place, including in a
   day or list that is currently empty. Lists and tasks use separate drag types, so a card never

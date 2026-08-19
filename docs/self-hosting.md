@@ -30,7 +30,7 @@ anything required is missing or malformed. Generate secrets with `openssl rand -
 | `BETTER_AUTH_SECRET` | ✅ | Signs sessions. |
 | `BETTER_AUTH_URL` | ✅ | Public URL, e.g. `https://openweek.example.com`. |
 | `OPENWEEK_ENCRYPTION_KEY` | ✅ | **base64 of exactly 32 bytes** — encrypts calendar tokens at rest. Validated at boot. |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | optional | Enables Google sign-in and/or Google Calendar sync. |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | optional | Enables Google sign-in and/or Google Calendar sync. Without them **Settings → Calendars** replaces the "Add Google account" button with what to set and the exact redirect URI to register (`$BETTER_AUTH_URL/api/calendars/google/callback`). A Google calendar can still be mirrored with no setup by pasting its *secret address in iCal format*. |
 | `OPENWEEK_SYNC_INTERVAL` | optional | Calendar poll interval (default `15m`). |
 | `OPENWEEK_EVENT_WINDOW` | optional | Event cache window (default `-1w..+6w`). |
 | `TZ` | optional | Container timezone default. |

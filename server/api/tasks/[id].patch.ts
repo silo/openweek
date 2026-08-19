@@ -2,13 +2,26 @@ import { and, desc, eq } from 'drizzle-orm'
 import { db } from '../../database/client'
 import { task } from '../../database/schema'
 import { requireUserId } from '../../utils/session'
+import { PAST_DATE_MESSAGE, userToday } from '../../utils/today'
 import { keyBetween } from '../../services/ordering'
 import { taskUpdateSchema } from '~~/shared/schemas/task'
+import { isPastDate } from '~~/shared/utils/week'
 
 export default defineEventHandler(async (event) => {
   const userId = await requireUserId(event)
   const id = getRouterParam(event, 'id')!
   const input = taskUpdateSchema.parse(await readBody(event))
+
+  // No moving a task into the past — except back to the day it rolled off, which is the
+  // rollover banner's "send back" and restores a date the task already had.
+  if (input.date != null && isPastDate(input.date, await userToday(userId))) {
+    const [existing] = await db.select({ originalDate: task.originalDate }).from(task)
+      .where(and(eq(task.id, id), eq(task.userId, userId)))
+    if (!existing) throw createError({ statusCode: 404, statusMessage: 'Task not found' })
+    if (existing.originalDate !== input.date) {
+      throw createError({ statusCode: 400, statusMessage: PAST_DATE_MESSAGE })
+    }
+  }
 
   const updates: Partial<typeof task.$inferInsert> = { updatedAt: new Date() }
   if (input.title !== undefined) updates.title = input.title

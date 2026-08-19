@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "hide_converted_events" boolean DEFAULT true NOT NULL;

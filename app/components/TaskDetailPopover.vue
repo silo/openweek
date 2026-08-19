@@ -26,7 +26,13 @@ const moveValue = computed(() => {
   return c ? containerKey(c) : ''
 })
 const dayOptions = computed(() =>
-  week.days.map(d => ({ value: containerKey({ date: d.date }), label: format(parseISO(d.date), 'EEEE d') })),
+  week.days.map(d => ({
+    value: containerKey({ date: d.date }),
+    label: format(parseISO(d.date), 'EEEE d'),
+    // Days that have gone stay listed but unselectable: dropping the option outright would
+    // leave the select showing nothing for a task that is sitting on one of those days.
+    disabled: week.isPastContainer({ date: d.date }) && d.date !== props.task.originalDate,
+  })),
 )
 const listOptions = computed(() =>
   week.lists.map(l => ({ value: containerKey({ listId: l.id }), label: l.name })),
@@ -162,7 +168,7 @@ async function remove() {
           class="w-full rounded-[9px] border border-ow-border bg-ow-surface px-[7px] py-2 text-[13.5px] text-ow-ink"
           @change="onMove"
         >
-          <option v-for="o in dayOptions" :key="o.value" :value="o.value">
+          <option v-for="o in dayOptions" :key="o.value" :value="o.value" :disabled="o.disabled">
             {{ o.label }}
           </option>
           <option disabled>

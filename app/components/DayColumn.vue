@@ -2,6 +2,7 @@
 import { format, parseISO } from 'date-fns'
 import type { CalendarEventDto } from '~~/shared/schemas/calendar'
 import type { Task } from '~~/shared/schemas/task'
+import { isPastDate, todayStr } from '~~/shared/utils/week'
 
 const props = defineProps<{
   date: string
@@ -25,13 +26,15 @@ const fullDate = computed(() => format(parseISO(props.date), 'EEEE d MMMM'))
 
 const isFocused = computed(() => week.focusDate === props.date)
 const openLeft = computed(() => props.tasks.filter(t => !t.completedAt).length)
+/** A day that has gone takes no new tasks: no composer, and nothing can be dropped into it. */
+const isPast = computed(() => isPastDate(props.date, todayStr()))
 
 // Destructured so the refs unwrap in the template.
 const { visibleTasks, hasFold, isOpen: foldOpen, label: foldLabel, toggle: toggleFold }
   = useDoneFold(container, () => props.tasks)
 
 onMounted(() => {
-  if (col.value) {
+  if (col.value && !isPast.value) {
     const stop = containerDropTarget(col.value, container.value, a => (dropAtEnd.value = a))
     onUnmounted(stop)
   }
@@ -97,7 +100,7 @@ onMounted(() => {
     <DropLine v-if="dropAtEnd" />
     <DoneFold v-if="hasFold" :label="foldLabel" :expanded="foldOpen" @click="toggleFold" />
 
-    <TaskComposer :container="container" />
+    <TaskComposer v-if="!isPast" :container="container" />
 
     <div class="flex-1" />
   </div>

@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
-import type { CalendarConnectionDto, CalendarEventDto, CalendarSourceDto } from '~~/shared/schemas/calendar'
+import type { CalendarConnectionDto, CalendarEventDto, CalendarProvidersDto, CalendarSourceDto } from '~~/shared/schemas/calendar'
 
 export const useCalendarsStore = defineStore('calendars', () => {
   const connections = ref<CalendarConnectionDto[]>([])
   const loaded = ref(false)
+  /** Null until asked — only the Calendars settings pane needs it, so it loads on demand. */
+  const providers = ref<CalendarProvidersDto | null>(null)
 
   /** Every calendar across every connection, in menu order. */
   const sources = computed(() => connections.value.flatMap(c => c.sources))
@@ -16,15 +18,19 @@ export const useCalendarsStore = defineStore('calendars', () => {
   const hiddenSourceIds = computed(() => new Set(sources.value.filter(s => !s.enabled).map(s => s.id)))
 
   /**
-   * Both visibility rules in one place — the master "show events" setting and each
-   * calendar's own switch. Applied client-side so either takes effect without a refetch;
-   * every surface that renders events goes through here so they cannot disagree.
+   * Every visibility rule in one place — the master "show events" setting, each calendar's
+   * own switch, and hiding events that already became tasks. Applied client-side so they
+   * take effect without a refetch; every surface that renders events goes through here so
+   * they cannot disagree.
    */
   function visibleEvents(events: CalendarEventDto[]): CalendarEventDto[] {
     const settings = useSettingsStore()
     if (settings.settings?.showCalendarEvents === false) return []
-    if (!hiddenSourceIds.value.size) return events
-    return events.filter(e => !hiddenSourceIds.value.has(e.sourceId))
+    const hideConverted = settings.settings?.hideConvertedEvents ?? true
+    if (!hiddenSourceIds.value.size && !hideConverted) return events
+    return events.filter(e =>
+      !hiddenSourceIds.value.has(e.sourceId) && !(hideConverted && e.converted),
+    )
   }
 
   /** The account line under a calendar's name — whichever identifier the connection carries. */
@@ -39,6 +45,11 @@ export const useCalendarsStore = defineStore('calendars', () => {
     const qs = weekStart ? `?start=${weekStart}` : ''
     connections.value = await apiFetch<CalendarConnectionDto[]>(`/api/calendars${qs}`)
     loaded.value = true
+  }
+
+  /** Whether this server can run the Google OAuth flow at all — see providers.get.ts. */
+  async function loadProviders() {
+    providers.value = await apiFetch<CalendarProvidersDto>('/api/calendars/providers')
   }
 
   async function patchSource(id: string, patch: Partial<Pick<CalendarSourceDto, 'name' | 'color' | 'enabled'>>) {
@@ -82,7 +93,7 @@ export const useCalendarsStore = defineStore('calendars', () => {
   }
 
   return {
-    connections, loaded, sources, shownCount, totalCount, allShown, none, hiddenSourceIds, visibleEvents,
-    accountFor, providerFor, load, patchSource, toggle, toggleAll, disconnect,
+    connections, loaded, providers, sources, shownCount, totalCount, allShown, none, hiddenSourceIds,
+    visibleEvents, accountFor, providerFor, load, loadProviders, patchSource, toggle, toggleAll, disconnect,
   }
 })

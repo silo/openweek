@@ -50,8 +50,11 @@ export const userSettings = pgTable('user_settings', {
   tagStyle: tagStyleEnum('tag_style').notNull().default('edge'),
   textSize: textSizeEnum('text_size').notNull().default('default'),
   showWeekends: boolean('show_weekends').notNull().default(true),
+  showLists: boolean('show_lists').notNull().default(true),
   collapseDone: boolean('collapse_done').notNull().default(true),
   showCalendarEvents: boolean('show_calendar_events').notNull().default(true),
+  // Once an event has become a task, showing both is the same meeting twice.
+  hideConvertedEvents: boolean('hide_converted_events').notNull().default(true),
   rolloverEnabled: boolean('rollover_enabled').notNull().default(false),
   timezone: text('timezone').notNull().default('UTC'),
   ...timestamps,
