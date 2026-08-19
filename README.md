@@ -12,6 +12,10 @@ An open alternative to [tweek.so](https://tweek.so), [teuxdeux.com](https://teux
 ![Status: early development](https://img.shields.io/badge/status-early%20development-orange)
 ![Nuxt 4](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt&logoColor=white)
 
+<br>
+
+<img src="./docs/screenshots/week-grid.png" alt="The Openweek week grid: seven day columns of checkable tasks, a rollover review banner, and a rail of lists along the bottom" width="900">
+
 </div>
 
 ---
@@ -44,6 +48,43 @@ It's **AGPL-3.0** and **self-host first** — your tasks live in your own Postgr
 
 > Not yet: subtasks, recurring tasks, reminders, two-way calendar sync, and offline/PWA — these are
 > [planned for later](./docs/roadmap.md). The data model already leaves room for them.
+
+## Screenshots
+
+### The same week in Ink
+
+<img src="./docs/screenshots/week-grid-ink.png" alt="The Openweek week grid in the Ink dark theme: seven day columns of checkable tasks, a rollover review banner, and a rail of lists along the bottom" width="100%">
+
+Paper and Ink are one design in two palettes — identical layout and behaviour, every colour re-tuned rather
+than inverted. Pick either, or follow your OS.
+
+### Calendars, one switch each
+
+<img src="./docs/screenshots/calendars-menu.png" alt="The Calendars menu open in the toolbar, listing Google, CalDAV and iCal calendars with show/hide switches" width="100%">
+
+Google, CalDAV and iCal feeds side by side in the toolbar. Turn one off and its events leave the week
+immediately — no reload, no refetch.
+
+### Settings → Calendars
+
+<img src="./docs/screenshots/settings-calendars.png" alt="Settings, Calendars tab: connected accounts with per-calendar rename, colour picker, event count and visibility switch" width="100%">
+
+Rename, recolour or hide any calendar, see what each one contributes to the week you're looking at, and
+connect more accounts. Sync is **read-only** — nothing is ever written back to your calendar.
+
+### Settings → Appearance
+
+<img src="./docs/screenshots/settings-appearance.png" alt="Settings, Appearance tab: theme, accent, typeface, highlight style, text size, week start, collapse-done and rollover controls" width="100%">
+
+Paper, Ink or System; an accent, a typeface and a text size; plus the week-start, weekends, collapse-done and
+rollover switches.
+
+### Sign in
+
+<img src="./docs/screenshots/sign-in.png" alt="The Openweek sign-in card, with the instance hostname and version in the footer" width="100%">
+
+Email and password out of the box, with optional Google sign-in. The first account registered on a fresh
+instance becomes its admin.
 
 ## Tech stack
 
