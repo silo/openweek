@@ -15,10 +15,6 @@ const settings = useSettingsStore()
 const progressPct = computed(() =>
   week.totalCount > 0 ? Math.round((week.doneCount / week.totalCount) * 100) : 0,
 )
-const doneLabel = computed(() =>
-  week.totalCount > 0 ? `${week.doneCount} of ${week.totalCount} done` : 'nothing planned',
-)
-
 const showWeekends = computed(() => settings.settings?.showWeekends ?? true)
 function toggleWeekends() {
   settings.update({ showWeekends: !showWeekends.value })
@@ -63,11 +59,11 @@ function toggleWeekends() {
         :aria-valuenow="progressPct"
         aria-valuemin="0"
         aria-valuemax="100"
-        :aria-label="doneLabel"
+        :aria-label="week.doneLabel"
       >
         <div class="h-full rounded-[3px] bg-ow-accent transition-[width]" :style="{ width: `${progressPct}%` }" />
       </div>
-      <span class="whitespace-nowrap text-[13px] text-ow-text">{{ doneLabel }}</span>
+      <span class="whitespace-nowrap text-[13px] text-ow-text">{{ week.doneLabel }}</span>
     </div>
 
     <div class="flex-1" />

@@ -87,7 +87,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-ow-surface">
+  <!-- On the grid breakpoint the page itself is the flex column, so the rail can be a
+       sibling of the week rather than living inside each layout. -->
+  <div class="min-h-screen bg-ow-surface lg:flex lg:h-screen lg:flex-col">
     <!-- Below the grid's breakpoint the week becomes a day strip with one day in view. -->
     <MobileWeek
       class="lg:hidden"
@@ -100,7 +102,7 @@ onMounted(() => {
     />
 
     <!-- Full-bleed: the week is the window, not a card floating in it. -->
-    <div class="hidden h-screen flex-col lg:flex">
+    <div class="hidden min-h-0 flex-1 flex-col lg:flex">
       <TopBar
         :range-label="rangeLabel"
         :week-number="weekNumber"
@@ -111,12 +113,11 @@ onMounted(() => {
       />
       <RolloverReview />
       <WeekGrid class="min-h-0 flex-1" @open-task="openTask" @convert="convert" />
-      <ListsRail @open-task="openTask" />
     </div>
 
-    <!-- The rail stacks below the day view on small screens; the extra padding clears the
-         fixed bottom nav. -->
-    <ListsRail id="ow-lists" class="pb-24 lg:hidden" @open-task="openTask" />
+    <!-- One instance for both layouts. Rendering it inside each tree meant every list card
+         and its drag registrations existed twice on every device. -->
+    <ListsRail id="ow-lists" class="pb-24 lg:pb-0" @open-task="openTask" />
 
     <TaskDetailPopover
       v-if="selected"

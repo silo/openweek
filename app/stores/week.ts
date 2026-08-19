@@ -27,6 +27,10 @@ export const useWeekStore = defineStore('week', () => {
   const doneCount = computed(() => days.value.reduce((n, d) => n + d.tasks.filter(t => t.completedAt).length, 0))
   const totalCount = computed(() => days.value.reduce((n, d) => n + d.tasks.length, 0))
   const weekEmpty = computed(() => totalCount.value === 0)
+  /** Shared by the desktop toolbar and the mobile header, including as an aria-label. */
+  const doneLabel = computed(() =>
+    totalCount.value > 0 ? `${doneCount.value} of ${totalCount.value} done` : 'nothing planned',
+  )
 
   /** Tasks that rolled onto today and can still be sent back. */
   const rolledIn = computed(() =>
@@ -263,7 +267,7 @@ export const useWeekStore = defineStore('week', () => {
   return {
     weekStart, days, lists, loading,
     focusDate, doneOpen, rolloverReviewed, draggingId,
-    doneCount, totalCount, weekEmpty, rolledIn,
+    doneCount, totalCount, weekEmpty, doneLabel, rolledIn,
     isFoldOpen, toggleFold, toggleFocus,
     loadWeek, find, containerOf, bucketFor, createTask,
     updateTask, toggleComplete, deleteTask, moveTask, moveRelative, sendBack, convertEvent,

@@ -2,7 +2,7 @@
 import { format, parseISO } from 'date-fns'
 import type { Task } from '~~/shared/schemas/task'
 import type { Container, Edge } from '~/composables/useTaskBoard'
-import { inkColor } from '~~/shared/constants/colors'
+import { inkColor, inkEdge, inkTint } from '~~/shared/constants/colors'
 
 const props = defineProps<{ task: Task, container: Container }>()
 /** The row's rect travels with the event so the detail popover can anchor to it. */
@@ -24,8 +24,8 @@ const rowStyle = computed(() => {
   if (done.value) return { background: 'transparent', boxShadow: 'none' }
   if (ink.value && fillMode.value) {
     return {
-      background: `var(--ow-hl-${ink.value}-tint)`,
-      boxShadow: `0 0 0 1px var(--ow-hl-${ink.value}-edge)`,
+      background: inkTint(ink.value),
+      boxShadow: `0 0 0 1px ${inkEdge(ink.value)}`,
     }
   }
   return { background: 'var(--ow-surface)', boxShadow: '0 0 0 1px var(--ow-hairline)' }

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { CalendarConnectionDto, CalendarSourceDto } from '~~/shared/schemas/calendar'
+import type { CalendarConnectionDto, CalendarEventDto, CalendarSourceDto } from '~~/shared/schemas/calendar'
 
 export const useCalendarsStore = defineStore('calendars', () => {
   const connections = ref<CalendarConnectionDto[]>([])
@@ -14,6 +14,18 @@ export const useCalendarsStore = defineStore('calendars', () => {
 
   /** Ids of calendars currently switched off, for filtering the week without a refetch. */
   const hiddenSourceIds = computed(() => new Set(sources.value.filter(s => !s.enabled).map(s => s.id)))
+
+  /**
+   * Both visibility rules in one place — the master "show events" setting and each
+   * calendar's own switch. Applied client-side so either takes effect without a refetch;
+   * every surface that renders events goes through here so they cannot disagree.
+   */
+  function visibleEvents(events: CalendarEventDto[]): CalendarEventDto[] {
+    const settings = useSettingsStore()
+    if (settings.settings?.showCalendarEvents === false) return []
+    if (!hiddenSourceIds.value.size) return events
+    return events.filter(e => !hiddenSourceIds.value.has(e.sourceId))
+  }
 
   /** The account line under a calendar's name — whichever identifier the connection carries. */
   function accountFor(source: CalendarSourceDto): string {
@@ -70,7 +82,7 @@ export const useCalendarsStore = defineStore('calendars', () => {
   }
 
   return {
-    connections, loaded, sources, shownCount, totalCount, allShown, none, hiddenSourceIds,
+    connections, loaded, sources, shownCount, totalCount, allShown, none, hiddenSourceIds, visibleEvents,
     accountFor, providerFor, load, patchSource, toggle, toggleAll, disconnect,
   }
 })

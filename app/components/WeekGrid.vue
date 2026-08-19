@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getDay, parseISO } from 'date-fns'
+import { isWeekend, parseISO } from 'date-fns'
 import type { CalendarEventDto } from '~~/shared/schemas/calendar'
 import type { Task } from '~~/shared/schemas/task'
 import { todayStr } from '~~/shared/utils/week'
@@ -12,19 +12,18 @@ const cals = useCalendarsStore()
 
 const today = todayStr()
 
-/** Applied here rather than server-side so both toggles take effect without a refetch. */
-function visibleEvents(events: CalendarEventDto[]) {
-  if (settings.settings?.showCalendarEvents === false) return []
-  return events.filter(e => !cals.hiddenSourceIds.has(e.sourceId))
-}
-
-function isWeekend(date: string) {
-  const d = getDay(parseISO(date))
-  return d === 0 || d === 6
-}
+/**
+ * Cached per date rather than filtered in the binding: a fresh array on every render gives
+ * all seven DayColumns new props, so focusing a day re-rendered every task row for nothing.
+ */
+const eventsByDate = computed(() =>
+  new Map(week.days.map(d => [d.date, cals.visibleEvents(d.events)])),
+)
 
 const visibleDays = computed(() =>
-  settings.settings?.showWeekends === false ? week.days.filter(d => !isWeekend(d.date)) : week.days,
+  settings.settings?.showWeekends === false
+    ? week.days.filter(d => !isWeekend(parseISO(d.date)))
+    : week.days,
 )
 
 /**
@@ -61,9 +60,9 @@ const colTemplate = computed(() => {
         :key="d.date"
         :date="d.date"
         :tasks="d.tasks"
-        :events="visibleEvents(d.events)"
+        :events="eventsByDate.get(d.date) ?? []"
         :is-today="d.date === today"
-        :is-weekend="isWeekend(d.date)"
+        :is-weekend="isWeekend(parseISO(d.date))"
         @open-task="(t, r) => emit('openTask', t, r)"
         @convert="emit('convert', $event)"
       />

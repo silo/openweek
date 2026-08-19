@@ -8,7 +8,6 @@ const props = defineProps<{ list: ListWithTasks }>()
 const emit = defineEmits<{ openTask: [Task, DOMRect] }>()
 
 const week = useWeekStore()
-const settings = useSettingsStore()
 
 const card = ref<HTMLElement | null>(null)
 const header = ref<HTMLElement | null>(null)
@@ -17,6 +16,8 @@ const trigger = ref<HTMLElement | null>(null)
 const renameInput = ref<HTMLInputElement | null>(null)
 
 const menuOpen = ref(false)
+// "Delete list…" promises a confirmation step; deleting takes its tasks with it.
+const confirmingDelete = ref(false)
 /** True while a dragged task is over the card itself rather than one of its rows. */
 const dropAtEnd = ref(false)
 /** Which side of this card a dragged *list* would land on. */
@@ -27,17 +28,16 @@ const draftName = ref('')
 
 const container = computed(() => ({ listId: props.list.id }))
 
-useDismissable(menu, () => (menuOpen.value = false), trigger)
+// Closing the menu also disarms the delete — otherwise reopening it lands you on an
+// armed destructive button.
+useDismissable(menu, () => {
+  menuOpen.value = false
+  confirmingDelete.value = false
+}, trigger)
 
-const doneTasks = computed(() => props.list.tasks.filter(t => t.completedAt))
-const hasFold = computed(() => (settings.settings?.collapseDone ?? true) && doneTasks.value.length > 0)
-const foldOpen = computed(() => week.isFoldOpen(container.value))
-const visibleTasks = computed(() =>
-  hasFold.value && !foldOpen.value ? props.list.tasks.filter(t => !t.completedAt) : props.list.tasks,
-)
-const foldLabel = computed(() =>
-  foldOpen.value ? `Hide ${doneTasks.value.length} done` : `${doneTasks.value.length} done`,
-)
+// Destructured so the refs unwrap in the template.
+const { visibleTasks, hasFold, isOpen: foldOpen, label: foldLabel, toggle: toggleFold }
+  = useDoneFold(container, () => props.list.tasks)
 
 async function startRename() {
   draftName.value = props.list.name
@@ -51,9 +51,6 @@ function commitRename() {
   renaming.value = false
   if (name && name !== props.list.name) week.updateList(props.list.id, { name })
 }
-
-// "Delete list…" promises a confirmation step; deleting takes its tasks with it.
-const confirmingDelete = ref(false)
 
 function remove() {
   confirmingDelete.value = false
@@ -204,16 +201,7 @@ onMounted(() => {
       <p v-if="!list.tasks.length && !dropAtEnd" class="px-1 pb-1 text-[13px] text-ow-muted">
         Nothing here yet.
       </p>
-
-      <button
-        v-if="hasFold"
-        type="button"
-        class="mb-2 cursor-pointer self-start rounded-[7px] border-none bg-transparent px-2 py-1 text-[12.5px] text-ow-muted transition-colors hover:bg-ow-inset hover:text-ow-title"
-        :aria-expanded="foldOpen"
-        @click="week.toggleFold(container)"
-      >
-        {{ foldLabel }}
-      </button>
+      <DoneFold v-if="hasFold" :label="foldLabel" :expanded="foldOpen" @click="toggleFold" />
 
       <TaskComposer :container="container" />
     </div>

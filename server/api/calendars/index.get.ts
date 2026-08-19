@@ -13,36 +13,39 @@ export default defineEventHandler(async (event) => {
   const weekStart = typeof q.start === 'string' ? q.start : todayStr()
   const dates = eachDay(weekStart, 7)
 
-  const connections = await db.select({
-    id: calendarConnection.id,
-    provider: calendarConnection.provider,
-    displayName: calendarConnection.displayName,
-    color: calendarConnection.color,
-    status: calendarConnection.status,
-    lastError: calendarConnection.lastError,
-    lastSyncedAt: calendarConnection.lastSyncedAt,
-  }).from(calendarConnection)
-    .where(eq(calendarConnection.userId, userId))
-    .orderBy(asc(calendarConnection.createdAt))
+  // Neither query feeds the other — they are joined in memory below, so issue them together.
+  const [connections, sources] = await Promise.all([
+    db.select({
+      id: calendarConnection.id,
+      provider: calendarConnection.provider,
+      displayName: calendarConnection.displayName,
+      color: calendarConnection.color,
+      status: calendarConnection.status,
+      lastError: calendarConnection.lastError,
+      lastSyncedAt: calendarConnection.lastSyncedAt,
+    }).from(calendarConnection)
+      .where(eq(calendarConnection.userId, userId))
+      .orderBy(asc(calendarConnection.createdAt)),
 
-  const sources = await db.select({
-    id: calendarSource.id,
-    connectionId: calendarSource.connectionId,
-    name: calendarSource.name,
-    color: calendarSource.color,
-    enabled: calendarSource.enabled,
-    eventCount: sql<number>`count(${calendarEvent.id})::int`,
-  }).from(calendarSource)
-    .innerJoin(calendarConnection, eq(calendarSource.connectionId, calendarConnection.id))
-    .leftJoin(calendarEvent, and(
-      eq(calendarEvent.sourceId, calendarSource.id),
-      eq(calendarEvent.status, 'confirmed'),
-      gte(calendarEvent.localDate, dates[0]!),
-      lte(calendarEvent.localDate, dates[6]!),
-    ))
-    .where(eq(calendarConnection.userId, userId))
-    .groupBy(calendarSource.id)
-    .orderBy(asc(calendarSource.name))
+    db.select({
+      id: calendarSource.id,
+      connectionId: calendarSource.connectionId,
+      name: calendarSource.name,
+      color: calendarSource.color,
+      enabled: calendarSource.enabled,
+      eventCount: sql<number>`count(${calendarEvent.id})::int`,
+    }).from(calendarSource)
+      .innerJoin(calendarConnection, eq(calendarSource.connectionId, calendarConnection.id))
+      .leftJoin(calendarEvent, and(
+        eq(calendarEvent.sourceId, calendarSource.id),
+        eq(calendarEvent.status, 'confirmed'),
+        gte(calendarEvent.localDate, dates[0]!),
+        lte(calendarEvent.localDate, dates[6]!),
+      ))
+      .where(eq(calendarConnection.userId, userId))
+      .groupBy(calendarSource.id)
+      .orderBy(asc(calendarSource.name)),
+  ])
 
   return connections.map(c => ({
     ...c,

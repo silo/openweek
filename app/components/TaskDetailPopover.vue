@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { format, parseISO } from 'date-fns'
 import type { Task, TaskUpdate } from '~~/shared/schemas/task'
-import { HIGHLIGHT_INKS, INK_LABELS } from '~~/shared/constants/colors'
+import { HIGHLIGHT_INKS, INK_LABELS, inkColor } from '~~/shared/constants/colors'
 import { containerKey, parseContainer } from '~/composables/useTaskBoard'
 
 const props = defineProps<{ task: Task }>()
@@ -129,19 +129,12 @@ async function remove() {
         }"
         @click="week.updateTask(task.id, { highlightColor: null })"
       />
-      <button
+      <OwSwatch
         v-for="ink in HIGHLIGHT_INKS"
         :key="ink"
-        type="button"
-        :title="INK_LABELS[ink]"
-        :aria-label="INK_LABELS[ink]"
-        :aria-pressed="task.highlightColor === ink"
-        class="h-[22px] w-[22px] cursor-pointer rounded-[7px] p-0"
-        :style="{
-          background: `var(--ow-hl-${ink})`,
-          border: `1px solid var(--ow-hl-${ink})`,
-          boxShadow: task.highlightColor === ink ? '0 0 0 2px var(--ow-surface), 0 0 0 3.5px var(--ow-ink)' : 'none',
-        }"
+        :color="inkColor(ink)"
+        :label="INK_LABELS[ink]"
+        :selected="task.highlightColor === ink"
         @click="pickInk(ink)"
       />
       <div class="flex-1" />

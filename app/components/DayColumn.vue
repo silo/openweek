@@ -13,7 +13,6 @@ const props = defineProps<{
 const emit = defineEmits<{ openTask: [Task, DOMRect], convert: [CalendarEventDto] }>()
 
 const week = useWeekStore()
-const settings = useSettingsStore()
 
 const col = ref<HTMLElement | null>(null)
 const container = computed(() => ({ date: props.date }))
@@ -27,16 +26,9 @@ const fullDate = computed(() => format(parseISO(props.date), 'EEEE d MMMM'))
 const isFocused = computed(() => week.focusDate === props.date)
 const openLeft = computed(() => props.tasks.filter(t => !t.completedAt).length)
 
-// Completed tasks fold into a quiet "N done" line at the bottom until asked for.
-const doneTasks = computed(() => props.tasks.filter(t => t.completedAt))
-const hasFold = computed(() => (settings.settings?.collapseDone ?? true) && doneTasks.value.length > 0)
-const foldOpen = computed(() => week.isFoldOpen(container.value))
-const visibleTasks = computed(() =>
-  hasFold.value && !foldOpen.value ? props.tasks.filter(t => !t.completedAt) : props.tasks,
-)
-const foldLabel = computed(() =>
-  foldOpen.value ? `Hide ${doneTasks.value.length} done` : `${doneTasks.value.length} done`,
-)
+// Destructured so the refs unwrap in the template.
+const { visibleTasks, hasFold, isOpen: foldOpen, label: foldLabel, toggle: toggleFold }
+  = useDoneFold(container, () => props.tasks)
 
 onMounted(() => {
   if (col.value) {
@@ -103,16 +95,7 @@ onMounted(() => {
     />
 
     <DropLine v-if="dropAtEnd" />
-
-    <button
-      v-if="hasFold"
-      type="button"
-      class="mb-2 cursor-pointer self-start rounded-[7px] border-none bg-transparent px-2 py-1 text-[12.5px] text-ow-muted transition-colors hover:bg-ow-inset hover:text-ow-title"
-      :aria-expanded="foldOpen"
-      @click="week.toggleFold(container)"
-    >
-      {{ foldLabel }}
-    </button>
+    <DoneFold v-if="hasFold" :label="foldLabel" :expanded="foldOpen" @click="toggleFold" />
 
     <TaskComposer :container="container" />
 

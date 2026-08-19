@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { CalendarEventDto } from '~~/shared/schemas/calendar'
-import { inkColor } from '~~/shared/constants/colors'
+import { PROVIDER_LABELS, inkColor } from '~~/shared/constants/colors'
 
 defineProps<{ event: CalendarEventDto }>()
 const emit = defineEmits<{ convert: [CalendarEventDto] }>()
 
-const PROVIDER_LABEL = { google: 'Google', caldav: 'CalDAV', ical: 'iCal' } as const
 </script>
 
 <template>
@@ -23,7 +22,7 @@ const PROVIDER_LABEL = { google: 'Google', caldav: 'CalDAV', ical: 'iCal' } as c
       </div>
       <div class="flex items-center gap-1.5">
         <span class="truncate whitespace-nowrap text-[11.5px] text-ow-done">
-          {{ event.sourceName }} · {{ PROVIDER_LABEL[event.provider] }}
+          {{ event.sourceName }} · {{ PROVIDER_LABELS[event.provider] }}
         </span>
         <div class="flex-1" />
         <!-- The visible label is just "＋ task"; name the event for screen readers. -->

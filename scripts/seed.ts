@@ -199,14 +199,14 @@ async function main() {
   ]
 
   let futureIdx = 0
-  for (const date of week) {
+  const dayRows = week.flatMap((date, dayIndex) => {
     let items: SeedTask[]
-    if (date < todayStr) items = past.slice(0, 2 + (week.indexOf(date) % 2))
+    if (date < todayStr) items = past.slice(0, 2 + (dayIndex % 2))
     else if (date === todayStr) items = onToday
     else items = future[futureIdx++ % future.length]!
 
     const pos = positions(items.length)
-    await db.insert(task).values(items.map((t, j) => ({
+    return items.map((t, j) => ({
       userId,
       date,
       position: pos[j]!,
@@ -216,8 +216,9 @@ async function main() {
       timeOfDay: t.time ?? null,
       originalDate: t.rolledFrom ?? null,
       completedAt: t.done ? new Date() : null,
-    })))
-  }
+    }))
+  })
+  await db.insert(task).values(dayRows)
 
   // 6. calendars ------------------------------------------------------------
   // Read-only demo feeds. The credentials are fake but really encrypted, so the rows

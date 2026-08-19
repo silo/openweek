@@ -73,7 +73,6 @@
   --ow-shell: oklch(0.975 0.002 265);
   --ow-surface: #ffffff;
   --ow-surface-weekend: oklch(0.978 0.003 265);
-  --ow-well: oklch(0.977 0.002 265);
   --ow-sunken: oklch(0.963 0.003 265);
   --ow-inset: oklch(0.968 0.003 265);
 
@@ -97,7 +96,6 @@
   --ow-border-strong: oklch(0.878 0.006 265);
   --ow-track: oklch(0.875 0.006 265);
   --ow-control: oklch(0.85 0.007 265);
-  --ow-control-strong: oklch(0.83 0.008 265);
   --ow-mark: oklch(0.78 0.01 265);
 
   /* accent — blue by default; [data-accent] below swaps it */
@@ -110,7 +108,6 @@
   --ow-today: oklch(0.5 0.09 252);
   --ow-select-edge: oklch(0.62 0.07 252);
   --ow-select-bg: oklch(0.975 0.012 250);
-  --ow-select-fg: oklch(0.3 0.05 252);
 
   /* highlighter inks */
   --ow-hl-persimmon: oklch(0.58 0.17 32);
@@ -140,7 +137,6 @@
   --ow-brand-3: oklch(0.62 0.12 165);
 
   --ow-selection: oklch(0.87 0.09 72);
-  --ow-shadow: oklch(0.45 0.02 265);
   --ow-elev-1: 0 10px 30px -22px oklch(0.45 0.02 265 / 0.4);
   --ow-elev-2: 0 20px 50px -20px oklch(0.45 0.02 265 / 0.26);
   --ow-elev-3: 0 24px 56px -18px oklch(0.45 0.02 265 / 0.26);
@@ -153,7 +149,6 @@
   --ow-shell: oklch(0.185 0.01 265);
   --ow-surface: oklch(0.215 0.011 265);
   --ow-surface-weekend: oklch(0.195 0.011 265);
-  --ow-well: oklch(0.245 0.012 265);
   --ow-sunken: oklch(0.265 0.013 265);
   --ow-inset: oklch(0.27 0.013 265);
 
@@ -175,7 +170,6 @@
   --ow-border-strong: oklch(0.385 0.015 265);
   --ow-track: oklch(0.4 0.015 265);
   --ow-control: oklch(0.44 0.015 265);
-  --ow-control-strong: oklch(0.46 0.015 265);
   --ow-mark: oklch(0.52 0.015 265);
 
   --ow-accent: oklch(0.7 0.13 254);
@@ -186,7 +180,6 @@
   --ow-today: oklch(0.62 0.11 252);
   --ow-select-edge: oklch(0.58 0.09 252);
   --ow-select-bg: oklch(0.255 0.03 252);
-  --ow-select-fg: oklch(0.9 0.06 252);
 
   --ow-hl-persimmon: oklch(0.7 0.15 32);
   --ow-hl-amber: oklch(0.79 0.13 78);
@@ -212,7 +205,6 @@
   --ow-brand-3: oklch(0.62 0.12 165);
 
   --ow-selection: oklch(0.4 0.09 72);
-  --ow-shadow: oklch(0.05 0.01 265);
   --ow-elev-1: 0 10px 30px -22px oklch(0.05 0.01 265 / 0.7);
   --ow-elev-2: 0 20px 50px -20px oklch(0.05 0.01 265 / 0.66);
   --ow-elev-3: 0 24px 56px -18px oklch(0.05 0.01 265 / 0.66);
@@ -231,15 +223,11 @@
 [data-accent="indigo"] { --ow-accent: var(--ow-hl-indigo); }
 [data-accent="magenta"] { --ow-accent: var(--ow-hl-magenta); }
 
-[data-theme="openweek"][data-accent="graphite"] { --ow-accent: oklch(0.38 0.014 265); }
-[data-theme="openweek-dark"][data-accent="graphite"] { --ow-accent: oklch(0.78 0.012 265); }
+/* --ow-accent-graphite already flips with the theme, so no per-theme rule is needed. */
+[data-accent="graphite"] { --ow-accent: var(--ow-accent-graphite); }
 
-[data-accent="persimmon"],
-[data-accent="amber"],
-[data-accent="jade"],
-[data-accent="indigo"],
-[data-accent="magenta"],
-[data-accent="graphite"] {
+/* Everything except the hand-tuned default derives its edge and tint. */
+[data-accent]:not([data-accent="blue"]) {
   --ow-accent-edge: color-mix(in oklch, var(--ow-accent) 55%, var(--ow-border));
   --ow-accent-tint: color-mix(in oklch, var(--ow-accent) 14%, var(--ow-surface));
 }
@@ -269,7 +257,6 @@
   --color-ow-shell: var(--ow-shell);
   --color-ow-surface: var(--ow-surface);
   --color-ow-surface-weekend: var(--ow-surface-weekend);
-  --color-ow-well: var(--ow-well);
   --color-ow-sunken: var(--ow-sunken);
   --color-ow-inset: var(--ow-inset);
 
@@ -291,7 +278,6 @@
   --color-ow-border-strong: var(--ow-border-strong);
   --color-ow-track: var(--ow-track);
   --color-ow-control: var(--ow-control);
-  --color-ow-control-strong: var(--ow-control-strong);
   --color-ow-mark: var(--ow-mark);
 
   --color-ow-accent: var(--ow-accent);
@@ -302,13 +288,7 @@
   --color-ow-today: var(--ow-today);
   --color-ow-select-edge: var(--ow-select-edge);
   --color-ow-select-bg: var(--ow-select-bg);
-  --color-ow-select-fg: var(--ow-select-fg);
 
-  --color-hl-persimmon: var(--ow-hl-persimmon);
-  --color-hl-amber: var(--ow-hl-amber);
-  --color-hl-jade: var(--ow-hl-jade);
-  --color-hl-indigo: var(--ow-hl-indigo);
-  --color-hl-magenta: var(--ow-hl-magenta);
 
   --font-brand: var(--ow-font-brand);
   --font-display: var(--ow-font-display);
@@ -358,26 +338,6 @@
     outline: 2px solid var(--ow-accent);
     outline-offset: 2px;
   }
-}
-
-/* --- Highlighter rendering (the tagStyle setting) ---------------------------- */
-/* Two modes, ported from the canvas's viewTask():
-   - edge: the row keeps its surface, a colour bar runs down the left
-   - fill: the row takes a tinted background and a 1px ring in the same hue
-   Set --hl / --hl-tint / --hl-edge on the row from the task's colour. */
-@utility hl-edge {
-  position: relative;
-  background: var(--ow-surface);
-  box-shadow: 0 0 0 1px var(--ow-hairline);
-}
-
-@utility hl-edge-bar {
-  background: var(--hl);
-}
-
-@utility hl-fill {
-  background: var(--hl-tint);
-  box-shadow: 0 0 0 1px var(--hl-edge);
 }
 
 /* --- Motion ----------------------------------------------------------------- */

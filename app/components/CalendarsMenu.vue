@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inkColor } from '~~/shared/constants/colors'
+import { PROVIDER_LABELS, inkColor } from '~~/shared/constants/colors'
 
 const cals = useCalendarsStore()
 const settings = useSettingsStore()
@@ -15,7 +15,6 @@ const trigger = ref<HTMLElement | null>(null)
 
 useDismissable(panel, () => (open.value = false), trigger)
 
-const PROVIDER_LABEL = { google: 'GOOGLE', caldav: 'CALDAV', ical: 'ICAL' } as const
 </script>
 
 <template>
@@ -102,8 +101,8 @@ const PROVIDER_LABEL = { google: 'GOOGLE', caldav: 'CALDAV', ical: 'ICAL' } as c
           <span class="truncate text-sm font-medium" :class="s.enabled ? 'text-ow-ink' : 'text-ow-muted'">{{ s.name }}</span>
           <span class="truncate text-[11.5px] text-ow-muted">{{ cals.accountFor(s) }}</span>
         </span>
-        <span class="rounded-[5px] bg-ow-sunken px-1.5 py-0.5 text-[11px] font-semibold tracking-[0.04em] text-ow-faint">
-          {{ PROVIDER_LABEL[cals.providerFor(s)] }}
+        <span class="rounded-[5px] bg-ow-sunken px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-ow-faint">
+          {{ PROVIDER_LABELS[cals.providerFor(s)] }}
         </span>
         <OwSwitch :model-value="s.enabled" as="span" />
       </button>

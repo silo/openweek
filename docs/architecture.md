@@ -80,7 +80,6 @@ Root: `drizzle.config.ts`, `Dockerfile`, `docker-compose.yml`, `.env.example`, `
 | `GET /api/calendars/google/callback` | Google OAuth (calendar.readonly) return. |
 | `POST /api/events/:id/convert` | Turn an imported event into a task (optionally keep-linked). |
 | `GET/PATCH /api/me/settings` | Per-user settings (theme, week-start, rollover, tz). |
-| `GET /api/search?q=` | Basic task search. |
 | `/api/auth/**` | Better Auth (email/password, Google, admin). |
 
 ## Auth & authorization

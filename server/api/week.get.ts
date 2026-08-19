@@ -22,43 +22,46 @@ export default defineEventHandler(async (event) => {
     await rolloverForUser(userId, todayInTz(settings.timezone))
   }
 
-  const rows = await db.select().from(task)
-    .where(and(eq(task.userId, userId), gte(task.date, weekStart), lte(task.date, endDate)))
-    .orderBy(asc(task.position), asc(task.id))
+  // Nothing below depends on anything else except lists-after-ensureDefaultList, so the
+  // four reads go out in one wave rather than four sequential round-trips.
+  const [rows, listRows, listTasks, events] = await Promise.all([
+    db.select().from(task)
+      .where(and(eq(task.userId, userId), gte(task.date, weekStart), lte(task.date, endDate)))
+      .orderBy(asc(task.position), asc(task.id)),
 
-  await ensureDefaultList(userId)
-  const listRows = await db.select().from(list)
-    .where(and(eq(list.userId, userId), isNull(list.archivedAt)))
-    .orderBy(asc(list.position), asc(list.id))
+    ensureDefaultList(userId).then(() => db.select().from(list)
+      .where(and(eq(list.userId, userId), isNull(list.archivedAt)))
+      .orderBy(asc(list.position), asc(list.id))),
 
-  // The rail shows every list at once, so their tasks come down with the week rather than
-  // through a separate per-list fetch.
-  const listTasks = await db.select().from(task)
-    .where(and(eq(task.userId, userId), isNotNull(task.listId)))
-    .orderBy(asc(task.position), asc(task.id))
+    // The rail shows every list at once, so their tasks come down with the week rather
+    // than through a separate per-list fetch.
+    db.select().from(task)
+      .where(and(eq(task.userId, userId), isNotNull(task.listId)))
+      .orderBy(asc(task.position), asc(task.id)),
 
-  // Events always come down unfiltered — both `showCalendarEvents` and each calendar's
-  // on/off state are applied in the client, so those toggles take effect immediately
-  // instead of waiting for a refetch.
-  const events = await db.select({
-    id: calendarEvent.id,
-    sourceId: calendarEvent.sourceId,
-    title: calendarEvent.title,
-    timeLabel: calendarEvent.timeLabel,
-    localDate: calendarEvent.localDate,
-    provider: calendarConnection.provider,
-    color: calendarSource.color,
-    sourceName: calendarSource.name,
-  }).from(calendarEvent)
-    .innerJoin(calendarSource, eq(calendarEvent.sourceId, calendarSource.id))
-    .innerJoin(calendarConnection, eq(calendarSource.connectionId, calendarConnection.id))
-    .where(and(
-      eq(calendarEvent.userId, userId),
-      gte(calendarEvent.localDate, weekStart),
-      lte(calendarEvent.localDate, endDate),
-      eq(calendarEvent.status, 'confirmed'),
-    ))
-    .orderBy(asc(calendarEvent.startAt))
+    // Events always come down unfiltered — both `showCalendarEvents` and each calendar's
+    // on/off state are applied in the client, so those toggles take effect immediately
+    // instead of waiting for a refetch.
+    db.select({
+      id: calendarEvent.id,
+      sourceId: calendarEvent.sourceId,
+      title: calendarEvent.title,
+      timeLabel: calendarEvent.timeLabel,
+      localDate: calendarEvent.localDate,
+      provider: calendarConnection.provider,
+      color: calendarSource.color,
+      sourceName: calendarSource.name,
+    }).from(calendarEvent)
+      .innerJoin(calendarSource, eq(calendarEvent.sourceId, calendarSource.id))
+      .innerJoin(calendarConnection, eq(calendarSource.connectionId, calendarConnection.id))
+      .where(and(
+        eq(calendarEvent.userId, userId),
+        gte(calendarEvent.localDate, weekStart),
+        lte(calendarEvent.localDate, endDate),
+        eq(calendarEvent.status, 'confirmed'),
+      ))
+      .orderBy(asc(calendarEvent.startAt)),
+  ])
 
   const days = dates.map(date => ({
     date,

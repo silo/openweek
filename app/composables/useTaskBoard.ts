@@ -20,6 +20,16 @@ export function parseContainer(key: string): Container {
   return key.startsWith('d:') ? { date: id } : { listId: id }
 }
 
+/** The closest-edge reporting shared by both drop targets. */
+function edgeCallbacks(onEdge: (edge: Edge | null) => void) {
+  return {
+    getIsSticky: () => true,
+    onDrag: ({ self }: { self: { data: Record<string, unknown> } }) => onEdge(extractClosestEdge(self.data)),
+    onDragLeave: () => onEdge(null),
+    onDrop: () => onEdge(null),
+  }
+}
+
 export function taskDraggable(el: HTMLElement, taskId: string, cb: { onStart: () => void, onEnd: () => void }) {
   return draggable({
     element: el,
@@ -35,10 +45,7 @@ export function taskDropTarget(el: HTMLElement, taskId: string, container: Conta
     element: el,
     canDrop: ({ source }) => source.data.type === 'task' && source.data.taskId !== taskId,
     getData: ({ input, element }) => attachClosestEdge({ kind: 'task', taskId, container: key }, { input, element, allowedEdges: ['top', 'bottom'] }),
-    getIsSticky: () => true,
-    onDrag: ({ self }) => onEdge(extractClosestEdge(self.data)),
-    onDragLeave: () => onEdge(null),
-    onDrop: () => onEdge(null),
+    ...edgeCallbacks(onEdge),
   })
 }
 
@@ -94,10 +101,7 @@ export function listDropTarget(el: HTMLElement, listId: string, onEdge: (edge: E
     element: el,
     canDrop: ({ source }) => source.data.type === 'list' && source.data.listId !== listId,
     getData: ({ input, element }) => attachClosestEdge({ listId }, { input, element, allowedEdges: ['left', 'right'] }),
-    getIsSticky: () => true,
-    onDrag: ({ self }) => onEdge(extractClosestEdge(self.data)),
-    onDragLeave: () => onEdge(null),
-    onDrop: () => onEdge(null),
+    ...edgeCallbacks(onEdge),
   })
 }
 

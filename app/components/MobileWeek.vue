@@ -13,7 +13,6 @@ const emit = defineEmits<{
 }>()
 
 const week = useWeekStore()
-const settings = useSettingsStore()
 const cals = useCalendarsStore()
 
 const today = todayStr()
@@ -27,11 +26,7 @@ const activeDate = computed(() =>
 const activeDay = computed(() => week.days.find(d => d.date === activeDate.value))
 const container = computed(() => ({ date: activeDate.value }))
 
-/** Mirrors WeekGrid — see the note there. */
-const visibleEvents = computed(() => {
-  if (settings.settings?.showCalendarEvents === false) return []
-  return (activeDay.value?.events ?? []).filter(e => !cals.hiddenSourceIds.has(e.sourceId))
-})
+const visibleEvents = computed(() => cals.visibleEvents(activeDay.value?.events ?? []))
 
 const dayLabel = computed(() => {
   if (!activeDay.value) return ''
@@ -43,20 +38,20 @@ const shortLabel = computed(() =>
 )
 const openCount = computed(() => activeDay.value?.tasks.filter(t => !t.completedAt).length ?? 0)
 
-const doneLabel = computed(() =>
-  week.totalCount > 0 ? `${week.doneCount} of ${week.totalCount} done` : 'nothing planned',
-)
-
-function strip(date: string) {
-  const d = parseISO(date)
+/** One row object per day. Built as a computed because the template reads six fields
+ *  per button — calling a function per field re-parsed the date and rescanned the week. */
+const strips = computed(() => week.days.map((d) => {
+  const parsed = parseISO(d.date)
   return {
-    letter: format(d, 'EEEEE'),
-    num: format(d, 'd'),
-    isToday: date === today,
-    isActive: date === activeDate.value,
-    hasOpen: (week.days.find(x => x.date === date)?.tasks.filter(t => !t.completedAt).length ?? 0) > 0,
+    date: d.date,
+    letter: format(parsed, 'EEEEE'),
+    num: format(parsed, 'd'),
+    label: format(parsed, 'EEEE d MMMM'),
+    isToday: d.date === today,
+    isActive: d.date === activeDate.value,
+    hasOpen: d.tasks.some(t => !t.completedAt),
   }
-}
+}))
 </script>
 
 <template>
@@ -80,29 +75,29 @@ function strip(date: string) {
         <ChevronIcon direction="right" :size="14" />
       </OwButton>
       <div class="flex-1" />
-      <span class="text-[12.5px] text-ow-muted">{{ doneLabel }}</span>
+      <span class="text-[12.5px] text-ow-muted">{{ week.doneLabel }}</span>
     </div>
 
     <!-- day strip: pans the week, one day fills the screen -->
     <div class="flex gap-1.5 overflow-x-auto border-b border-ow-line px-4 pb-3">
       <button
-        v-for="d in week.days"
-        :key="d.date"
+        v-for="s in strips"
+        :key="s.date"
         type="button"
-        :aria-pressed="strip(d.date).isActive"
-        :aria-label="format(parseISO(d.date), 'EEEE d MMMM')"
+        :aria-pressed="s.isActive"
+        :aria-label="s.label"
         class="flex min-w-[44px] flex-1 cursor-pointer flex-col items-center gap-0.5 rounded-[10px] border px-1 py-1.5 transition-colors"
-        :class="strip(d.date).isActive ? 'border-ow-border-strong bg-ow-sunken' : 'border-transparent bg-transparent'"
-        @click="selectedDate = d.date"
+        :class="s.isActive ? 'border-ow-border-strong bg-ow-sunken' : 'border-transparent bg-transparent'"
+        @click="selectedDate = s.date"
       >
-        <span class="text-[10.5px] font-semibold tracking-[0.06em] text-ow-muted">{{ strip(d.date).letter }}</span>
+        <span class="text-[10.5px] font-semibold tracking-[0.06em] text-ow-muted">{{ s.letter }}</span>
         <span
           class="font-display text-[17px] font-semibold leading-none"
-          :style="strip(d.date).isToday ? { color: 'var(--ow-today)' } : { color: 'var(--ow-ink)' }"
-        >{{ strip(d.date).num }}</span>
+          :style="{ color: s.isToday ? 'var(--ow-today)' : 'var(--ow-ink)' }"
+        >{{ s.num }}</span>
         <span
           class="h-[5px] w-[5px] rounded-full"
-          :style="{ background: strip(d.date).hasOpen ? 'var(--ow-hl-jade)' : 'transparent' }"
+          :style="{ background: s.hasOpen ? 'var(--ow-hl-jade)' : 'transparent' }"
           aria-hidden="true"
         />
       </button>

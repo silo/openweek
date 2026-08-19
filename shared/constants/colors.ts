@@ -114,3 +114,10 @@ export const PROVIDER_DEFAULT_INK: Record<'google' | 'caldav' | 'ical', Highligh
 }
 
 export type CalendarProvider = keyof typeof PROVIDER_DEFAULT_INK
+
+/** How a provider is named in the UI. Use CSS `uppercase` where the loud form is wanted. */
+export const PROVIDER_LABELS: Record<CalendarProvider, string> = {
+  google: 'Google',
+  caldav: 'CalDAV',
+  ical: 'iCal',
+}

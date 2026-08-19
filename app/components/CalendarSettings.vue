@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatDistanceToNow, parseISO } from 'date-fns'
-import { HIGHLIGHT_INKS, INK_LABELS, inkColor } from '~~/shared/constants/colors'
+import { HIGHLIGHT_INKS, INK_LABELS, PROVIDER_LABELS, inkColor } from '~~/shared/constants/colors'
 
 const cals = useCalendarsStore()
 
@@ -13,7 +13,6 @@ const errorMsg = ref('')
 const editing = ref<string | null>(null)
 const draftName = ref('')
 
-const PROVIDER_LABEL = { google: 'Google', caldav: 'CalDAV', ical: 'iCal' } as const
 
 function readErr(e: unknown) {
   return (e as { data?: { message?: string } })?.data?.message ?? 'Something went wrong'
@@ -104,7 +103,7 @@ onMounted(() => {
           class="rounded-xl border border-ow-border bg-ow-surface"
         >
           <div class="flex items-center gap-3 border-b border-ow-hairline px-3.5 py-3">
-            <span class="text-sm font-semibold text-ow-ink">{{ PROVIDER_LABEL[c.provider] }}</span>
+            <span class="text-sm font-semibold text-ow-ink">{{ PROVIDER_LABELS[c.provider] }}</span>
             <span class="truncate text-[13px] text-ow-muted">{{ c.displayName }}</span>
             <span
               v-if="c.status === 'error'"
@@ -157,18 +156,13 @@ onMounted(() => {
             </span>
 
             <div class="flex gap-1">
-              <button
+              <OwSwatch
                 v-for="ink in HIGHLIGHT_INKS"
                 :key="ink"
-                type="button"
-                :title="INK_LABELS[ink]"
-                :aria-label="`${INK_LABELS[ink]} for ${s.name}`"
-                :aria-pressed="s.color === ink"
-                class="h-4 w-4 cursor-pointer rounded border-none"
-                :style="{
-                  background: `var(--ow-hl-${ink})`,
-                  boxShadow: s.color === ink ? '0 0 0 2px var(--ow-surface), 0 0 0 3px var(--ow-ink)' : 'none',
-                }"
+                :color="inkColor(ink)"
+                :label="`${INK_LABELS[ink]} for ${s.name}`"
+                :selected="s.color === ink"
+                :size="16"
                 @click="cals.patchSource(s.id, { color: ink })"
               />
             </div>

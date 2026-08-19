@@ -1,12 +1,10 @@
 <script setup lang="ts">
 /** The accent rule showing where a dragged task will land. */
-withDefaults(defineProps<{ inset?: boolean }>(), { inset: true })
 </script>
 
 <template>
   <div
-    class="ow-drop-line h-[3px] rounded-sm"
-    :class="inset ? 'mx-1 my-[3px]' : 'my-[3px]'"
+    class="ow-drop-line mx-1 my-[3px] h-[3px] rounded-sm"
     style="background: var(--ow-accent);"
     aria-hidden="true"
   />
