@@ -17,8 +17,11 @@ await useAsyncData('settings', async () => {
 const weekStartsOn = computed(() => (settings.settings?.weekStartsOn ?? 1) as 0 | 1)
 const currentStart = ref(startOfWeekStr(todayStr(), weekStartsOn.value))
 
+// The calendars come down with the week, not on mount: which calendars are switched off is
+// applied in the client, so without them the server-rendered week shows events from
+// calendars the user has hidden, which then vanish once the store loads.
 await useAsyncData('week', async () => {
-  await week.loadWeek(currentStart.value)
+  await Promise.all([week.loadWeek(currentStart.value), cals.load(currentStart.value)])
   return week.weekStart
 })
 
@@ -74,7 +77,6 @@ function convert(e: CalendarEventDto) {
 }
 
 onMounted(() => {
-  cals.load(currentStart.value)
   const stopTasks = taskBoardMonitor(({ taskId, over }) => {
     if (over.kind === 'task') week.moveRelative(taskId, over.container, over.taskId, over.after)
     else week.moveRelative(taskId, over.container, null, false)

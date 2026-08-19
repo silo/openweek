@@ -3,6 +3,7 @@ import { format, parseISO } from 'date-fns'
 import type { Task } from '~~/shared/schemas/task'
 import type { Container, Edge } from '~/composables/useTaskBoard'
 import { inkColor, inkEdge, inkTint } from '~~/shared/constants/colors'
+import { isRolledOver } from '~~/shared/utils/task'
 
 const props = defineProps<{ task: Task, container: Container }>()
 /** The row's rect travels with the event so the detail popover can anchor to it. */
@@ -33,8 +34,8 @@ const rowStyle = computed(() => {
 const showBar = computed(() => !!ink.value && !done.value && !fillMode.value)
 
 const rolledFrom = computed(() => {
-  if (!props.task.originalDate) return null
-  return `from ${format(parseISO(props.task.originalDate), 'EEE d MMM')}`
+  if (!isRolledOver(props.task)) return null
+  return `from ${format(parseISO(props.task.originalDate!), 'EEE d MMM')}`
 })
 const hasMeta = computed(() => !!props.task.timeOfDay || !!props.task.note || !!rolledFrom.value)
 

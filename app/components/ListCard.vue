@@ -9,6 +9,8 @@ const emit = defineEmits<{ openTask: [Task, DOMRect] }>()
 
 const week = useWeekStore()
 
+/** The outer wrapper takes the *list* drop target; the card itself takes the task one. */
+const root = ref<HTMLElement | null>(null)
 const card = ref<HTMLElement | null>(null)
 const header = ref<HTMLElement | null>(null)
 const menu = ref<HTMLElement | null>(null)
@@ -59,10 +61,13 @@ function remove() {
 }
 
 onMounted(() => {
-  if (!card.value) return
+  if (!card.value || !root.value) return
+  // Pragmatic DnD keys its drop-target registry by element, so the two targets have to sit
+  // on different nodes: registering both on the card silently dropped whichever was added
+  // first, leaving tasks with nowhere to land on a list.
   const stops = [
     containerDropTarget(card.value, container.value, a => (dropAtEnd.value = a)),
-    listDropTarget(card.value, props.list.id, e => (listEdge.value = e)),
+    listDropTarget(root.value, props.list.id, e => (listEdge.value = e)),
   ]
   // The header is the handle so grabbing a task row does not pick the whole card up.
   if (header.value) {
@@ -76,7 +81,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex items-stretch gap-1.5">
+  <div ref="root" class="flex items-stretch gap-1.5">
     <div v-if="listEdge === 'left'" class="w-[3px] flex-none rounded-sm bg-ow-accent" aria-hidden="true" />
 
     <div

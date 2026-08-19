@@ -6,6 +6,7 @@ import type { ListWithTasks, WeekPayload } from '~~/shared/schemas/week'
 import type { Container } from '~/composables/useTaskBoard'
 import { containerKey } from '~/composables/useTaskBoard'
 import { inkForIndex } from '~~/shared/constants/colors'
+import { isRolledOver } from '~~/shared/utils/task'
 
 interface Day { date: string, tasks: Task[], events: CalendarEventDto[] }
 let tempCounter = 0
@@ -32,9 +33,9 @@ export const useWeekStore = defineStore('week', () => {
     totalCount.value > 0 ? `${doneCount.value} of ${totalCount.value} done` : 'nothing planned',
   )
 
-  /** Tasks that rolled onto today and can still be sent back. */
+  /** Tasks that rolled onto a later day and can still be sent back. */
   const rolledIn = computed(() =>
-    days.value.flatMap(d => d.tasks.filter(t => t.originalDate && !t.completedAt)),
+    days.value.flatMap(d => d.tasks.filter(t => isRolledOver(t) && !t.completedAt)),
   )
 
   function isFoldOpen(c: Container) {
