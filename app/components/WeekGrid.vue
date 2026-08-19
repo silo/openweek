@@ -30,12 +30,20 @@ const visibleDays = computed(() =>
 /**
  * Focusing a day widens its column and narrows the rest, rather than hiding anything.
  * Ratios are the design's: 2.1fr against 0.85fr.
+ *
+ * Always an expanded track list, never `repeat()`: the two notations do not interpolate,
+ * so mixing them made every transition into or out of the unfocused state snap instead of
+ * animate. Only focus-to-focus moves were animating.
  */
 const colTemplate = computed(() => {
   const days = visibleDays.value
   const focused = days.findIndex(d => d.date === week.focusDate)
-  if (focused < 0) return `repeat(${days.length},minmax(0,1fr))`
-  return days.map((_, i) => (i === focused ? 'minmax(0,2.1fr)' : 'minmax(0,0.85fr)')).join(' ')
+  return days
+    .map((_, i) => {
+      if (focused < 0) return 'minmax(0,1fr)'
+      return i === focused ? 'minmax(0,2.1fr)' : 'minmax(0,0.85fr)'
+    })
+    .join(' ')
 })
 </script>
 
@@ -45,7 +53,7 @@ const colTemplate = computed(() => {
 
     <div
       v-else
-      class="grid min-h-full gap-px bg-ow-line transition-[grid-template-columns]"
+      class="grid min-h-full gap-px bg-ow-line transition-[grid-template-columns] duration-300 ease-out motion-reduce:transition-none"
       :style="{ gridTemplateColumns: colTemplate }"
     >
       <DayColumn

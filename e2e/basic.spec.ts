@@ -50,11 +50,13 @@ test('focusing a day widens its column', async ({ page }) => {
   await signIn(page)
 
   const grid = page.locator('[style*="grid-template-columns"]').first()
-  const even = await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns)
+  const tracks = () => grid.evaluate(el => getComputedStyle(el).gridTemplateColumns)
+  const even = await tracks()
 
   await dayHeader(page).first().click()
   await expect(page.getByText('FOCUS ×')).toBeVisible()
 
-  const focused = await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns)
-  expect(focused).not.toBe(even)
+  // The columns animate over ~300ms, so poll rather than sampling once — a single read
+  // lands mid-transition and can still see the even tracks.
+  await expect.poll(tracks, { timeout: 5_000 }).not.toBe(even)
 })
