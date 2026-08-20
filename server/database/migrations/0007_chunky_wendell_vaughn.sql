@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "lists_height" smallint DEFAULT 0 NOT NULL;

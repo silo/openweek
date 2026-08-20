@@ -193,13 +193,7 @@ onMounted(() => {
 
       <div class="mx-0.5 mb-[9px] h-px bg-ow-hairline" />
 
-      <TaskItem
-        v-for="t in visibleTasks"
-        :key="t.id"
-        :task="t"
-        :container="container"
-        @open="(t, r) => emit('openTask', t, r)"
-      />
+      <TaskRows :tasks="visibleTasks" :container="container" @open="(t, r) => emit('openTask', t, r)" />
 
       <DropLine v-if="dropAtEnd" />
 

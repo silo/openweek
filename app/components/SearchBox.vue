@@ -59,8 +59,12 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKey))
 </script>
 
 <template>
-  <div class="relative">
-    <div class="flex w-[236px] items-center gap-2 rounded-[9px] bg-ow-sunken px-[11px] py-2">
+  <!-- The one part of the bar that gives way when the window is narrow: it can lose a third
+       of its width and still be a search box, which no other control up here can. The width
+       lives on the flex item itself — on the inner box the item still sizes to its content
+       and nothing gives. -->
+  <div class="relative w-[236px] min-w-[152px]">
+    <div class="flex w-full items-center gap-2 rounded-[9px] bg-ow-sunken px-[11px] py-2">
       <span class="text-sm leading-none text-ow-muted" aria-hidden="true">⌕</span>
       <input
         ref="input"

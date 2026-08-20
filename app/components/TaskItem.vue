@@ -3,7 +3,7 @@ import { format, parseISO } from 'date-fns'
 import type { Task } from '~~/shared/schemas/task'
 import type { Container, Edge } from '~/composables/useTaskBoard'
 import { inkColor, inkEdge, inkTint } from '~~/shared/constants/colors'
-import { isRolledOver } from '~~/shared/utils/task'
+import { isPending, isRolledOver } from '~~/shared/utils/task'
 
 const props = defineProps<{ task: Task, container: Container }>()
 /** The row's rect travels with the event so the detail popover can anchor to it. */
@@ -17,6 +17,11 @@ const edge = ref<Edge | null>(null)
 const dragging = ref(false)
 
 const done = computed(() => !!props.task.completedAt)
+/**
+ * A just-added row is on screen before the server has given it an id. Ticking it in that
+ * window would PATCH the placeholder, 404, and quietly un-tick itself, so the box waits.
+ */
+const pending = computed(() => isPending(props.task))
 const ink = computed(() => props.task.highlightColor)
 const fillMode = computed(() => settings.settings?.tagStyle === 'fill')
 
@@ -83,6 +88,7 @@ onMounted(() => {
         title="Mark done"
         :aria-label="done ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`"
         :aria-pressed="done"
+        :disabled="pending"
         class="mt-px h-[19px] w-[19px] flex-none cursor-pointer rounded-md p-0 text-[11px] leading-[15px] transition-colors"
         :style="{
           border: `1.6px solid ${done ? 'var(--ow-today)' : 'var(--ow-mark)'}`,
@@ -96,10 +102,10 @@ onMounted(() => {
 
       <div class="min-w-0 flex-1">
         <div
-          class="text-[14.5px] leading-[1.4]"
-          :class="done ? 'text-ow-done line-through decoration-ow-ghost' : 'text-ow-ink'"
+          class="ow-title text-[14.5px] leading-[1.4]"
+          :class="done ? 'text-ow-done' : 'text-ow-ink'"
         >
-          {{ task.title }}
+          <span class="ow-strike" :class="done && 'ow-strike-on'">{{ task.title }}</span>
         </div>
         <div v-if="hasMeta" class="mt-[3px] flex items-center gap-[9px] text-xs text-ow-secondary">
           <span v-if="task.timeOfDay" class="tabular-nums">{{ task.timeOfDay.slice(0, 5) }}</span>
@@ -118,6 +124,29 @@ onMounted(() => {
   transition: opacity 140ms ease;
 }
 
+/* The strike is drawn, not switched on. `text-decoration` cannot animate, so the line is a
+   background gradient grown from nothing to the full width of the title — which, unlike an
+   absolutely positioned rule, follows the text onto a second line when it wraps. */
+.ow-title {
+  transition: color 220ms ease;
+}
+
+.ow-strike {
+  /* `clone`, so a title that wraps is struck on every line: with the default `slice` the
+     gradient's 100% resolves against the first line only and the rest goes unmarked. */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 0.58em;
+  background-size: 0% 1.5px;
+  transition: background-size 240ms ease;
+}
+
+.ow-strike-on {
+  background-size: 100% 1.5px;
+}
+
 /* The row left behind fades to show it is in transit. No transform: this is the source
    element, not the thing under the cursor, so tilting it reads as the wrong item moving. */
 .ow-row-dragging {
@@ -125,6 +154,8 @@ onMounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ow-row { transition: none; }
+  .ow-row,
+  .ow-title,
+  .ow-strike { transition: none; }
 }
 </style>

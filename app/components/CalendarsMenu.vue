@@ -23,7 +23,7 @@ useDismissable(panel, () => (open.value = false), trigger)
          sibling buttons rather than one nested inside the other, which is invalid. -->
     <div
       ref="trigger"
-      class="flex h-[34px] items-stretch overflow-hidden rounded-[9px] border transition-colors"
+      class="flex h-[34px] flex-none items-stretch overflow-hidden rounded-[9px] border transition-colors"
       :class="open ? 'border-ow-accent-edge bg-ow-accent-tint' : 'border-ow-border bg-ow-surface'"
     >
       <button

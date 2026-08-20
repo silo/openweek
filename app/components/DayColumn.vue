@@ -89,13 +89,7 @@ onMounted(() => {
       <span class="h-px flex-1 bg-ow-hairline" />
     </div>
 
-    <TaskItem
-      v-for="t in visibleTasks"
-      :key="t.id"
-      :task="t"
-      :container="container"
-      @open="(t, r) => emit('openTask', t, r)"
-    />
+    <TaskRows :tasks="visibleTasks" :container="container" @open="(t, r) => emit('openTask', t, r)" />
 
     <DropLine v-if="dropAtEnd" />
     <DoneFold v-if="hasFold" :label="foldLabel" :expanded="foldOpen" @click="toggleFold" />

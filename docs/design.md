@@ -110,7 +110,14 @@ Ten frames, mirrored by the components:
 - **Collapse done** — finished tasks fold into a quiet "N done" line per day *and* per list.
 - **Weekends** — 7 or 5 columns, from the toolbar or Settings.
 - **Lists** — the rail under the week can be switched off from the same control, giving the grid the
-  whole window. The lists keep working: "Move to…" still reaches them.
+  whole window. The lists keep working: "Move to…" still reaches them. It is also **resizable**: drag
+  the grip on its top edge (or focus it and use ↑/↓ — it is an ARIA window splitter), and let go below
+  the smallest useful height to switch it off entirely. The height persists as `listsHeight`; the rail
+  keeps its natural size until the handle is first used, and is capped at `70vh`.
+- **Ticking a task** — the strike-through is *drawn* across the title over ~240ms (an animated
+  background gradient; `text-decoration` cannot animate), the row holds its place for a beat, then
+  folds away into the "N done" line. Unticking runs the line back off. Only completed rows animate on
+  leave — a row that was dragged elsewhere still goes instantly.
 - **Cmd/Ctrl-K** — search across this week and every list, capped at 8 results.
 - **Dragging** — the row left behind fades while a drop line marks the landing place, including in a
   day or list that is currently empty. Lists and tasks use separate drag types, so a card never

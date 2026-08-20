@@ -35,6 +35,7 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 | `textSize` | enum | `small` \| `default` \| `large`; drives `--ow-text-scale`. |
 | `showWeekends` | boolean | default `true`; also a toolbar toggle. |
 | `showLists` | boolean | default `true`; hides the lists rail under the week so the grid has the whole window. Also a toolbar toggle. |
+| `listsHeight` | smallint | px height of the lists rail, dragged from its top edge. `0` (default) = size to its contents. Dragging below the minimum switches `showLists` off and leaves this untouched, so it comes back the size it was. |
 | `collapseDone` | boolean | default `true`; folds finished tasks into a "N done" line. |
 | `showCalendarEvents` | boolean | default `true`. |
 | `hideConvertedEvents` | boolean | default `true`; an event that became a task steps out of the grid, so the same meeting is not listed twice. Deleting the task brings it back. |

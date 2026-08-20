@@ -25,7 +25,7 @@ function toggleLists() {
 }
 
 /** The two "what is on screen" switches share a shell, so they share their styling too. */
-const toggleClass = 'flex cursor-pointer items-center gap-2 border-none bg-transparent py-0 pl-2 pr-[11px] text-[13.5px] transition-colors hover:bg-ow-sunken'
+const toggleClass = 'flex cursor-pointer items-center gap-2 border-none bg-transparent py-0 pl-2 pr-2 text-[13.5px] transition-colors hover:bg-ow-sunken xl:pr-[11px]'
 </script>
 
 <template>
@@ -75,19 +75,23 @@ const toggleClass = 'flex cursor-pointer items-center gap-2 border-none bg-trans
 
     <div class="flex-1" />
 
-    <!-- Both switches answer "what is on screen", so they share one shell — as two
-         free-standing buttons they pushed the bar past its own width at 1024. -->
-    <div class="flex h-[34px] items-stretch overflow-hidden rounded-[9px] border border-ow-border bg-ow-surface">
+    <!-- Both switches answer "what is on screen", so they share one shell rather than taking
+         two free-standing buttons' worth of a bar that is already tight. `flex-none` because
+         the shell clips (rounded corners): left shrinkable it eats its own labels before
+         anything else in the row gives way. Under 1280 the labels step aside and the
+         switches speak for themselves. -->
+    <div class="flex h-[34px] flex-none items-stretch overflow-hidden rounded-[9px] border border-ow-border bg-ow-surface">
       <button
         type="button"
         title="Show or hide Saturday and Sunday"
+        aria-label="Show weekends"
         role="switch"
         :aria-checked="showWeekends"
         :class="[toggleClass, showWeekends ? 'text-ow-title' : 'text-ow-ghost']"
         @click="toggleWeekends"
       >
         <OwSwitch :model-value="showWeekends" as="span" size="sm" />
-        <span>Weekends</span>
+        <span class="hidden xl:inline">Weekends</span>
       </button>
 
       <span class="my-[6px] w-px flex-none bg-ow-border" aria-hidden="true" />
@@ -95,13 +99,14 @@ const toggleClass = 'flex cursor-pointer items-center gap-2 border-none bg-trans
       <button
         type="button"
         title="Show or hide the lists under the week"
+        aria-label="Show lists"
         role="switch"
         :aria-checked="showLists"
         :class="[toggleClass, showLists ? 'text-ow-title' : 'text-ow-ghost']"
         @click="toggleLists"
       >
         <OwSwitch :model-value="showLists" as="span" size="sm" />
-        <span>Lists</span>
+        <span class="hidden xl:inline">Lists</span>
       </button>
     </div>
     <CalendarsMenu />

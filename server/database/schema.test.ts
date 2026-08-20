@@ -15,6 +15,7 @@ describe('drizzle-zod contract', () => {
     textSize: 'default' as const,
     showWeekends: true,
     showLists: true,
+    listsHeight: 0,
     collapseDone: true,
     showCalendarEvents: true,
     hideConvertedEvents: true,

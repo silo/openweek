@@ -16,8 +16,12 @@ export function useDoneFold(container: Ref<Container>, tasks: () => Task[]) {
   const hasFold = computed(() => (settings.settings?.collapseDone ?? true) && doneTasks.value.length > 0)
   const isOpen = computed(() => week.isFoldOpen(container.value))
 
+  // A task ticked a moment ago stays put until the store lets go of it, so the row folds
+  // away *after* its strike-through rather than vanishing under the cursor.
   const visibleTasks = computed(() =>
-    hasFold.value && !isOpen.value ? tasks().filter(t => !t.completedAt) : tasks(),
+    hasFold.value && !isOpen.value
+      ? tasks().filter(t => !t.completedAt || week.isSettling(t.id))
+      : tasks(),
   )
   const label = computed(() =>
     isOpen.value ? `Hide ${doneTasks.value.length} done` : `${doneTasks.value.length} done`,

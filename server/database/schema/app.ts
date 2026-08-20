@@ -51,6 +51,9 @@ export const userSettings = pgTable('user_settings', {
   textSize: textSizeEnum('text_size').notNull().default('default'),
   showWeekends: boolean('show_weekends').notNull().default(true),
   showLists: boolean('show_lists').notNull().default(true),
+  // Height of the lists rail in px, dragged from its top edge. 0 = size to its contents,
+  // which is what an account that has never touched the handle keeps.
+  listsHeight: smallint('lists_height').notNull().default(0),
   collapseDone: boolean('collapse_done').notNull().default(true),
   showCalendarEvents: boolean('show_calendar_events').notNull().default(true),
   // Once an event has become a task, showing both is the same meeting twice.

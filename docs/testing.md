@@ -43,8 +43,16 @@ Endpoints exercised against a disposable Postgres (a compose db or Testcontainer
 persistence**, list CRUD, convert-event, settings read/write, the **auth guard** (401 when unauthenticated,
 owner-scoping across users), and the **first-user-becomes-admin** hook.
 
-### End-to-end (Playwright — later phase)
-DnD reorder within a day and **move across days** with **both mouse and keyboard**; complete a task; connect a
+### End-to-end (Playwright — `e2e/basic.spec.ts`, run against `pnpm db:seed` data)
+In place: sign-in lands on the week grid; adding a task to a day; focusing a day widens its column; **ticking a
+task** draws the strike-through *before* the row folds away; the **lists rail** resizes from its grip and hides
+when dragged to the floor.
+
+Two things to know when writing more: the mobile day view is in the DOM alongside the grid (just hidden), so an
+unscoped locator matches today's rows twice — scope to `[style*="grid-template-columns"]`. And a created row is
+optimistic, so wait for the `POST /api/tasks` response before acting on it.
+
+Still to cover: DnD reorder within a day and **move across days** with **both mouse and keyboard**; connect a
 public iCal feed and see events land; convert an event to a task.
 
 ## Fixtures & helpers

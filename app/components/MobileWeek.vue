@@ -127,10 +127,11 @@ const strips = computed(() => week.days.map((d) => {
         <span class="h-px flex-1 bg-ow-hairline" />
       </div>
 
-      <TaskItem
-        v-for="t in activeDay.tasks"
-        :key="t.id"
-        :task="t"
+      <!-- Keyed by the day: switching days swaps the whole list, which should read as a new
+           screen rather than every row folding out and back in. -->
+      <TaskRows
+        :key="activeDate"
+        :tasks="activeDay.tasks"
         :container="container"
         @open="(task, rect) => emit('openTask', task, rect)"
       />

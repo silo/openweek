@@ -6,11 +6,18 @@ import type { ListWithTasks, WeekPayload } from '~~/shared/schemas/week'
 import type { Container } from '~/composables/useTaskBoard'
 import { containerKey } from '~/composables/useTaskBoard'
 import { inkForIndex } from '~~/shared/constants/colors'
-import { isRolledOver } from '~~/shared/utils/task'
+import { TEMP_ID_PREFIX, isRolledOver } from '~~/shared/utils/task'
 import { isPastDate, todayStr } from '~~/shared/utils/week'
 
 interface Day { date: string, tasks: Task[], events: CalendarEventDto[] }
 let tempCounter = 0
+
+/** How long a ticked row keeps its place before folding away. Matches the strike-through. */
+const SETTLE_MS = 420
+
+function prefersReducedMotion() {
+  return import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
 
 export const useWeekStore = defineStore('week', () => {
   const weekStart = ref('')
@@ -25,6 +32,8 @@ export const useWeekStore = defineStore('week', () => {
   const rolloverReviewed = ref(false)
   /** The task currently being dragged, so every container can show a drop line. */
   const draggingId = ref<string | null>(null)
+  /** Just-ticked tasks, kept in their column while the strike-through plays. */
+  const settling = ref<string[]>([])
 
   const doneCount = computed(() => days.value.reduce((n, d) => n + d.tasks.filter(t => t.completedAt).length, 0))
   const totalCount = computed(() => days.value.reduce((n, d) => n + d.tasks.length, 0))
@@ -50,6 +59,16 @@ export const useWeekStore = defineStore('week', () => {
   /** …with the one exception the server also makes: sending a rolled-over task back. */
   function refusesPast(taskId: string, dest: Container) {
     return isPastContainer(dest) && find(taskId)?.originalDate !== (dest as { date: string }).date
+  }
+
+  /** Read by the done-fold, which leaves a settling task where it is until the timer runs. */
+  function isSettling(id: string) {
+    return settling.value.includes(id)
+  }
+  function settle(id: string) {
+    if (prefersReducedMotion() || settling.value.includes(id)) return
+    settling.value = [...settling.value, id]
+    setTimeout(() => { settling.value = settling.value.filter(x => x !== id) }, SETTLE_MS)
   }
 
   function isFoldOpen(c: Container) {
@@ -104,7 +123,7 @@ export const useWeekStore = defineStore('week', () => {
 
   function tempTask(partial: Partial<Task>): Task {
     return {
-      id: `temp-${++tempCounter}`, date: null, listId: null, position: '~', title: '',
+      id: `${TEMP_ID_PREFIX}${++tempCounter}`, date: null, listId: null, position: '~', title: '',
       note: null, highlightColor: null, timeOfDay: null, completedAt: null,
       originalDate: null, recurrenceRule: null, sourceEventId: null, sourceLabel: null, ...partial,
     }
@@ -151,7 +170,11 @@ export const useWeekStore = defineStore('week', () => {
   }
   function toggleComplete(id: string) {
     const t = find(id)
-    if (t) return updateTask(id, { completed: !t.completedAt })
+    if (!t) return
+    // Ticking a task normally takes it straight out of the column. Hold it in place first,
+    // long enough for the strike-through to draw, so the tick is something you can see.
+    if (!t.completedAt) settle(id)
+    return updateTask(id, { completed: !t.completedAt })
   }
   async function deleteTask(id: string) {
     const loc = locate(id)
@@ -300,9 +323,9 @@ export const useWeekStore = defineStore('week', () => {
 
   return {
     weekStart, days, lists, loading,
-    focusDate, doneOpen, rolloverReviewed, draggingId,
+    focusDate, doneOpen, rolloverReviewed, draggingId, settling,
     doneCount, totalCount, weekEmpty, doneLabel, rolledIn,
-    isFoldOpen, toggleFold, toggleFocus, isPastContainer,
+    isFoldOpen, toggleFold, toggleFocus, isPastContainer, isSettling,
     loadWeek, find, containerOf, bucketFor, createTask,
     updateTask, toggleComplete, deleteTask, moveTask, moveRelative, sendBack, convertEvent,
     createList, updateList, moveList, deleteList,

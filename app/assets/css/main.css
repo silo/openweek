@@ -340,7 +340,44 @@
   }
 }
 
+/* --- The lists rail --------------------------------------------------------- */
+/* Resizable from its top edge, but only where it is a band under the week. Below the grid
+   breakpoint the rail stacks under the day and keeps its natural height. The cap means a
+   stored height from a taller screen can never swallow the week. */
+@media (min-width: 1024px) {
+  .ow-rail {
+    height: var(--ow-rail-h, auto);
+    max-height: 70vh;
+    flex: none;
+  }
+}
+
 /* --- Motion ----------------------------------------------------------------- */
+/* A ticked row keeps its place for a beat (see the week store's SETTLE_MS), then folds away
+   into the "N done" line. Only rows that are actually done transition: one leaving because
+   it was dragged elsewhere, or because its optimistic id was swapped for the real one, has
+   no business animating and still goes instantly.
+   `grid-template-rows: 1fr -> 0fr` is the collapse — a max-height keyframe would idle for
+   half the run on a short row and snap on a tall one. */
+.ow-task-row {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.ow-task-leave-active.ow-task-done {
+  transition: grid-template-rows 220ms ease, opacity 220ms ease;
+}
+
+.ow-task-leave-active.ow-task-done > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ow-task-leave-to.ow-task-done {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
 @keyframes ow-shimmer {
   0% { background-position: -260px 0; }
   100% { background-position: 260px 0; }

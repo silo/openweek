@@ -50,6 +50,13 @@
       "when": 1787159227679,
       "tag": "0006_known_sunset_bain",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787232834818,
+      "tag": "0007_chunky_wendell_vaughn",
+      "breakpoints": true
     }
   ]
 }
