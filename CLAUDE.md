@@ -32,7 +32,9 @@ pnpm db:migrate     # apply migrations
 pnpm db:seed        # demo account + a week of test data (see docs/testing.md)
 pnpm auth:gen       # regenerate Better Auth tables after auth changes
 ```
-First run: `cp .env.example .env`, then `pnpm db:up && pnpm db:migrate && pnpm dev`.
+Runs on **Node 24 LTS** — `.nvmrc`/`.node-version` pin it, `engines` enforces it, and both Dockerfile stages
+use `node:24-alpine`. Not Node 25+: corepack, which is how the image installs pnpm, was dropped there.
+First run: `nvm use` (or `fnm use`), `cp .env.example .env`, then `pnpm db:up && pnpm db:migrate && pnpm dev`.
 `docker compose` reads the same `.env`, so `OPENWEEK_DB_PORT` must match the port in
 `DATABASE_URL` (parallel workspaces each pick their own).
 

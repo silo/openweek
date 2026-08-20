@@ -90,9 +90,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- On the grid breakpoint the page itself is the flex column, so the rail can be a
-       sibling of the week rather than living inside each layout. -->
   <div class="min-h-screen bg-ow-surface lg:flex lg:h-screen lg:flex-col">
+    <!-- The note belongs on the element above, but a comment at the template root reads as a
+         second root to eslint-plugin-vue, so it sits here instead: on the grid breakpoint the
+         page itself is the flex column, which is what lets the rail be a sibling of the week
+         rather than something each layout carries its own copy of. -->
     <!-- Below the grid's breakpoint the week becomes a day strip with one day in view. -->
     <MobileWeek
       class="lg:hidden"

@@ -1,6 +1,11 @@
 // The single file wrapping the drag-and-drop engine (Pragmatic DnD). Swap the engine here.
-import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { attachClosestEdge, type Edge, extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
+// Per-symbol entry points, which is what v3 wants: the old barrel paths (`/element/adapter`,
+// `/closest-edge`) still resolve but are deprecated shims now, and the hitbox package says
+// outright that they go away in a future release.
+import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter'
+import { attachClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/attach-closest-edge'
+import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge/extract-closest-edge'
+import type { Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/types'
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
 
 export type { Edge }

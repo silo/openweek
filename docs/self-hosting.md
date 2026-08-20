@@ -19,6 +19,53 @@ docker compose up -d --build  # app + postgres; migrations run on start
 
 Update later: `git pull && docker compose up -d --build` (migrations re-run automatically).
 
+## Building on a small host
+
+The **build** is the memory-hungry part, not the app. Measured on this repo against `node:24-alpine`,
+`pnpm build` inside the image peaks at **~1.05 GB of RSS** and needs **just over 500 MB of V8 heap**; the
+container it produces idles around 100 MB. So a box that runs Openweek happily may still be unable to build it.
+
+> **A 1 GB host needs swap.** It used to fit in 1 GB with ~150 MB to spare; Vite 8 (which arrived with Nuxt
+> 4.5) costs about 240 MB more, which spent that margin. With a swapfile it builds fine — measured down to a
+> 512 MB box. Without one, a 1 GB host is killed outright.
+
+What makes this bite is that Node sizes its own heap at **half the memory it can see**. On a 1 GB host that is
+560 MB — barely above what the build needs, which is why the same command can succeed one month and fail the
+next after a dependency grows. Below 1 GB it is *guaranteed* to fail. The failure reaches Portainer or
+`docker compose` as a bare:
+
+```
+failed to solve: process "/bin/sh -c pnpm build" did not complete successfully: exit code: 1
+```
+
+with the real cause — `FATAL ERROR: ... JavaScript heap out of memory` — hundreds of lines further up.
+
+The build step now prints how much memory *and swap* it was given before it starts, warns up front when that
+is not enough, and says plainly if it fails. On a host under ~950 MB it also overrides the heap ceiling to
+640 MB, because the default would fail outright there; that override only lands if the host has **swap** to
+spill into.
+
+**Add swap** (the fix on a 1 GB VPS — a 512 MB box builds fine with it):
+
+```bash
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab   # survives reboot
+```
+
+**Or build somewhere else** and ship the image, which keeps the small host out of it entirely:
+
+```bash
+# on a machine with memory to spare (laptop, CI, a bigger VM)
+docker build -t openweek:local .
+docker save openweek:local | gzip > openweek.tar.gz
+scp openweek.tar.gz you@your-host:~
+
+# on the host
+gunzip -c openweek.tar.gz | docker load
+# then in docker-compose.yml, replace `build: .` on the app service with `image: openweek:local`
+```
+
 ## Configuration
 
 `server/utils/config.ts` validates the environment with Zod at boot and **fails fast** with a clear message if
@@ -46,7 +93,7 @@ These are read by the app itself. Compose additionally reads a few of its own fr
 ## Container & runtime
 
 - **Dockerfile** — multi-stage: a build stage runs `pnpm install --frozen-lockfile` + `pnpm build` (→
-  `.output`); a slim runtime stage (`node:22-alpine`, **non-root** `openweek` user) carries `.output`, the
+  `.output`); a slim runtime stage (`node:24-alpine`, **non-root** `openweek` user) carries `.output`, the
   committed migration SQL, and a small migration runner. Nitro `node-server` preset; start command
   `node .output/server/index.mjs`.
 - **Entrypoint** (`docker/entrypoint.sh`) — apply migrations via `docker/migrate.mjs` (drizzle-orm's migrator

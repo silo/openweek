@@ -44,6 +44,11 @@ export const account = pgTable(
     id: text("id").primaryKey(),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
+    // Added by hand: better-auth 1.7 requires `issuer` on every account and matches on it
+    // when it looks up the credential account at sign-in. `@better-auth/cli` lags the
+    // library (see docs/tech-stack.md), so `pnpm auth:gen` does not emit this field yet —
+    // keep it when regenerating, or sign-in starts answering "User not found".
+    issuer: text("issuer").notNull(),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),

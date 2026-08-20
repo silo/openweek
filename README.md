@@ -89,8 +89,8 @@ instance becomes its admin.
 ## Tech stack
 
 [Nuxt 4](https://nuxt.com) · TypeScript · [PostgreSQL](https://www.postgresql.org) +
-[Drizzle ORM](https://orm.drizzle.team) · [Zod](https://zod.dev) · [Tailwind CSS v4](https://tailwindcss.com) +
-[DaisyUI](https://daisyui.com) · [Better Auth](https://better-auth.com) ·
+[Drizzle ORM](https://orm.drizzle.team) · [Zod](https://zod.dev) · [Tailwind CSS v4](https://tailwindcss.com) ·
+[Better Auth](https://better-auth.com) ·
 [Pragmatic drag-and-drop](https://github.com/atlassian/pragmatic-drag-and-drop) · Docker.
 Full list and rationale: [docs/tech-stack.md](./docs/tech-stack.md).
 
@@ -250,7 +250,8 @@ fast with a clear message if something is missing or malformed.
 
 ## Local development
 
-For working on Openweek itself. Requires Node 22+, [pnpm](https://pnpm.io), and Docker for the database.
+For working on Openweek itself. Requires **Node 24** (the active LTS — `.nvmrc` and `.node-version` pin it, so
+`nvm use` / `fnm use` picks it up on `cd`), [pnpm](https://pnpm.io) via corepack, and Docker for the database.
 
 ```bash
 cp .env.example .env

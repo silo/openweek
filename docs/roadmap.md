@@ -7,7 +7,7 @@ migrations**.
 ## Phase 0 — Foundations & docs
 Write the `docs/*.md` set from the plan; add `CLAUDE.md`; correct the fonts line in
 [tech-stack.md](./tech-stack.md). Tooling baseline: `package.json` deps + scripts, Nuxt config modules,
-Tailwind v4 + token CSS, DaisyUI, ESLint (`@nuxt/eslint`), Vitest, `server/utils/config.ts` (Zod env,
+Tailwind v4 + token CSS, ESLint (`@nuxt/eslint`), Vitest, `server/utils/config.ts` (Zod env,
 fail-fast), `drizzle.config.ts`, `.env.example`.
 
 ## Phase 1 — DB + Auth
