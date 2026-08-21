@@ -1,21 +1,18 @@
-# App + Postgres, for local development and self-hosting.
-# Dev: `docker compose up -d db` then `pnpm db:migrate && pnpm dev`.
-# Self-host: see the README — `docker compose up -d --build`.
+# App + Postgres. Dev: `docker compose up -d db`, then `pnpm db:migrate && pnpm dev`.
+# Self-host: `docker compose up -d --build` — see the README.
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: openweek
-      # Postgres only reads this when it initialises the data directory, so set it in .env
-      # *before* the first start. Changing it later needs an ALTER USER in the container.
+      # Read only when the data directory is initialised — set it in .env before the first
+      # start; changing it later needs an ALTER USER in the container.
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-openweek}
       POSTGRES_DB: openweek
     ports:
-      # Bound to loopback: the app reaches the database over the compose network, so the only
-      # reason to publish it is psql from the host. Without the 127.0.0.1 prefix this puts
-      # Postgres on every interface of a self-hosted box.
-      # Host port is overridable (OPENWEEK_DB_PORT) so parallel workspaces don't collide; container port stays 5432.
+      # Loopback-bound: the app reaches the db over the compose network, so publishing it is
+      # only for psql from the host. Without 127.0.0.1 this exposes Postgres on every interface.
       - "127.0.0.1:${OPENWEEK_DB_PORT:-5432}:5432"
     volumes:
       - openweek-db:/var/lib/postgresql/data

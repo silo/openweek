@@ -1,4 +1,4 @@
-node_modules
+**/node_modules
 .output
 .nuxt
 .nitro
@@ -8,10 +8,15 @@ node_modules
 .github
 .env
 .env.*
-!.env.example
-*.log
-.DS_Store
+**/*.log
+**/.DS_Store
 dist
 .context
 playwright-report
 test-results
+e2e
+tests
+Dockerfile*
+docker-compose*.yml
+compose.yaml
+.dockerignore

@@ -21,29 +21,17 @@ Update later: `git pull && docker compose up -d --build` (migrations re-run auto
 
 ## Building on a small host
 
-The **build** is the memory-hungry part, not the app. Measured on this repo against `node:24-alpine`,
-`pnpm build` inside the image peaks at **~1.05 GB of RSS** and needs **just over 500 MB of V8 heap**; the
-container it produces idles around 100 MB. So a box that runs Openweek happily may still be unable to build it.
+The **build** is the memory-hungry part, not the app: it needs **~1.2 GB**, while the container it produces
+idles around 100 MB. So a box that runs Openweek happily may still be unable to build it.
 
-> **A 1 GB host needs swap.** It used to fit in 1 GB with ~150 MB to spare; Vite 8 (which arrived with Nuxt
-> 4.5) costs about 240 MB more, which spent that margin. With a swapfile it builds fine — measured down to a
-> 512 MB box. Without one, a 1 GB host is killed outright.
+What decides this is **free** memory, not total. Node sizes its heap at half of what it can see, and an
+unconstrained `docker build` sees the host's `MemTotal` — so a 2 GB box already running other containers
+aims for a 1 GB heap against ~1.2 GB actually free, never collects hard, and gets OOM-killed. The image pins
+the ceiling at 512 MB, which makes it collect and land. Check yours with `free -m` and read **available**,
+not **total**.
 
-What makes this bite is that Node sizes its own heap at **half the memory it can see**. On a 1 GB host that is
-560 MB — barely above what the build needs, which is why the same command can succeed one month and fail the
-next after a dependency grows. Below 1 GB it is *guaranteed* to fail. The failure reaches Portainer or
-`docker compose` as a bare:
-
-```
-failed to solve: process "/bin/sh -c pnpm build" did not complete successfully: exit code: 1
-```
-
-with the real cause — `FATAL ERROR: ... JavaScript heap out of memory` — hundreds of lines further up.
-
-The build step now prints how much memory *and swap* it was given before it starts, warns up front when that
-is not enough, and says plainly if it fails. On a host under ~950 MB it also overrides the heap ceiling to
-640 MB, because the default would fail outright there; that override only lands if the host has **swap** to
-spill into.
+Even then 1.2 GB against a 1.2 GB build is not a margin, and Portainer discards build output — it shows only
+the failing command and `exit code: 1`. Either of the following is more reliable than hoping.
 
 **Add swap** (the fix on a 1 GB VPS — a 512 MB box builds fine with it):
 
