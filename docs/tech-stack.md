@@ -80,6 +80,7 @@ Always pair DnD with a **non-drag "move to…" menu** (also the keyboard path). 
 | Lucia (auth) | Officially deprecated (sunset to a guide in 2025). | Better Auth |
 | tRPC | Duplicates Nitro's routing/runtime and fights Better Auth's route mounting; no gain in a single app. | Typed `$fetch`/`useFetch` + shared Zod |
 | Google Fonts CDN | Third-party network dependency at runtime; bad for self-host/privacy. | Self-hosted `@fontsource/*` |
+| Chart.js / d3 / unovis | The Stats page needs a bar, a grid of squares and a split rule; a chart library brings its own theming model to fight with the `--ow-*` token layer, for marks that are a few lines of SVG. | Hand-rolled inline SVG/CSS in `app/components/stats/` |
 | plain `fractional-indexing` | Identical colliding keys on concurrent same-slot inserts (multi-device risk). | `fractional-indexing-jittered` + uuid v7 tiebreaker |
 
 ## Version-coupling notes

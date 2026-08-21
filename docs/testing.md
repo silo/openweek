@@ -19,11 +19,26 @@ integration layer against a real Postgres, all gated in CI.
   zod4 / drizzle-zod version split — see [tech-stack.md](./tech-stack.md)).
 - **Colour constants** — the ink palette, its per-theme values, and `inkColor()`'s pass-through for
   pre-rework hex values (`shared/constants/colors.test.ts`).
+- **Stats arithmetic** — zero-filling a sparse day series, both streaks (including the rule that an
+  as-yet-empty *today* does not break the current one), weekday rotation under either week start, and the
+  heatmap intensity steps (`shared/utils/stats.test.ts`). The aggregation itself is SQL and the timezone
+  bucketing is `AT TIME ZONE`, so neither is unit-testable without a live database — verify those against
+  `pnpm db:psql` (see below).
 
 ### Component (happy-dom)
 `TaskItem` across states (open/done/`edge` vs `fill` highlight/rolled/meta/note), `EventItem`,
 `TaskDetailPopover`, `DayColumn` inline composer and done-fold, `ListCard` menu, `AppearanceSettings`.
 Assert rendered structure + a11y roles, not pixel styles.
+
+### Checking Stats against the database
+
+The aggregates have no unit-test seam, so check them by hand after touching `server/services/stats.ts`:
+
+- Cross-check a figure: run the follow-through query from `pnpm db:psql` and compare it to `/api/stats`.
+- **The timezone case, which is the one that actually bites.** Insert a completion at `22:30Z` on some day,
+  then read `/api/stats` with the account's `timezone` set to `UTC`, `Europe/Copenhagen` and
+  `Pacific/Auckland` in turn: it must land on that day under UTC and on the *next* day under both of the
+  others. If it lands on the same day in all three, something is grouping on raw `completed_at`.
 
 ## Local demo data
 

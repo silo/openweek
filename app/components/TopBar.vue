@@ -59,7 +59,13 @@ const toggleClass = 'flex cursor-pointer items-center gap-2 border-none bg-trans
       </span>
     </div>
 
-    <div class="ml-0.5 flex items-center gap-[9px]">
+    <!-- The week's progress is the obvious way in to the longer view, and costs no room in a
+         bar that is already tight. -->
+    <NuxtLink
+      to="/stats"
+      title="Stats"
+      class="ml-0.5 flex items-center gap-[9px] rounded-[9px] px-1.5 py-1 no-underline transition-colors hover:bg-ow-sunken"
+    >
       <div
         class="h-1.5 w-[92px] overflow-hidden rounded-[3px] bg-ow-hairline"
         role="progressbar"
@@ -71,7 +77,7 @@ const toggleClass = 'flex cursor-pointer items-center gap-2 border-none bg-trans
         <div class="h-full rounded-[3px] bg-ow-accent transition-[width]" :style="{ width: `${progressPct}%` }" />
       </div>
       <span class="whitespace-nowrap text-[13px] text-ow-text">{{ week.doneLabel }}</span>
-    </div>
+    </NuxtLink>
 
     <div class="flex-1" />
 

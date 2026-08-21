@@ -64,6 +64,13 @@
       "when": 1787248171681,
       "tag": "0008_married_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787308033313,
+      "tag": "0009_lovely_gorgon",
+      "breakpoints": true
     }
   ]
 }

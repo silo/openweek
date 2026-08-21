@@ -63,5 +63,23 @@ and rollover share one code path. See [data-model.md](./data-model.md).
 ## D8 — Month view out of scope for v1
 The v2 target layout has no month affordance and the README is week-first; a month view is a later phase.
 
+## D9 — Stats are derived on request; charts are hand-rolled
+No aggregate table, no rollup job, no retention change — `GET /api/stats` reads `task` directly, which is why
+the feature needed no migration (the `(userId, completedAt)` index was already there). *Why:* a personal
+planner's row counts are trivial, and a cached rollup would be a second source of truth to keep honest.
+Charts are inline SVG/CSS over the `--ow-*` tokens rather than a charting dependency: the page needs a bar, a
+grid of squares and a split rule, and a chart library would bring a theming model that fights the token layer.
+*Rejected:* Chart.js / d3 / unovis — see [tech-stack.md](./tech-stack.md).
+
+## D10 — A task counts against the day it was **first** planned for
+Every follow-through figure buckets on `COALESCE(original_date, date)`, never on `date`. *Why:* rollover moves
+`date` forward, so bucketing on it would let each unfinished day quietly empty itself and report 100% done.
+`original_date` is written once, on the first roll, so the coalesce is correct whether or not rollover is on.
+Completions are bucketed through the account's `timezone` (`completed_at AT TIME ZONE …`), because
+`completed_at` is stamped in server UTC and an evening tick would otherwise land on the wrong day.
+Known limits, recorded so nobody reads more into the numbers than is there: a **manual** move does not stamp
+`original_date`, deleted tasks are gone (no `deletedAt`), un-ticking destroys `completed_at`, and the *number*
+of rollovers is unrecoverable — only days slipped.
+
 ## Related docs
 [tech-stack.md](./tech-stack.md) · [architecture.md](./architecture.md) · [roadmap.md](./roadmap.md)

@@ -27,6 +27,7 @@ export const settingsSchema = z.object({
   /** Px, or 0 for "as tall as its contents". Clamped again in CSS against the viewport. */
   listsHeight: z.number().int().min(0).max(2000),
   collapseDone: z.boolean(),
+  showWeekStats: z.boolean(),
   showCalendarEvents: z.boolean(),
   hideConvertedEvents: z.boolean(),
   rolloverEnabled: z.boolean(),

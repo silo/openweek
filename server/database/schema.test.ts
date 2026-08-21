@@ -17,6 +17,7 @@ describe('drizzle-zod contract', () => {
     showLists: true,
     listsHeight: 0,
     collapseDone: true,
+    showWeekStats: true,
     showCalendarEvents: true,
     hideConvertedEvents: true,
     rolloverEnabled: false,

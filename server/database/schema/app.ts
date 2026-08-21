@@ -55,6 +55,9 @@ export const userSettings = pgTable('user_settings', {
   // which is what an account that has never touched the handle keeps.
   listsHeight: smallint('lists_height').notNull().default(0),
   collapseDone: boolean('collapse_done').notNull().default(true),
+  // The quiet streak/follow-through line above the grid. On by default; every other piece of
+  // chrome in the week has a switch, so this one does too.
+  showWeekStats: boolean('show_week_stats').notNull().default(true),
   showCalendarEvents: boolean('show_calendar_events').notNull().default(true),
   // Once an event has become a task, showing both is the same meeting twice.
   hideConvertedEvents: boolean('hide_converted_events').notNull().default(true),

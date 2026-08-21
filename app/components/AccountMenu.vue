@@ -45,6 +45,13 @@ async function signOut() {
       </div>
       <div class="mx-[5px] my-1 h-px bg-ow-hairline" />
       <NuxtLink
+        to="/stats"
+        class="block rounded-lg px-2.5 py-2 text-sm text-ow-strong transition-colors hover:bg-ow-inset hover:text-ow-ink"
+        @click="open = false"
+      >
+        Stats
+      </NuxtLink>
+      <NuxtLink
         to="/settings"
         class="block rounded-lg px-2.5 py-2 text-sm text-ow-strong transition-colors hover:bg-ow-inset hover:text-ow-ink"
         @click="open = false"

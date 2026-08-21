@@ -37,10 +37,11 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 | `showLists` | boolean | default `true`; hides the lists rail under the week so the grid has the whole window. Also a toolbar toggle. |
 | `listsHeight` | smallint | px height of the lists rail, dragged from its top edge. `0` (default) = size to its contents. Dragging below the minimum switches `showLists` off and leaves this untouched, so it comes back the size it was. |
 | `collapseDone` | boolean | default `true`; folds finished tasks into a "N done" line. |
+| `showWeekStats` | boolean | default `true`; the streak / follow-through line above the grid. Off hides it — the Stats page is unaffected. |
 | `showCalendarEvents` | boolean | default `true`. |
 | `hideConvertedEvents` | boolean | default `true`; an event that became a task steps out of the grid, so the same meeting is not listed twice. Deleting the task brings it back. |
 | `rolloverEnabled` | boolean | default `false` (opt-in). |
-| `timezone` | text | IANA tz; used by rollover + event placement. |
+| `timezone` | text | IANA tz, set in Appearance. Used by rollover, event placement, and the day a completion counts on in Stats. Defaults to `UTC`. |
 
 ### `list` — the non-day buckets ("Someday", "Work", …)
 | Column | Type | Notes |
@@ -65,7 +66,7 @@ The Postgres schema, its constraints, and the ordering/identity conventions. App
 | `note` | text? | italic annotation |
 | `highlightColor` | enum? | `persimmon` \| `amber` \| `jade` \| `indigo` \| `magenta` (the highlighter ink) |
 | `timeOfDay` | time? | display label only (◷) — **no** hourly scheduling |
-| `completedAt` | timestamptz? | null = open; timestamp enables stats |
+| `completedAt` | timestamptz? | null = open. Stamped in **server UTC**, so Stats buckets it through the account's `timezone` |
 | `originalDate` | date? | kept when a rollover moves the task ("rolled" ⇔ `originalDate < date`) |
 | `recurrenceRule` | text? | reserved; materialization deferred (see [roadmap](./roadmap.md)) |
 | `sourceEventId` | uuidv7? → calendar_event | set when created from / kept-linked to an imported event |
@@ -79,6 +80,9 @@ in the UI: past columns drop their composer and their drop targets, past days ar
 past events lose their "＋ task" button. The one exception is the rollover banner's **send back**, which
 restores a task to its own `originalDate`. Rows already sitting on a past day are left alone.
 **Indexes** — `(userId, date)`, `(userId, listId)`, `(userId, completedAt)`.
+**The day a task counts against** — every Stats figure buckets on `COALESCE(original_date, date)`, the day it
+was **first** planned for, never on `date`. Rollover moves `date` forward, so bucketing on it would let each
+unfinished day empty itself out and report 100% done. See [decisions.md](./decisions.md) D10.
 
 ### `subtask` — schema-ready (UI deferred, see [decisions.md](./decisions.md))
 `id` uuidv7 PK · `taskId` → task (**ON DELETE CASCADE**) · `title` · `position` (fractional) · `completedAt?`.

@@ -43,6 +43,21 @@ const WEEK_STARTS = [
   { v: 0, label: 'Sunday' },
 ] as const
 
+// Filled after mount rather than during setup: on the server this resolves to the
+// container's zone, which would not match the browser's and would break hydration.
+const browserTimezone = ref('')
+onMounted(() => {
+  browserTimezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone
+})
+
+// A row written by the seed — or before this control existed — can hold a zone this runtime
+// does not enumerate, so the current value is folded in rather than silently dropped.
+const TIMEZONES = computed(() => {
+  const zones = new Set<string>(['UTC', ...Intl.supportedValuesOf('timeZone')])
+  if (store.settings?.timezone) zones.add(store.settings.timezone)
+  return [...zones].sort()
+})
+
 const heading = 'mb-2.5 text-[11px] font-semibold tracking-[0.06em] text-ow-faint'
 const note = 'mt-2.5 max-w-[560px] text-[13px] leading-relaxed text-ow-muted'
 </script>
@@ -153,6 +168,49 @@ const note = 'mt-2.5 max-w-[560px] text-[13px] leading-relaxed text-ow-muted'
       <p :class="note">
         Off gives the week the whole window. The lists themselves are untouched — a task can
         still be sent to one from its “Move to…” menu.
+      </p>
+      <label class="mt-3.5 flex items-center gap-3 text-sm text-ow-ink">
+        <OwSwitch
+          :model-value="store.settings.showWeekStats"
+          size="lg"
+          label="Show the stats line above the week"
+          @update:model-value="set('showWeekStats', $event)"
+        />
+        <span>Show the stats line above the week</span>
+      </label>
+      <p :class="note">
+        A quiet line carrying your streak and how the last four weeks went. Off hides it; the
+        full picture is still on the Stats page.
+      </p>
+    </section>
+
+    <section>
+      <h3 :class="heading">
+        TIME ZONE
+      </h3>
+      <label class="flex flex-wrap items-center gap-3 text-sm text-ow-ink">
+        <span>Days begin and end in</span>
+        <select
+          :value="store.settings.timezone"
+          class="rounded-[9px] border border-ow-border bg-ow-surface px-2.5 py-1.5 text-[13.5px]"
+          @change="set('timezone', ($event.target as HTMLSelectElement).value)"
+        >
+          <option v-for="tz in TIMEZONES" :key="tz" :value="tz">
+            {{ tz }}
+          </option>
+        </select>
+        <OwButton
+          v-if="browserTimezone && browserTimezone !== store.settings.timezone"
+          size="sm"
+          @click="set('timezone', browserTimezone)"
+        >
+          Use {{ browserTimezone }}
+        </OwButton>
+      </label>
+      <p :class="note">
+        Which clock decides when one day becomes the next. Rollover waits for midnight here,
+        calendar events land on their day here, and Stats counts a finished task on the day you
+        ticked it here. New accounts start on UTC.
       </p>
     </section>
 

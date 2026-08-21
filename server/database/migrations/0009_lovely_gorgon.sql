@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "show_week_stats" boolean DEFAULT true NOT NULL;

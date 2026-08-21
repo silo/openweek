@@ -16,6 +16,7 @@ await useAsyncData('settings', async () => {
 
 const weekStartsOn = computed(() => (settings.settings?.weekStartsOn ?? 1) as 0 | 1)
 const showLists = computed(() => settings.settings?.showLists ?? true)
+const showWeekStats = computed(() => settings.settings?.showWeekStats ?? true)
 const currentStart = ref(startOfWeekStr(todayStr(), weekStartsOn.value))
 
 // The calendars come down with the week, not on mount: which calendars are switched off is
@@ -117,6 +118,7 @@ onMounted(() => {
         @open-task="openFromSearch"
       />
       <RolloverReview />
+      <WeekStatsStrip v-if="showWeekStats" />
       <WeekGrid class="min-h-0 flex-1" @open-task="openTask" @convert="convert" />
     </div>
 

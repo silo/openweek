@@ -27,7 +27,7 @@ import { auth } from '../server/utils/auth'
 import { encryptJson } from '../server/utils/crypto'
 import { keyBetween } from '../server/services/ordering'
 import { parseConfig } from '../server/utils/config'
-import { DEFAULT_ACCENT } from '../shared/constants/colors'
+import { DEFAULT_ACCENT, HIGHLIGHT_INKS } from '../shared/constants/colors'
 import type { HighlightInk } from '../shared/constants/colors'
 
 const EMAIL = 'demo@openweek.test'
@@ -67,6 +67,18 @@ function at(date: string, hhmm: string): Date {
   const d = new Date(`${date}T00:00:00`)
   d.setHours(h!, m!, 0, 0)
   return d
+}
+
+/**
+ * A fixed-seed PRNG. The history below needs to look scattered, but `Math.random` would give
+ * every re-seed a different heatmap — and then "does this number look right?" has no answer.
+ */
+function lcg(seed: number): () => number {
+  let s = seed >>> 0
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0
+    return s / 0x1_0000_0000
+  }
 }
 
 // --- shapes ----------------------------------------------------------------
@@ -171,6 +183,9 @@ async function main() {
         note: t.note ?? null,
         highlightColor: t.ink ?? null,
         completedAt: t.done ? new Date() : null,
+        // Backdated, and Someday furthest of all: a list is where things go to age, and the
+        // "oldest open task" line has nothing to report if every row was written this morning.
+        createdAt: at(iso(addDays(today, -(spec.isDefault ? 150 + j * 40 : 20 + i * 15 + j * 6))), '09:00'),
       })))
     }
   }
@@ -219,6 +234,99 @@ async function main() {
     }))
   })
   await db.insert(task).values(dayRows)
+
+  // 5b. history -------------------------------------------------------------
+  // Ten months of finished weeks behind the curated one, so the Stats page has a heatmap,
+  // streaks, a weekday shape and a week-over-week trend to draw. Without this the whole page
+  // renders one column and reads as broken.
+  const rand = lcg(20260821)
+  const pick = <T>(xs: readonly T[]): T => xs[Math.floor(rand() * xs.length)]!
+
+  const HISTORY_DAYS = 300
+  const HISTORY_TITLES = [
+    'Morning pages', 'Reply to the week’s email', 'Run the numbers for the studio',
+    'Walk the dog', 'Stretch', 'Read a chapter', 'Tidy the desk', 'Water the herbs',
+    'Invoice the studio', 'Weekly backup', 'Call the landlord', 'Sort the recycling',
+    'Practise scales', 'Plan the shopping', 'Check the bike tyres', 'Write the standup note',
+    'Book the rehearsal room', 'Review the pull request', 'Update the budget sheet',
+    'Change the bed linen', 'Cook something new', 'Ring Grandad', 'Sweep the stairs',
+  ]
+  // Weighted so the time-of-day chart has a morning and an evening lobe rather than a flat bar.
+  const HOURS = [7, 8, 8, 9, 9, 9, 10, 10, 11, 12, 13, 14, 15, 16, 16, 17, 17, 18, 19, 20, 21]
+
+  const now = new Date()
+  // Same shape as the curated week's rows, plus the cached calendar label.
+  const historyRows: ((typeof dayRows)[number] & { sourceLabel: string | null, createdAt: Date })[] = []
+
+  for (let back = HISTORY_DAYS; back > 0; back--) {
+    const day = addDays(today, -back)
+    const dayStr = iso(day)
+    if (dayStr >= week[0]!) continue // the curated week owns its own days
+
+    const weekend = day.getDay() === 0 || day.getDay() === 6
+    const roll = rand()
+    // Quiet weekends and the occasional empty weekday are what give the heatmap texture and
+    // the streaks somewhere to break.
+    const count = weekend
+      ? (roll < 0.55 ? 0 : 1 + Math.floor(rand() * 2))
+      : (roll < 0.08 ? 0 : 1 + Math.floor(rand() * 5))
+
+    const pos = positions(count)
+    for (let i = 0; i < count; i++) {
+      const outcome = rand()
+      const slip = outcome < 0.12 ? -1 : outcome < 0.8 ? 0 : 1 + Math.floor(rand() * 4)
+      const closedOn = addDays(day, slip)
+      if (closedOn > today) continue
+
+      const completedAt = new Date(closedOn)
+      completedAt.setHours(pick(HOURS), Math.floor(rand() * 60), 0, 0)
+      if (completedAt > now) completedAt.setTime(now.getTime() - Math.floor(rand() * 3_600_000))
+
+      historyRows.push({
+        userId,
+        // A task that slipped is where rollover left it: moved to the day it was finally
+        // finished, with the day it was first planned for kept in originalDate.
+        date: slip > 0 ? iso(closedOn) : dayStr,
+        position: pos[i]!,
+        title: pick(HISTORY_TITLES),
+        note: null,
+        highlightColor: rand() < 0.32 ? pick(HIGHLIGHT_INKS) : null,
+        timeOfDay: null,
+        originalDate: slip > 0 ? dayStr : null,
+        completedAt,
+        sourceLabel: rand() < 0.05 ? 'Work · Studio' : null,
+        // Written a day or two before the day it was planned for. Left at the column default
+        // every row would look created today, and "time to close" would come out negative.
+        createdAt: at(iso(addDays(day, -Math.floor(rand() * 3))), '09:00'),
+      })
+    }
+  }
+
+  // What a rollover account actually accumulates: a handful of tasks that keep moving forward
+  // and never get finished. They sit on today with originalDate pointing back, which is where
+  // rollover would have left them — and they are what keeps follow-through from reading 100%,
+  // because every one of them is a day that was planned and not delivered.
+  const LINGERING = [
+    'Sort out the loft', 'Cancel the old gym membership', 'Back up the photo library',
+    'Reply to Anders about the boat', 'Descale the kettle', 'Find a dentist that takes new patients',
+  ]
+  // Continues past the keys the curated day used, so these sit below it rather than tying.
+  const lingerPos = positions(20).slice(10)
+  historyRows.push(...LINGERING.map((title, i) => ({
+    userId,
+    date: todayStr,
+    position: lingerPos[i]!,
+    title,
+    note: null,
+    highlightColor: null,
+    timeOfDay: null,
+    originalDate: iso(addDays(today, -(4 + i * 3))),
+    completedAt: null,
+    sourceLabel: null,
+    createdAt: at(iso(addDays(today, -(6 + i * 3))), '09:00'),
+  })))
+
+  await db.insert(task).values(historyRows)
 
   // 6. calendars ------------------------------------------------------------
   // Read-only demo feeds. The credentials are fake but really encrypted, so the rows
@@ -292,6 +400,7 @@ async function main() {
   console.log(`\n  Seeded ${EMAIL}`)
   console.log(`  password: ${PASSWORD}`)
   console.log(`  week of ${week[0]} — ${taskCount} tasks, ${listSpecs.length} lists, ${events.length} events across 3 calendars`)
+  console.log(`  plus ${historyRows.length} rows of history behind it, so Stats has something to draw`)
   console.log('\n  pnpm dev  →  http://localhost:3000\n')
 }
 

@@ -59,13 +59,16 @@ Before any PR: `pnpm lint && pnpm typecheck && pnpm test` must be green.
 - **Design tokens are CSS variables** (`--ow-*`); don't hard-code the hex values from `docs/design.md` in
   components — reference the tokens.
 - **Config fails fast** — `server/utils/config.ts` validates env with Zod at boot.
+- **Stats count a task against the day it was *first* planned** — `COALESCE(original_date, date)`, never
+  `date`, and completions are bucketed through the account's `timezone`. See `docs/decisions.md` D10.
 - **Fonts are self-hosted** (`@fontsource-variable/bricolage-grotesque` for display + five body faces);
   no CDN. The design canvases link Google Fonts — do not copy that.
 
 ## Build order
-Follow the phases in [`docs/roadmap.md`](docs/roadmap.md). Status: **v1 scaffolded (Phases 0–9 implemented),
+Follow the phases in [`docs/roadmap.md`](docs/roadmap.md). Status: **v1 scaffolded (Phases 0–10 implemented),
 front-end rebuilt on the Paper/Ink design** — tasks/lists/grid, drag-and-drop across days *and* lists,
 rollover with a review banner, read-only calendar sync (Google/CalDAV/iCal) with per-calendar show/hide,
-search, focus-day, collapse-done, the weekends toggle, and the Docker/self-host packaging are in place.
+search, focus-day, collapse-done, the weekends toggle, the `/stats` page, and the Docker/self-host packaging
+are in place.
 Deferred (schema ready): subtasks UI, recurring materialization, reminders, two-way sync, offline/PWA,
 month view. Explicitly out of scope: the design's "Manage users" / admin copy.

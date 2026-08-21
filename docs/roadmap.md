@@ -49,6 +49,13 @@ responsive layout.
 Multi-stage `Dockerfile`; `docker-compose.yml` (app + postgres); entrypoint migrations; `.env.example`;
 [self-hosting.md](./self-hosting.md) polish + backups; Playwright e2e; first release.
 
+## Phase 10 — Stats
+`GET /api/stats` + `server/services/stats.ts` (**aggregates only — no new tables**); the `/stats` page; a
+quiet summary strip above the week grid with a `showWeekStats` switch; the **timezone** control in
+Appearance, without which every completion is bucketed as UTC. The one migration is the `show_week_stats`
+column — the stats themselves needed none. Charts are hand-rolled SVG/CSS — see
+[decisions.md](./decisions.md) D9.
+
 ## Later phases (not scheduled)
 
 The schema already reserves room for these — they are UI/logic work, **not** migrations:
